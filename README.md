@@ -53,19 +53,13 @@ the margin definitions (read SNM, hold SNM, write margin), the corner and
 Monte Carlo methodology, and the harness — has one master, `gf180-sram`, and
 is taken from there by pinned reference rather than redesigned.
 
-## Target specification (DRAFT — engineering to ratify, see issue #1)
+## Target specification (DRAFT — awaiting operator ratification)
 
-All figures are targets.
-
-| Parameter | Target | Fallback | Stretch |
-|---|---|---|---|
-| Bitcell | 6T, logic design rules only | — | — |
-| Ports | 1RW, synchronous | — | 1RW1R |
-| Compiler range | words 16–1024, bits 8–64, column mux 1/2/4/8 | single fixed 256 × 32 instance through the compiler path | words to 4096 |
-| Reference instances | 64 × 32, 256 × 32, 1024 × 32 all DRC/LVS-clean | 256 × 32 | — |
-| Supply | 1.8 V ±10% | — | — |
-| Margins | read SNM, hold SNM, write margin strictly positive at every corner, with Monte Carlo | — | — |
-| Views per instance | GDS, LEF, Liberty, Verilog behavioural model | GDS, LEF | — |
+The target / fallback / stretch for every parameter, with rationale, is in
+[`spec/sram-compiler.md`](spec/sram-compiler.md); departures from the earlier
+draft are recorded in [`spec/decisions/`](spec/decisions/). All figures are
+targets. Items inherited from `gf180-sram` are pinned in
+[`reuse.lock.json`](reuse.lock.json).
 
 Maturity ladder: spec ratified → bitcell characterized across PVT →
 periphery characterized → first instance DRC/LVS-clean → reference
@@ -75,7 +69,7 @@ measured silicon. **Current position: pre-spec.**
 ## Repo layout
 
 ```
-spec/          ratified spec + decision records
+spec/          target spec + decision records
 design/        bitcell and periphery schematics, compiler sources
 rtl/           control logic + behavioural model
 verification/  cocotb testbenches for control logic and the behavioural model
