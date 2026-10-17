@@ -1,0 +1,8 @@
+# Yosys smoke script; @STD_LIB@ and @OUT@ are substituted by run.sh.
+read_verilog -sv sim/smoke/placeholder.v
+synth -top smoke_top -flatten
+dfflibmap -liberty @STD_LIB@
+abc -liberty @STD_LIB@
+opt_clean
+stat -liberty @STD_LIB@
+write_verilog -noattr @OUT@
