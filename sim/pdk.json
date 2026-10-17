@@ -1,0 +1,13 @@
+{
+  "pdk": "sky130",
+  "variant": "sky130A",
+  "open_pdks_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+  "revision_kind": "open_pdks commit",
+  "install_method": "ciel (installs <PDK_ROOT>/ciel/sky130/versions/<open_pdks commit>/sky130A, linked as <PDK_ROOT>/sky130A); open_pdks or a direct checkout at the same commit is equivalent",
+  "revision_discovery": "resolved path component after /versions/, else the 'open_pdks <commit>' line of <variant dir>/SOURCES",
+  "model_files": {
+    "ngspice": "libs.tech/ngspice/sky130.lib.spice",
+    "std_cell_liberty": "libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
+  },
+  "notes": "Pin is the open_pdks commit, not the ciel bundle hash. Both are the same value for this install (ciel names versions by open_pdks commit); confirmed against <variant dir>/SOURCES."
+}
