@@ -9,6 +9,12 @@ for the bitcell and periphery, and Yosys/OpenROAD for the control logic.
 
 **Status: just opened, specification phase.** Nothing is designed yet.
 
+**T1 status.** The evidence-tier verdict is graded by `klt signoff`, not
+hand-read. The verdict of record is
+[`manifests/sky130-sram-compiler.signoff.json`](manifests/sky130-sram-compiler.signoff.json);
+see [`manifests/README.md`](manifests/README.md) for how it is regenerated and
+how CI keeps it fresh.
+
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
 spec and an append-only evidence trail — not human-authored work that agents

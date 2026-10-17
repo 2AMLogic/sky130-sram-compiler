@@ -1,0 +1,9 @@
+{
+  "block": "sky130-sram-compiler",
+  "kind": "mixed-signal",
+  "partition_boundary": {
+    "analog": "PLACEHOLDER until the spec (#2) fixes it: 6T bitcell array and pitch-matched periphery (row decoder, wordline drivers, column mux, sense amplifiers, write drivers)",
+    "digital": "PLACEHOLDER until the spec (#2) fixes it: synthesized control logic and the behavioural model (rtl/)"
+  },
+  "evidence": {}
+}
