@@ -14,7 +14,7 @@ python3 -I ../lib/snm_from_artifacts.py <scratch>          # SNM per corner from
 
 | Path | What |
 |---|---|
-| `tb/` | Testbench bodies (generated). `read_snm`/`hold_snm`: decoupled half cell; `mc_*`: two independently mismatched half cells; `write_trip`: full cell (schematic subckt) with a 33-trial ladder; `mc_write_trip`: the same ladder under `_mm` mismatch (fs, sf x 1.62/1.98 V x -40/125 C, 60 requested per point; record via `lib/make_write_mc_record.py`; batch jobs are capped at 5 units by the fleet's 3600 s ceiling, so run it when the fleet has free instances). |
+| `tb/` | Testbench bodies (generated). `read_snm`/`hold_snm`: decoupled half cell; `mc_*`: two independently mismatched half cells; `write_trip`: full cell (schematic subckt) with a 33-trial ladder; `mc_write_trip`: the same ladder under `_mm` mismatch (fs, sf x 1.62/1.98 V x -40/125 C, 60 requested per point; record via `lib/make_write_mc_record.py`; batch jobs are capped at 5 units by the fleet's 3600 s ceiling, so run it when the fleet has free instances). `records/2026-10-18-write-mc-complete.md` merges the partial `20261018-write-mc` report with a full re-run (`corners/20261018-write-mc-complete/`, `make_write_mc_record.py --report <base> <rerun>`) to n = 60 valid at all 8 points. |
 | `requests/` | `klt sim` requests (generated): 45 corners = {tt,ff,ss,sf,fs} x {-40,25,125 C} x {1.62,1.80,1.98 V}; MC requests use the `_mm` library sections. |
 | `lib/` | `make_tb.py`, `fetch_pinned.sh`, `snm_from_artifacts.py`. |
 | `corners/`, `records/` | Append-only evidence: compressed `klt sim` reports and dated records. |
