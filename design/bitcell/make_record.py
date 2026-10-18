@@ -5,7 +5,6 @@ Usage: design/bitcell/make_record.py <scratch-dir>      (scratch: outside the re
 Writes design/bitcell/records/<UTC timestamp>-<git sha>.md and never overwrites one.
 Needs: uv (klayout python), klt, a sky130A install at the pin (source sim/env.sh first).
 """
-import collections
 import datetime
 import json
 import os

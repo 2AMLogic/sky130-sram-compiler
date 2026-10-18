@@ -15,7 +15,6 @@ import argparse
 import gzip
 import hashlib
 import json
-import math
 import pathlib
 import statistics
 import subprocess
@@ -24,6 +23,7 @@ import sys
 here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import snm_from_artifacts as sa  # noqa: E402
+from record_common import scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 
@@ -48,15 +48,12 @@ def write_table(report):
     rows = {}
     for c in rep["corners"]:
         vdd = c["supply_v"]["vvdd"]
-        q = [m["value"] for m in sorted(c["measurements"], key=lambda m: m["name"])]
-        flipped = [v is not None and v < vdd / 2 for v in q]
-        k = -1
-        for i, f in enumerate(flipped):
-            if not f:
-                break
-            k = i
-        mono = not any(flipped[k + 1:])
-        rows[c["corner_id"]] = (k, vdd * k / (len(q) - 1) if k >= 0 else None, mono, len(q))
+        w = write_ladder(c)
+        if w is None:  # incomplete ladder: a failure row, not a lower trip
+            rows[c["corner_id"]] = (None, None, False, len(c["measurements"]))
+            continue
+        k, mono, n = w
+        rows[c["corner_id"]] = (k, vdd * k / (n - 1) if k >= 0 else None, mono, n)
     return rep, rows
 
 
@@ -110,16 +107,6 @@ def main():
 
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
-
-    def scrub(o):
-        """Host-absolute artifact paths (scratch dirs, home) are replaced by their last two components."""
-        if isinstance(o, dict):
-            return {k: scrub(v) for k, v in o.items()}
-        if isinstance(o, list):
-            return [scrub(v) for v in o]
-        if isinstance(o, str) and o.startswith("/") and ("/home/" in o or "/tmp/" in o):
-            return "<artifact>/" + "/".join(o.rstrip("/").split("/")[-2:])
-        return o
 
     def keep(src, name):
         data = json.dumps(scrub(json.load(open(src))), indent=1, sort_keys=True).encode()
@@ -188,7 +175,7 @@ def main():
                 detk = {}
                 for cid, v in det.items():
                     proc, vdd, temp = cid.split("/")
-                    detk[f"{proc}_mm_{vdd.replace('.', 'p').replace('V', 'V')}_{temp}"] = v[0]
+                    detk[f"{proc}_mm_{vdd.replace('.', 'p')}_{temp}"] = v[0]
                 L += [f"### {nm}", ""] + fmt_mc(mc_stats(dirs), detk) + [""]
                 L.append("jobs: " + ", ".join(sorted({pathlib.Path(d).name for d in dirs})))
                 L.append("")
