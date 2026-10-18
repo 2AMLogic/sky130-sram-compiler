@@ -25,12 +25,54 @@ LADDER = 33          # write-trip trial levels: VDD * k / (LADDER - 1)
 TRIAL_NS = 8.0
 MC_WRITE_N = 60        # samples per (process, VDD, T) point
 MC_WRITE_SEED = 20261018
+# Controls (issue #19): determinism control (mismatch switched off) and negative control (mismatch sigma
+# scaled up, independently seeded). 6x is the smallest of gf180-sram's 20x/12x/6x negative-control factors,
+# i.e. the hardest detection test.
+DET_N = 3
+NEG_N = 20
+NEG_SEED = 20261019
+NEG_SCALE = 6
+# Per-instance MOS mismatch in the sky130 `_mm` library sections is
+#   param = nominal + MC_MM_SWITCH * AGAUSS(0, 1, 1) * (<device>__<param>_slope / sqrt(l*w*mult)),
+# so every sigma scales linearly with these `.param` slopes. Values are the non-zero slopes of the pinned
+# open_pdks f6eeac7 libs.ref/sky130_fd_pr/spice/sky130_fd_pr__{nfet,pfet}_01v8__mismatch.corner.spice.
+MM_SLOPES = {
+    "nfet_01v8": {"toxe_slope": "3.443e-03", "voff_slope": "0.007", "vth0_slope": "3.356e-03",
+                  "vth0_slope1": "7.356e-03"},
+    "pfet_01v8": {"toxe_slope": "4.443e-03", "toxe_slope1": "6.443e-03", "toxe_slope2": "3.443e-03",
+                  "nfactor_slope": "0.1", "nfactor_slope1": "0.1", "voff_slope2": "0.007",
+                  "vth0_slope": "5.856e-03", "vth0_slope1": "7.356e-03", "vth0_slope2": "4.356e-03"},
+}
 
 files = {}
 
 
 def dev(kind):
     return sz[kind]["model"], sz[kind]["w"], sz[kind]["l"]
+
+
+def mm_scale_params(scale):
+    """`.param` lines (placed after the klt-injected `.lib`, so they win) scaling every mismatch sigma."""
+    lines = [f"* NEGATIVE CONTROL: every per-instance mismatch sigma x {scale} (slope params of the pinned",
+             "* open_pdks mismatch.corner files, x mm_scale); nominal parameters and process corner unchanged.",
+             f".param mm_scale={scale}"]
+    for dev, ps in MM_SLOPES.items():
+        lines += [f".param sky130_fd_pr__{dev}__{k}='{v}*mm_scale'" for k, v in ps.items()]
+    return "\n".join(lines) + "\n"
+
+
+MM_OFF_PARAMS = ("* DETERMINISM CONTROL: the `_mm` section's mismatch switch forced off, so every Monte Carlo\n"
+                 "* unit is the nominal skewed corner and must reproduce the deterministic ladder.\n"
+                 ".param mc_mm_switch=0\n")
+
+
+def with_params(body, params):
+    """Insert `params` after the leading comment block of a testbench body."""
+    lines = body.split("\n")
+    i = 0
+    while lines[i].startswith("*"):
+        i += 1
+    return "\n".join(lines[:i]) + "\n" + params + "\n".join(lines[i:])
 
 
 def half_cell(tag, wl_expr, out, inp="in"):
@@ -123,6 +165,10 @@ def build():
         files[f"tb/mc_{mode}_snm.sp"] = snm_tb(mode, 2)
     files["tb/write_trip.sp"] = write_tb()
     files["tb/mc_write_trip.sp"] = write_tb()  # same ladder body; the `_mm` sections add per-instance mismatch
+    files["tb/mc_write_trip_det.sp"] = with_params(write_tb(), MM_OFF_PARAMS)
+    files["tb/mc_write_trip_neg.sp"] = with_params(write_tb(), mm_scale_params(NEG_SCALE))
+    for mode in ("read", "hold"):
+        files[f"tb/mc_{mode}_snm_neg.sp"] = with_params(snm_tb(mode, 2), mm_scale_params(NEG_SCALE))
     sweep = {"kind": "dc", "args": "VNRM 0 1 0.005"}
     keep = {"save_vectors": ["v(in)", "v(out)"]}
     keep2 = {"save_vectors": ["v(in)", "v(outa)", "v(outb)"]}
@@ -152,6 +198,25 @@ def build():
         mc={"n": MC_WRITE_N, "seed": MC_WRITE_SEED, "vary": "mismatch", "k_sigma": 3},
         process=["sf_mm", "fs_mm"], vdds=[1.62, 1.98], temps=[-40, 125])
     files["requests/mc_write_trip.request.json"]["batch"] = {"max_units_per_job": 5, "poll_timeout_s": 21600}
+    # Controls (issue #19). Determinism: same points, mismatch switched off, a few identical samples.
+    # Negative: same points, sigma x NEG_SCALE, independent seed.
+    wopts = {"waveforms": False, "keep_artifacts": False, "timeout_s": 600}
+    files["requests/mc_write_trip_det.request.json"] = base_req(
+        "mc_write_trip_det.sp", wtran, meas, wopts,
+        mc={"n": DET_N, "seed": MC_WRITE_SEED, "vary": "mismatch", "k_sigma": 3},
+        process=["sf_mm", "fs_mm"], vdds=[1.62, 1.98], temps=[-40, 125])
+    files["requests/mc_write_trip_det.request.json"]["batch"] = {"max_units_per_job": 5, "poll_timeout_s": 21600}
+    files["requests/mc_write_trip_neg.request.json"] = base_req(
+        "mc_write_trip_neg.sp", wtran, meas, wopts,
+        mc={"n": NEG_N, "seed": NEG_SEED, "vary": "mismatch", "k_sigma": 3},
+        process=["sf_mm", "fs_mm"], vdds=[1.62, 1.98], temps=[-40, 125])
+    files["requests/mc_write_trip_neg.request.json"]["batch"] = {"max_units_per_job": 5, "poll_timeout_s": 21600}
+    for mode in ("read", "hold"):
+        # same shape as the baseline mc_{mode}_snm request: 6 points, artifacts kept for the SNM extractor
+        r = json.loads(json.dumps(files[f"requests/mc_{mode}_snm.request.json"]))
+        r["netlist"] = f"../tb/mc_{mode}_snm_neg.sp"
+        r["monte_carlo"].update({"n": NEG_N, "seed": NEG_SEED})
+        files[f"requests/mc_{mode}_snm_neg.request.json"] = r
 
 
 def main():
