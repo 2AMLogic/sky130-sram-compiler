@@ -81,6 +81,8 @@ def main():
         with gzip.GzipFile(ev / f"mc_write_trip.report{i}.json.gz", "wb", mtime=0) as g:
             g.write(json.dumps(scrub(r), indent=1, sort_keys=True).encode())
 
+    inputs = ", ".join(["`sim/bitcell/corners/20261018-write-mc/mc_write_trip.report.json.gz` (base)"]
+                       + [f"`sim/bitcell/corners/{ev.name}/mc_write_trip.report{i}.json.gz`" for i in range(1, len(reps))])
     pts, fail, units = stats(merge(reps))
     bpts, bfail, _ = stats(reps[0]["corners"])
 
@@ -140,7 +142,7 @@ def main():
          f"- request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` "
          "(full 6T cell, schematic subckt `bitcell_6t`, per-instance mismatch via the `_mm` library sections)",
          f"- Monte Carlo: n={mc.get('n')} samples per point, seed={mc.get('seed')}, vary={mc.get('vary')}, k_sigma={mc.get('k_sigma')}",
-         f"- backend: batch fleet; batch job ids in the merged report `{ev.name}/mc_write_trip.report.json.gz` "
+         f"- backend: batch fleet; batch job ids in the input reports {inputs} "
          f"(`environment.remote` carries {', '.join(sorted(remote)) or 'no'} keys; job ids are printed by klt on stderr only); "
          "models staged from the repo-pinned PDK (`options.stage_model_inputs`)",
          f"- klt: {rep['environment'].get('client_klt_version') or remote.get('client_klt_version') or '0.7.1.dev1865+g1c5546271c61'}", "",

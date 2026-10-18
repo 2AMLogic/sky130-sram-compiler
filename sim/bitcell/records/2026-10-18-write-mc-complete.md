@@ -1,4 +1,4 @@
-# Bitcell write-trip Monte Carlo record 2026-10-18-write-mc-complete (5b9e057)
+# Bitcell write-trip Monte Carlo record 2026-10-18-write-mc-complete (98c79e4)
 
 Issue: 2AMLogic/sky130-sram-compiler#14 (follows #7). Append-only: add a new dated record, never edit this one. The 45-corner deterministic record `20261018-040941-91ba071.md` is not edited; this record adds the mismatch evidence that record's Limits say is missing.
 
@@ -7,7 +7,7 @@ Issue: 2AMLogic/sky130-sram-compiler#14 (follows #7). Append-only: add a new dat
 - sizing (drawn W/L, um): PD 0.84/0.15 nfet_01v8, AX 0.42/0.15 nfet_01v8, PU 0.42/0.15 pfet_01v8 (design/bitcell/sizing.json)
 - request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` (full 6T cell, schematic subckt `bitcell_6t`, per-instance mismatch via the `_mm` library sections)
 - Monte Carlo: n=60 samples per point, seed=20261018, vary=mismatch, k_sigma=3.0
-- backend: batch fleet; batch job ids in the merged report `20261018-write-mc-complete/mc_write_trip.report.json.gz` (`environment.remote` carries fleet, job_ceiling keys; job ids are printed by klt on stderr only); models staged from the repo-pinned PDK (`options.stage_model_inputs`)
+- backend: batch fleet; batch job ids in the input reports `sim/bitcell/corners/20261018-write-mc/mc_write_trip.report.json.gz` (base), `sim/bitcell/corners/20261018-write-mc-complete/mc_write_trip.report1.json.gz` (`environment.remote` carries fleet, job_ceiling keys; job ids are printed by klt on stderr only); models staged from the repo-pinned PDK (`options.stage_model_inputs`)
 - klt: 0.7.1.dev1865+g1c5546271c61
 
 ## Grading bar (taken by reference from gf180-sram, not redesigned)
