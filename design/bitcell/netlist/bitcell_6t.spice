@@ -1,0 +1,20 @@
+** sch_path: design/bitcell/bitcell_6t.sch
+.subckt bitcell_6t BL BLB WL VDD VSS
+*.iopin BL
+*.iopin BLB
+*.iopin WL
+*.iopin VDD
+*.iopin VSS
+XMPL Q QB VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42
++ nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+XMPR QB Q VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42
++ nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+XMNL Q QB VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26
++ nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMNR QB Q VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26
++ nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMAL BL WL Q VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42
++ nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+XMAR BLB WL QB VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42
++ nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+.ends

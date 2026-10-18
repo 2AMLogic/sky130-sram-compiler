@@ -1,0 +1,6 @@
+{
+  "_comment": "Single source of truth for the bitcell sizing (drawn W/L, um). Read by gen_bitcell.py (layout), gen_schematic.py (xschem) and sim/bitcell/lib/make_tb.py (testbenches). Chosen row: see sim/bitcell/records/ (sizing exploration).",
+  "pd": {"w": 0.84, "l": 0.15, "model": "nfet_01v8"},
+  "ax": {"w": 0.42, "l": 0.15, "model": "nfet_01v8"},
+  "pu": {"w": 0.42, "l": 0.15, "model": "pfet_01v8"}
+}
