@@ -1,0 +1,11 @@
+* HOLD SNM half-cell fixture body (circuit body for `klt sim`: no .control/.end).
+* hold: WL deasserted (0 V), BL precharged to VDD. One storage inverter + its access device, decoupled from the other
+* inverter; the sweep source is normalised (0..1) and scaled by VDD so one sweep
+* covers every supply corner. Sizes from design/bitcell/sizing.json (make_tb.py).
+VVDD vdd 0 dc 1.8
+VNRM nrm 0 dc 0
+BIN in 0 V='v(nrm)*v(vdd)'
+EBL bl 0 vdd 0 1
+XMP out in vdd vdd sky130_fd_pr__pfet_01v8 w=0.42 l=0.15
+XMN out in 0 0 sky130_fd_pr__nfet_01v8 w=0.84 l=0.15
+XMA bl 0 out 0 sky130_fd_pr__nfet_01v8 w=0.42 l=0.15
