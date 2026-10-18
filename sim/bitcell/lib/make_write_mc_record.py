@@ -20,38 +20,15 @@ import statistics
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from record_common import LADDER, scrub, write_ladder  # noqa: E402
+
 repo = pathlib.Path(__file__).resolve().parents[3]
-LADDER = 33
 
 
 def load(p):
     p = pathlib.Path(p)
     return json.load(gzip.open(p) if p.suffix == ".gz" else open(p))
-
-
-def scrub(o):
-    if isinstance(o, dict):
-        return {k: scrub(v) for k, v in o.items()}
-    if isinstance(o, list):
-        return [scrub(v) for v in o]
-    if isinstance(o, str) and o.startswith("/") and ("/home/" in o or "/tmp/" in o):
-        return "<artifact>/" + "/".join(o.rstrip("/").split("/")[-2:])
-    return o
-
-
-def sample(c):
-    """-> (kstar, monotone) or None if the unit did not produce a full ladder."""
-    vdd = c["supply_v"]["vvdd"]
-    q = [m["value"] for m in sorted(c["measurements"], key=lambda m: m["name"])]
-    if len(q) != LADDER or any(v is None for v in q):
-        return None
-    flipped = [v < vdd / 2 for v in q]
-    k = -1
-    for i, f in enumerate(flipped):
-        if not f:
-            break
-        k = i
-    return k, not any(flipped[k + 1:])
 
 
 def point_key(c):
@@ -75,11 +52,11 @@ def main():
     pts, fail = {}, {}
     for c in rep["corners"]:
         k = point_key(c)
-        s = sample(c)
+        s = write_ladder(c)
         if s is None:
             fail[k] = fail.get(k, 0) + 1
             continue
-        pts.setdefault(k, []).append(s)
+        pts.setdefault(k, []).append(s[:2])
 
     rows, notes = [], []
     for k in sorted(set(pts) | set(fail), key=lambda t: (t[0], t[1], t[2])):
