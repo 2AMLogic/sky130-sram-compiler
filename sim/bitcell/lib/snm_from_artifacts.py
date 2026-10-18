@@ -60,9 +60,11 @@ def eyes(pts1, pts2=None, n=4000):
     # sign changes of D, ignoring samples inside the flat, saturated tails (|D| ~ 0)
     nz = [(i, x > 0) for i, x in enumerate(d) if abs(x) > 1e-4]
     cross = [nz[k][0] for k in range(len(nz) - 1) if nz[k][1] != nz[k + 1][1]]
-    if len(cross) == 1 and abs(d[0]) < 1e-4 and abs(d[-1]) < 1e-4:
-        # rail-to-rail curves meet their mirrors exactly at the sweep ends: the stable states
-        cross = [0, cross[0], n]
+    # rail-to-rail curves meet their mirrors exactly at the sweep ends: the stable states
+    if len(cross) < 3 and abs(d[0]) < 1e-4:
+        cross = [0] + cross
+    if len(cross) < 3 and abs(d[-1]) < 1e-4:
+        cross = cross + [n]
     if len(cross) < 3:
         raise ValueError(f"{len(cross)} diagonal crossings (need 3 for a bistable cell)")
     c = [cross[0], cross[len(cross) // 2], cross[-1]]

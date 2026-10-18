@@ -8,7 +8,7 @@ Issue #7 (part of #2).
 | `sizing.json` | The one sizing input (drawn W/L per device). Read by the schematic generator, the layout generator and `sim/bitcell/lib/make_tb.py`. |
 | `gen_schematic.py` -> `bitcell_6t.sch` | xschem schematic (generated; do not hand-edit). |
 | `netlist/bitcell_6t.spice` | `klt netlist --block` output of the schematic (first-line `sch_path` rewritten to a repo-relative path). |
-| `gen_bitcell.py` -> GDS | Layout generator (klayout python). The GDS is a build product: `uv run --no-project --with klayout python -I design/bitcell/gen_bitcell.py bitcell_6t.gds`. |
+| `gen_bitcell.py` -> `bitcell_6t.gds` | Layout generator (klayout python) and its committed output; regenerate with `uv run --no-project --with klayout python -I design/bitcell/gen_bitcell.py design/bitcell/bitcell_6t.gds` (deterministic: same bytes on a re-run). |
 | `run_drc.sh` | The three DRC paths (curated deck, `sky130A.lydrc`, `sky130A_mr.drc`). |
 | `lvs/` | `klt lvs` request and reference netlist. |
 | `records/` | Dated, append-only DRC / LVS / area records. |
