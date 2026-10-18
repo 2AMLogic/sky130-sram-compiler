@@ -23,6 +23,8 @@ TEMPS = [-40, 25, 125]
 VDDS = [1.62, 1.8, 1.98]
 LADDER = 33          # write-trip trial levels: VDD * k / (LADDER - 1)
 TRIAL_NS = 8.0
+MC_WRITE_N = 60        # samples per (process, VDD, T) point
+MC_WRITE_SEED = 20261018
 
 files = {}
 
@@ -120,6 +122,7 @@ def build():
         files[f"tb/{mode}_snm.sp"] = snm_tb(mode, 1)
         files[f"tb/mc_{mode}_snm.sp"] = snm_tb(mode, 2)
     files["tb/write_trip.sp"] = write_tb()
+    files["tb/mc_write_trip.sp"] = write_tb()  # same ladder body; the `_mm` sections add per-instance mismatch
     sweep = {"kind": "dc", "args": "VNRM 0 1 0.005"}
     keep = {"save_vectors": ["v(in)", "v(out)"]}
     keep2 = {"save_vectors": ["v(in)", "v(outa)", "v(outb)"]}
@@ -139,9 +142,16 @@ def build():
         ts = k * TRIAL_NS + TRIAL_NS - 0.1
         meas.append({"name": f"q{k:02d}",
                      "spice": f".meas tran q{k:02d} find v(xdut.q) at={ts:g}n", "unit": "V"})
+    wtran = {"kind": "tran", "args": f"0.02n {LADDER * TRIAL_NS:g}n"}
     files["requests/write_trip_corners.request.json"] = base_req(
-        "write_trip.sp", {"kind": "tran", "args": f"0.02n {LADDER * TRIAL_NS:g}n"}, meas,
-        {"waveforms": False, "keep_artifacts": False})
+        "write_trip.sp", wtran, meas, {"waveforms": False, "keep_artifacts": False})
+    # Write-trip Monte Carlo (issue #14): the 33-level ladder under per-instance mismatch, at the
+    # {fs, sf} x {1.62, 1.98 V} x {-40, 125 C} points (the skewed corners that bound write margin).
+    files["requests/mc_write_trip.request.json"] = base_req(
+        "mc_write_trip.sp", wtran, meas, {"waveforms": False, "keep_artifacts": False, "timeout_s": 600},
+        mc={"n": MC_WRITE_N, "seed": MC_WRITE_SEED, "vary": "mismatch", "k_sigma": 3},
+        process=["sf_mm", "fs_mm"], vdds=[1.62, 1.98], temps=[-40, 125])
+    files["requests/mc_write_trip.request.json"]["batch"] = {"max_units_per_job": 5, "poll_timeout_s": 21600}
 
 
 def main():
