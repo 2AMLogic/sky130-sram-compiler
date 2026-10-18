@@ -17,13 +17,12 @@ import hashlib
 import json
 import pathlib
 import statistics
-import subprocess
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import snm_from_artifacts as sa  # noqa: E402
-from record_common import scrub, write_ladder  # noqa: E402
+from record_common import git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 
@@ -131,14 +130,14 @@ def main():
             (w.get("simulator", {}).get("version_banner", "").split("\n")[1:2] or [""])[0].strip("* ")
 
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
-    git = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    git = git_short_sha(repo)
     L = [f"# Bitcell margin record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#7 (part of #2). Append-only: add a new dated record, never edit this one.", "",
          "## Provenance", "",
          f"- sizing (drawn W/L, um): PD {sizing['pd']['w']}/{sizing['pd']['l']} {sizing['pd']['model']}, "
          f"AX {sizing['ax']['w']}/{sizing['ax']['l']} {sizing['ax']['model']}, "
          f"PU {sizing['pu']['w']}/{sizing['pu']['l']} {sizing['pu']['model']} (design/bitcell/sizing.json)",
-         f"- klt: {rrep['environment'].get('client_klt_version') or rrep['environment'].get('remote', {}).get('client_klt_version')}",
+         f"- klt: {klt_version_of(rrep)}",
          "- backend: batch fleet (`KLT_SIM_BACKEND=batch`); models staged from the repo-pinned PDK (`options.stage_model_inputs`)",
          "- margin extractor: gf180-sram `sim/lib/snm_extract.py` @ `74ba8a621c9e` (sha256 checked by `fetch_pinned.sh`) plus the inscribed-square `eyes()` in `sim/bitcell/lib/snm_from_artifacts.py`", ""]
     for nm, rep, req in (("read SNM", rrep, "read_snm_corners"), ("hold SNM", hrep, "hold_snm_corners"),

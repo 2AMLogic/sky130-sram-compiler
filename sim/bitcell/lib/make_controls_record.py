@@ -34,7 +34,7 @@ sys.path.insert(0, str(here))
 import make_record as mr  # noqa: E402
 from make_tb import DET_N, NEG_N, NEG_SCALE, NEG_SEED  # noqa: E402
 from make_write_mc_record import load, merge, point_key, stats  # noqa: E402
-from record_common import LADDER, scrub, write_ladder  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 SIGMA_RATIO_MIN = 2.0
@@ -201,8 +201,8 @@ def main():
         yield_note = (f"`klt yield` (klt `{klt_version()}`) ran on `{ev.name}/{ypath.name}` (n=60 per point, seed 20261018, limit min 0 V); "
                       f"full output in `{ev.name}/{keep_yield.name}`:\n\n```json\n{json.dumps(yout, indent=1)[:6000]}\n```")
 
-    git = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
-    klt = det_rep["environment"].get("client_klt_version") or det_rep["environment"].get("remote", {}).get("client_klt_version")
+    git = git_short_sha(repo)
+    klt = klt_version_of(det_rep)
     allw = all(ndet.values())
     L = [f"# Bitcell Monte Carlo controls record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#19 (follows #14, #7). Append-only: add a new dated record, never edit this one. "

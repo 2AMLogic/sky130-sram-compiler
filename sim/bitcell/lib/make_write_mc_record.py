@@ -22,11 +22,10 @@ import json
 import math
 import pathlib
 import statistics
-import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from record_common import LADDER, scrub, write_ladder  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
 
 repo = pathlib.Path(__file__).resolve().parents[3]
 
@@ -129,7 +128,7 @@ def main():
 
     mc = rep["environment"].get("monte_carlo", {})
     remote = rep["environment"].get("remote", {})
-    git = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    git = git_short_sha(repo)
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
     L = [f"# Bitcell write-trip Monte Carlo record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#14 (follows #7). Append-only: add a new dated record, never edit this one. "
@@ -145,7 +144,7 @@ def main():
          f"- backend: batch fleet; batch job ids in the input reports {inputs} "
          f"(`environment.remote` carries {', '.join(sorted(remote)) or 'no'} keys; job ids are printed by klt on stderr only); "
          "models staged from the repo-pinned PDK (`options.stage_model_inputs`)",
-         f"- klt: {rep['environment'].get('client_klt_version') or remote.get('client_klt_version') or '0.7.1.dev1865+g1c5546271c61'}", "",
+         f"- klt: {klt_version_of(rep)}", "",
          "## Grading bar (taken by reference from gf180-sram, not redesigned)", "",
          "gf180-sram `spec/sram.md` § Characterization (ratified by `spec/statistical-treatment-decision.md`, "
          "read at commit `74ba8a621c9e`, the same commit the read/hold margin definitions are pinned to): write margin is a "
