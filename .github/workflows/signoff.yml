@@ -1,0 +1,65 @@
+name: klt signoff
+
+# This block's T1 tier state is graded, not hand-read: re-grade the committed
+# block manifest (manifests/sky130-sram-compiler.json) and check that the
+# committed verdict-of-record (manifests/sky130-sram-compiler.signoff.json)
+# still reproduces. A manifest, vendored checklist or klt pin change that
+# moves the verdict fails here until the record is regenerated in the same PR.
+#
+# See manifests/README.md for the regenerate command.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned klt
+        run: pip install klayout-tools==0.7.0
+
+      - name: Grade the manifest (must run clean)
+        run: |
+          set -uo pipefail
+          rc=0
+          klt signoff --manifest manifests/sky130-sram-compiler.json \
+                      --tiers-doc manifests/design-evidence-tiers.md \
+                      --format json > "$RUNNER_TEMP/fresh-signoff.json" || rc=$?
+          # 0 = every T1 item met; 3 = the grader ran clean but at least one
+          # item is unmet (the expected state here). Anything else is a hard
+          # error: manifest or vendored tier doc unreadable or malformed.
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 3 ]; then
+            echo "::error::klt signoff exited $rc (expected 0 or 3): manifest or vendored tier doc is broken"
+            exit 1
+          fi
+
+      - name: Check the committed record still reproduces
+        run: |
+          set -uo pipefail
+          rc=0
+          klt signoff --manifest manifests/sky130-sram-compiler.json \
+                      --tiers-doc manifests/design-evidence-tiers.md \
+                      --check manifests/sky130-sram-compiler.signoff.json \
+                      --format json > "$RUNNER_TEMP/check.json" || rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::manifests/sky130-sram-compiler.signoff.json is stale (klt signoff --check exited $rc). Regenerate and commit it in this PR:"
+            echo "  klt signoff --manifest manifests/sky130-sram-compiler.json \\"
+            echo "      --tiers-doc manifests/design-evidence-tiers.md \\"
+            echo "      --format json > manifests/sky130-sram-compiler.signoff.json"
+            python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(json.dumps(d.get('drift'), indent=2))" "$RUNNER_TEMP/check.json" || cat "$RUNNER_TEMP/check.json"
+            exit 1
+          fi
+          python3 -c "import json; d=json.load(open('manifests/sky130-sram-compiler.signoff.json')); print('tier verdict of record:', d['tier'], '(T1 items met: %d/%d)' % (d['t1_met_count'], d['t1_item_count']))"
