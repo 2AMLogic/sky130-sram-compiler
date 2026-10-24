@@ -59,7 +59,7 @@ the margin definitions (read SNM, hold SNM, write margin), the corner and
 Monte Carlo methodology, and the harness — has one master, `gf180-sram`, and
 is taken from there by pinned reference rather than redesigned.
 
-## Target specification (DRAFT — engineering to ratify, see issue #1)
+## Target specification (DRAFT — EE-key and market-key reviews first, then operator ratification; see issue #8)
 
 All figures are targets.
 
