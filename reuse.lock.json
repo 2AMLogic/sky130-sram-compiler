@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "imports": [
+    {
+      "from": "2AMLogic/gf180-sram",
+      "commit": "74ba8a621c9edab9b7a75ecb19ca7ea6771588da",
+      "mode": "fetched",
+      "files": [
+        {
+          "upstream": "spec/sram.md",
+          "sha256": "f22d4ee86cace745ac6f115d4991c69fcc923b6e2068a1a5ba5b9f55f6f2c5e8"
+        },
+        {
+          "upstream": "spec/statistical-treatment-decision.md",
+          "sha256": "b1b178c65b1a0ef978ed9706ff26cde97a92979c7eb021b14206537594f50525"
+        },
+        {
+          "upstream": "spec/target-yield-decision.md",
+          "sha256": "bb1c01ae4561d94c1331a18410eb6495aa5b0042cb5a62946f7a935c337ad2a1"
+        },
+        {
+          "upstream": "sim/lib/env_provenance.py",
+          "sha256": "5569fe350132ab27fc3e141f38d8ca511df58309ceb01c357bb003a543ba8978"
+        },
+        {
+          "upstream": "sim/lib/mint_sim_envelope.py",
+          "sha256": "aa9776afdbd4da8ba1e1f2bbc8ac6fa78acc0530ea01b1c7687cee6c07895b8f"
+        },
+        {
+          "upstream": "sim/lib/pdk_env.sh",
+          "sha256": "4bbecf52355871be8b65fe4db1717298df8d1a8a28d9874b938a0a3295763e5b"
+        },
+        {
+          "upstream": "sim/lib/render_signoff_table.py",
+          "sha256": "d7592ff84250594650709a35f12acfc6a9e436ffe66881db77c100f8686d3f42"
+        },
+        {
+          "upstream": "sim/lib/run_corner_sweep.sh",
+          "sha256": "34c70cee43908d5ce6a9acc92ea810c42e8c7c519642eb31b621ce8d42603105"
+        },
+        {
+          "upstream": "sim/lib/run_mc_campaign.py",
+          "sha256": "637e44443344b7349b8520e1470616f5470aa50e65b400f123ffccb939ea4b6a"
+        },
+        {
+          "upstream": "sim/lib/snm_extract.py",
+          "sha256": "56c044cda6ccb4190a6b159a0113f7528c7c7cf91a7f1426ba917a7398b36080"
+        }
+      ]
+    }
+  ],
+  "in_tree": []
+}
