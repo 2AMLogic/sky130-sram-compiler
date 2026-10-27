@@ -1,0 +1,54 @@
+{
+  "netlist": "../tb/col_read_snm.sp",
+  "engine": "ngspice",
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/ngspice/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ff",
+      "ss",
+      "sf",
+      "fs"
+    ],
+    "supply_v": {
+      "vvdd": [
+        1.62,
+        1.8,
+        1.98
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "VNRM 0 1 0.005"
+  },
+  "measurements": [
+    {
+      "name": "vtrip",
+      "spice": ".meas dc vtrip when v(out)=0.9 fall=1",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 300,
+    "stage_model_inputs": true,
+    "waveforms": true,
+    "keep_artifacts": true,
+    "save_vectors": [
+      "v(in)",
+      "v(out)"
+    ]
+  },
+  "batch": {
+    "max_units_per_job": 15,
+    "poll_timeout_s": 5400
+  }
+}

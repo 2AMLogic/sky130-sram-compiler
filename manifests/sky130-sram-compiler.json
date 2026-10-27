@@ -29,6 +29,14 @@
     "3.digital": {
       "file": "evidence/item3-digital.json",
       "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    },
+    "9.analog": {
+      "file": "evidence/item9.json",
+      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
+    },
+    "9.digital": {
+      "file": "evidence/item9.json",
+      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
     }
   }
 }

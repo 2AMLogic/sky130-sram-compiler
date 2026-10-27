@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 9,
+  "description": "T1 item 9 (testbenches shipped), both partitions, 256 x 32 reference instance. Analog: column (bit-slice) benches sim/column (read access, write completion, in-situ SNM, with Monte Carlo and negative controls). Digital: cocotb bench rtl/tb/cocotb against the RTL, the synthesized netlist and seeded faults, plus the Icarus smoke benches. cold_start runs one local single-corner probe of every analog bench and the whole digital bench; the corner / Monte Carlo grids are the committed klt sim requests (see sim/column/README.md).",
+  "testbenches": [
+    "sim/column/tb/col_hold_snm.sp",
+    "sim/column/tb/col_mc_hold_snm.sp",
+    "sim/column/tb/col_mc_hold_snm_neg.sp",
+    "sim/column/tb/col_mc_read_snm.sp",
+    "sim/column/tb/col_mc_read_snm_neg.sp",
+    "sim/column/tb/col_read0.sp",
+    "sim/column/tb/col_read1.sp",
+    "sim/column/tb/col_read_snm.sp",
+    "sim/column/tb/col_write0.sp",
+    "sim/column/tb/col_write0_nowen.sp",
+    "sim/column/tb/col_write1.sp",
+    "sim/column/requests/col_hold_snm.probe.request.json",
+    "sim/column/requests/col_hold_snm.request.json",
+    "sim/column/requests/col_mc_hold_snm.request.json",
+    "sim/column/requests/col_mc_hold_snm_neg.request.json",
+    "sim/column/requests/col_mc_read_snm.request.json",
+    "sim/column/requests/col_mc_read_snm_neg.request.json",
+    "sim/column/requests/col_read0.probe.request.json",
+    "sim/column/requests/col_read0.request.json",
+    "sim/column/requests/col_read1.probe.request.json",
+    "sim/column/requests/col_read1.request.json",
+    "sim/column/requests/col_read_snm.probe.request.json",
+    "sim/column/requests/col_read_snm.request.json",
+    "sim/column/requests/col_write0.probe.request.json",
+    "sim/column/requests/col_write0.request.json",
+    "sim/column/requests/col_write0_nowen.probe.request.json",
+    "sim/column/requests/col_write0_nowen.request.json",
+    "sim/column/requests/col_write1.probe.request.json",
+    "sim/column/requests/col_write1.request.json",
+    "sim/column/lib/make_column_tb.py",
+    "sim/column/lib/check_probe.py",
+    "sim/column/lib/make_column_record.py",
+    "sim/column/run.sh",
+    "sim/column/README.md",
+    "rtl/tb/cocotb/tb_top.v",
+    "rtl/tb/cocotb/test_sram_ctrl.py",
+    "rtl/tb/cocotb/run.py",
+    "rtl/tb/cocotb/run.sh",
+    "rtl/tb/run.sh",
+    "rtl/tb/tb_sram_behav.v",
+    "rtl/tb/tb_sram_ctrl.v",
+    "sim/run_all_benches.sh",
+    "sim/env.sh",
+    "sim/pdk.json",
+    "sim/bitcell/lib/fetch_pinned.sh"
+  ],
+  "cold_start": {
+    "argv": [
+      "bash",
+      "sim/run_all_benches.sh"
+    ],
+    "local_only": true
+  },
+  "pins": {
+    "pdk": {
+      "name": "sky130A",
+      "revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+    },
+    "tools": {
+      "ngspice": "46",
+      "iverilog": "13.0",
+      "cocotb": "2.1.0",
+      "yosys": "0.67",
+      "klt": "0.8.1 (client; fleet runs use 0.7.0)",
+      "gf180-sram snm_extract.py": "74ba8a621c9edab9b7a75ecb19ca7ea6771588da"
+    }
+  }
+}
