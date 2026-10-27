@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 2,
+  "t1_met_count": 4,
   "source_doc": "manifests/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:a26b90262320d0fbd32b3f549a02b6300832706041797a559d8bf6bdb62efdc7",
   "build": {
@@ -296,10 +296,35 @@
       "partition_boundary": "Macro subckt sram_<words>x<bits>_m<mux> (reference sram_256x32_m4: 64 rows x 128 cols, mux 4) built from bitcell_6t and the periphery subckts sram_inv, sram_nand2/3/4, sram_wldrv, sram_precharge, sram_colmux, sram_senseamp, sram_wdrv. Ports: A0..A<n-1> address, D0..D31 data in, Q0..Q31 data out, WLEN, PCHB, SAE, WEN (control inputs, driven by the digital partition) and VDD, VSS. Everything behind those ports is analog; the digital partition (#27) drives WLEN/PCHB/SAE/WEN. Internal nets: WL<r>, BL<c>/BLB<c>, SBL<b>/SBLB<b>, CS<m>, PD<g>_<v>.",
       "text": "every claimed measurement's testbench committed, with a documented cold-start invocation a third party can run; pinned PDK revision.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "evidence/item9.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 9,
+          "path": {
+            "path": "sim/testbench-inventory.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84",
+          "input_verified": true,
+          "summary": "T1 item 9 (Testbenches shipped): 48/48 attestation checks passed (klt signoff --attest)",
+          "source": "sim/testbench-inventory.json",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": 1,
+            "check_count": 48,
+            "passed_count": 48
+          }
+        }
+      }
     },
     {
       "tier": "T1",
@@ -309,10 +334,35 @@
       "partition_boundary": "sram_ctrl (rtl/sram_ctrl.v), parameters WORDS/BITS, 256x32 reference instance: inputs clk rst_n ce we addr[7:0] din[31:0] sa_q[31:0]; outputs ready pch wl_en sae wen addr_q[7:0] din_q[31:0] dout[31:0]; plus the behavioural model sram_behav (rtl/sram_behav.v)",
       "text": "every claimed measurement's testbench committed, with a documented cold-start invocation a third party can run; pinned PDK revision.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "evidence/item9.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 9,
+          "path": {
+            "path": "sim/testbench-inventory.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84",
+          "input_verified": true,
+          "summary": "T1 item 9 (Testbenches shipped): 48/48 attestation checks passed (klt signoff --attest)",
+          "source": "sim/testbench-inventory.json",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": 1,
+            "check_count": 48,
+            "passed_count": 48
+          }
+        }
+      }
     },
     {
       "tier": "T1",

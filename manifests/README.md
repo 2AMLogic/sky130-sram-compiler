@@ -9,7 +9,7 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map cites only T1 item 1 (analog), attested from `design/compiler/inventory.json`; every other item grades `unmet`. The
+  map cites T1 item 1 (both partitions) and T1 item 9 (both partitions, attested from `sim/testbench-inventory.json`); every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
