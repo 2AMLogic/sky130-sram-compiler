@@ -2,8 +2,13 @@
   "block": "sky130-sram-compiler",
   "kind": "mixed-signal",
   "partition_boundary": {
-    "analog": "PLACEHOLDER until the spec (#2) fixes it: 6T bitcell array and pitch-matched periphery (row decoder, wordline drivers, column mux, sense amplifiers, write drivers)",
+    "analog": "Macro subckt sram_<words>x<bits>_m<mux> (reference sram_256x32_m4: 64 rows x 128 cols, mux 4) built from bitcell_6t and the periphery subckts sram_inv, sram_nand2/3/4, sram_wldrv, sram_precharge, sram_colmux, sram_senseamp, sram_wdrv. Ports: A0..A<n-1> address, D0..D31 data in, Q0..Q31 data out, WLEN, PCHB, SAE, WEN (control inputs, driven by the digital partition) and VDD, VSS. Everything behind those ports is analog; the digital partition (#27) drives WLEN/PCHB/SAE/WEN. Internal nets: WL<r>, BL<c>/BLB<c>, SBL<b>/SBLB<b>, CS<m>, PD<g>_<v>.",
     "digital": "PLACEHOLDER until the spec (#2) fixes it: synthesized control logic and the behavioural model (rtl/)"
   },
-  "evidence": {}
+  "evidence": {
+    "1.analog": {
+      "file": "design/compiler/evidence/item1.json",
+      "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7"
+    }
+  }
 }

@@ -1,0 +1,561 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "T1 item 1 (Design sources): 51/51 attestation checks passed (klt signoff --attest)",
+  "source": "design/compiler/inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 51,
+    "passed_count": 51,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/bitcell/bitcell_6t.sch",
+        "passed": true,
+        "content_hash": "sha256:cf7ba52948e57d899b02531dd784aaff46c2135fa3136a0cae1630419837c969"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/bitcell/gen_schematic.py",
+        "passed": true,
+        "content_hash": "sha256:959a0aeb04111874771b9dea6d3bea355709a52ee52e6ad8417149cb79d502b2"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/bitcell/sizing.json",
+        "passed": true,
+        "content_hash": "sha256:a08db8dcb88ee913fdfdaedde508f0c166e9266869bd3337a3df23a22457eeb1"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/bitcell/xschemrc",
+        "passed": true,
+        "content_hash": "sha256:d3f6487a917c8d9698c6511af6e3c9b877055ce79bd59f13b0dd4f2c87f027d0"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/cells.py",
+        "passed": true,
+        "content_hash": "sha256:7beaacd659e0d34633fa401cd3133141ea0284f4849feb7203bce7adf87fdb14"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/gen_schematic.py",
+        "passed": true,
+        "content_hash": "sha256:59ab8d1966f6e920996f7c1c2521060ac7f767ab13fe373e9b1df4c870d6d96e"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/netlists.py",
+        "passed": true,
+        "content_hash": "sha256:bfe56eb998c11a59eb0eed4da3991953de9c905a457b20dc8628f3bbefc38043"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/sizing.json",
+        "passed": true,
+        "content_hash": "sha256:eea3a86e5cd8a6eaaf904139fd2ad0939d729170b757018245d875157cc323a5"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/sram_compile.py",
+        "passed": true,
+        "content_hash": "sha256:691cf54027f41e52ca1c69d08e3db30da58e807d9bcd8e8ef8061792021560f9"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/test_compiler.py",
+        "passed": true,
+        "content_hash": "sha256:7b8acf6143002eaf38148bbdf964f8a29753389cf83d025ff70e6146e76983c8"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/compiler/xschemrc",
+        "passed": true,
+        "content_hash": "sha256:449e46fa3164d368589769ceba408b51bcc881ddbbfac3762c8190204bfcd9be"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/bitcell/netlist/bitcell_6t.spice",
+        "passed": true,
+        "content_hash": "sha256:a283a8edd5f9ed027c79a285e638f648e02bae7b9520777f62102992d7dfee80"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_colmux.sch",
+        "passed": true,
+        "content_hash": "sha256:11bc07cb6c309840dfc8c6583e20dced1259ac65e611de7ae2b5d468e350b190"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_inv.sch",
+        "passed": true,
+        "content_hash": "sha256:a11932ea6e4c0914045e2442d9f8f1b736535e7d6ec0bab5e9a7e3782a594ad0"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_nand2.sch",
+        "passed": true,
+        "content_hash": "sha256:2c3789855bfd8ca79f383b3bd14017be2c8e33ae754e84f0a7ed7275cc3c224d"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_nand3.sch",
+        "passed": true,
+        "content_hash": "sha256:7fefd0343b8b73bb063c7d23d590b8470442b958fdd3ae3bfcfdce9a99b449f0"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_nand4.sch",
+        "passed": true,
+        "content_hash": "sha256:d206b570646cffaca3629e1fb476ef1289f3aa3fba74ceb0ecfdf8e68f800a8a"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_precharge.sch",
+        "passed": true,
+        "content_hash": "sha256:9ab2647eda8923524746852d035ba7919a2b350caf2d4ea58bc631c868dca971"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_senseamp.sch",
+        "passed": true,
+        "content_hash": "sha256:def696ef7d4cbec9aefb7aaa84aab5033a9a5471629d291fcf53db655a3130bb"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_wdrv.sch",
+        "passed": true,
+        "content_hash": "sha256:43e98403a6fb550c7ff279db6e0820abc05a388e0c6060a00967c0deed2a73fb"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/cells/sram_wldrv.sch",
+        "passed": true,
+        "content_hash": "sha256:6928846fb105a222be8dca5fa986cc6e1355ee1de4b44ebbb8bd5d29647ed87c"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/macro/sram_256x32_m4.spice",
+        "passed": true,
+        "content_hash": "sha256:7815e5c5631bfb4a89c1d20035e2de9fe83bf4ed4b5dde08829a9cc3e04eaddf"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_colmux.spice",
+        "passed": true,
+        "content_hash": "sha256:cb1a8161f1258ef3141685fa130a3b1a0a936697ad6ee3797eac9958eaeda372"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_inv.spice",
+        "passed": true,
+        "content_hash": "sha256:dd0f4755bfa717ff724f8efceef1128df1af19be731fd7041156aff0e750a427"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_nand2.spice",
+        "passed": true,
+        "content_hash": "sha256:9caa3650b6ae6e27e0833e10c84ce213c309154d59f8a1ac3860468395621727"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_nand3.spice",
+        "passed": true,
+        "content_hash": "sha256:874f80a4b3c4f0eebc9604dd92cfa0a96f77fcb775c7b8e7b847760b7ee3690a"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_nand4.spice",
+        "passed": true,
+        "content_hash": "sha256:56af9bb0079b7f0d6fee159db12fbce9f1c299a08d3dacf38f78cca3efba9c23"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_precharge.spice",
+        "passed": true,
+        "content_hash": "sha256:4a0b50988bd8b6137be7c1f3c3acd02c4bf01a313cd99359b82993c44a509427"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_senseamp.spice",
+        "passed": true,
+        "content_hash": "sha256:e5091961b826dfb0cf574d5fc283d02c74ec79c0cac99d24fd00510dd32c3927"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_wdrv.spice",
+        "passed": true,
+        "content_hash": "sha256:1ea77a6115760e8195763f452e768a25bdf46230342c7d68e730b4bf90d388de"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/compiler/netlist/sram_wldrv.spice",
+        "passed": true,
+        "content_hash": "sha256:723e05cdfe2b3915ef827ac185337aaada3f887098f5f40731cc6510b487948d"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/bitcell/netlist/bitcell_6t.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_colmux.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_inv.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_nand2.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_nand3.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_nand4.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_precharge.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_senseamp.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_wdrv.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/cells/sram_wldrv.sch",
+        "generator": "design/compiler/gen_schematic.py",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/macro/sram_256x32_m4.spice",
+        "generator": "design/compiler/sram_compile.py 256 32 4",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/sram_compile.py",
+          "256",
+          "32",
+          "4",
+          "--check",
+          "design/compiler/macro/sram_256x32_m4.spice"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_colmux.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_inv.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_nand2.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_nand3.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_nand4.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_precharge.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_senseamp.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_wdrv.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/compiler/netlist/sram_wldrv.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.1.dev58+g78f36d8f316c",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "design/compiler/inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7"
+    }
+  }
+}
