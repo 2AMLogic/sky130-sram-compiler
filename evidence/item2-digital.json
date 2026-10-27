@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 2,
+  "summary": "T1 item 2 (Layout, digital): routed sram_ctrl GDS from klt place-and-route (route stage reached, power.pdn true, tapcell sky130_fd_sc_hd__tapvpwrvgnd_1); layout/control/run_pnr.sh --check regenerated it twice byte-identical to the committed stream",
+  "source": "layout/control/control.gds",
+  "provenance": {
+    "klt_version": "0.8.1.dev61+gb5c72a9333ff",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {"path": "layout/control/control.gds", "scope": "repo"},
+      "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    },
+    "regeneration": {
+      "generator": "bash layout/control/run_pnr.sh --check",
+      "regenerated_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    }
+  }
+}
