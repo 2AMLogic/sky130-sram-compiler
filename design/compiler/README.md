@@ -15,6 +15,19 @@ klt signoff --attest 1 --inventory design/compiler/inventory.json -o design/comp
 python3 -I design/compiler/test_compiler.py              # PDK-free tests
 ```
 
+Layout (issue #30, details in `layout/README.md`; needs klayout's python module, via uv):
+
+```console
+uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 \
+    -o layout/sram_256x32_m4.gds --socket layout/sram_256x32_m4.socket.json --lef layout/sram_256x32_m4.lef
+uv run --no-project --with klayout python -I design/compiler/test_layout.py
+python3 -I design/compiler/attest_layout.py              # T1 item 2 envelope (no klt --attest 2 yet, klayout-tools#4221)
+```
+
+`gen_layout.py` takes the geometry from `sram_compile.geometry()` and the logic connectivity
+from `sram_compile.macro_body()`, so a new netlist change shows up as a layout change. It
+refuses (exit 1) what it cannot place: today more than 64 rows.
+
 Step 3 and the tests need no PDK or xschem. `--check` on steps 1-3 reports drift
 (exit 3). `netlists.py --check` compares normalised text (no `sch_path`, joined
 continuations) because plain `klt netlist --check` cannot check a committed
