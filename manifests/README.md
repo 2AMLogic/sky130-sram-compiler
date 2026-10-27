@@ -9,7 +9,7 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map cites only T1 item 1 (analog), attested from `design/compiler/inventory.json`; every other item grades `unmet`. The
+  map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and item 10 (all partitions), attested from `hygiene-inventory.json`; every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
@@ -21,6 +21,11 @@ item 10).
   this repo's Apache-2.0 `LICENSE` does not relicense the vendored copy.
   When upstream moves, re-vendor the file, update the commit above, and
   regenerate the record in the same PR.
+- **`hygiene-inventory.json`** / **`sky130-sram-compiler.item10.attest.json`** — the item 10
+  (repo hygiene) inventory and its `klt signoff --attest 10` envelope; CI
+  (`hygiene.yml`) re-checks it with `--check`. Regenerate with
+  `klt signoff --attest 10 --inventory manifests/hygiene-inventory.json -o manifests/sky130-sram-compiler.item10.attest.json`,
+  then update the `content_hash` cited in the manifest (the inventory's hash).
 - **`sky130-sram-compiler.signoff.json`** — **the verdict of record**:
   committed output of the command below. Never hand-edit it.
 
@@ -50,7 +55,8 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 1 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, analog partition (issue #26). The `klt` pin moved to 0.8.0
+**Not-T1: 3 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, analog partition (issue #26); T1 item 10, Repo hygiene, both
+partitions (issue #28). The `klt` pin moved to 0.8.0
 because `klt signoff --attest` (the item 1 producer) first ships there. Each
 unmet row's `reason` is in the record.

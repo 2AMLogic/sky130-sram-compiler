@@ -1,0 +1,48 @@
+name: hygiene
+
+# PDK-free checks only: no PDK, ngspice, xschem or `klt sim` here. These are
+# the same commands manifests/hygiene-inventory.json declares for T1 item 10,
+# so the committed attestation (manifests/sky130-sram-compiler.item10.attest.json)
+# is re-run on every PR and cannot go stale.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pdk-free:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned klt
+        run: pip install klayout-tools==0.8.0
+
+      - name: JSON formats parse, Python sources compile
+        run: python3 -I verification/hygiene/check_formats.py
+
+      - name: Compiler generator tests
+        run: python3 -I design/compiler/test_compiler.py
+
+      - name: Compiler schematics and 256x32 macro netlist match their generators
+        run: |
+          python3 -I design/compiler/gen_schematic.py --check
+          python3 -I design/compiler/sram_compile.py 256 32 4 --check design/compiler/macro/sram_256x32_m4.spice
+
+      - name: Bitcell testbenches and klt sim requests match their generator
+        run: python3 -I sim/bitcell/lib/make_tb.py --check
+
+      - name: Item 10 attestation still reproduces
+        run: |
+          klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
+              --check manifests/sky130-sram-compiler.item10.attest.json

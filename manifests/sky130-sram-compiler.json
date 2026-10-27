@@ -9,6 +9,10 @@
     "1.analog": {
       "file": "design/compiler/evidence/item1.json",
       "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7"
+    },
+    "10": {
+      "file": "manifests/sky130-sram-compiler.item10.attest.json",
+      "content_hash": "sha256:aa932e942f1312ac0d57612f7e90868a3850081baa680976ee9b39d4deadd555"
     }
   }
 }
