@@ -27,7 +27,8 @@ item 10).
 ## Regenerate
 
 ```console
-pip install klayout-tools==0.7.0        # or: uvx --from klayout-tools==0.7.0 klt ...
+pip install 'klayout-tools>=0.8.0'       # --attest (item 1 evidence) needs >= 0.8.0; the committed
+                                        # record was rendered by a 0.8.1 dev build
 klt signoff --manifest manifests/sky130-sram-compiler.json \
             --tiers-doc manifests/design-evidence-tiers.md \
             --format json > manifests/sky130-sram-compiler.signoff.json

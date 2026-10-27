@@ -3,7 +3,12 @@
   "kind": "mixed-signal",
   "partition_boundary": {
     "analog": "PLACEHOLDER until the spec (#2) fixes it: 6T bitcell array and pitch-matched periphery (row decoder, wordline drivers, column mux, sense amplifiers, write drivers)",
-    "digital": "PLACEHOLDER until the spec (#2) fixes it: synthesized control logic and the behavioural model (rtl/)"
+    "digital": "sram_ctrl (rtl/sram_ctrl.v), parameters WORDS/BITS, 256x32 reference instance: inputs clk rst_n ce we addr[7:0] din[31:0] sa_q[31:0]; outputs ready pch wl_en sae wen addr_q[7:0] din_q[31:0] dout[31:0]; plus the behavioural model sram_behav (rtl/sram_behav.v)"
   },
-  "evidence": {}
+  "evidence": {
+    "1.digital": {
+      "file": "evidence/item1-digital.json",
+      "content_hash": "sha256:63c08c9a000cd8c763479bab5426f4ea087f661e19ebaa87391fc37158c8f802"
+    }
+  }
 }
