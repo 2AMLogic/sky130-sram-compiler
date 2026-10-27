@@ -100,3 +100,6 @@ flow/build/
 
 # klt sim batch-set scratch (reports are committed gzip under sim/bitcell/corners/)
 sim/bitcell/requests/.klt/
+
+# klt place-and-route scratch (root-owned container output; committed outputs are copied by layout/control/run_pnr.sh)
+layout/control/.klt/
