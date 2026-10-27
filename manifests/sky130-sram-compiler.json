@@ -13,6 +13,10 @@
     "1.digital": {
       "file": "evidence/item1-digital.json",
       "content_hash": "sha256:63c08c9a000cd8c763479bab5426f4ea087f661e19ebaa87391fc37158c8f802"
+    },
+    "2.analog": {
+      "file": "design/compiler/evidence/item2.json",
+      "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
     }
   }
 }

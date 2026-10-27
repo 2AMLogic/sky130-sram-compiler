@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 2,
+  "summary": "T1 item 2 (Layout, analog): layout/sram_256x32_m4.gds regenerates byte-identically from design/compiler/gen_layout.py; LEF and socket descriptor reproduce",
+  "source": "layout/sram_256x32_m4.gds",
+  "attestation": {
+    "producer": "design/compiler/attest_layout.py",
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 3,
+    "passed_count": 3,
+    "checks": [
+      {
+        "check": "regenerate-gds",
+        "argv": [
+          "uv",
+          "run",
+          "--no-project",
+          "--with",
+          "klayout",
+          "python",
+          "-I",
+          "design/compiler/gen_layout.py",
+          "256",
+          "32",
+          "4",
+          "--check",
+          "layout/sram_256x32_m4.gds"
+        ],
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "check": "regenerate-lef",
+        "argv": [
+          "uv",
+          "run",
+          "--no-project",
+          "--with",
+          "klayout",
+          "python",
+          "-I",
+          "design/compiler/gen_layout.py",
+          "256",
+          "32",
+          "4",
+          "--check-lef",
+          "layout/sram_256x32_m4.lef"
+        ],
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "check": "regenerate-socket",
+        "argv": [
+          "uv",
+          "run",
+          "--no-project",
+          "--with",
+          "klayout",
+          "python",
+          "-I",
+          "design/compiler/gen_layout.py",
+          "256",
+          "32",
+          "4",
+          "--check-socket",
+          "layout/sram_256x32_m4.socket.json"
+        ],
+        "exit_code": 0,
+        "passed": true
+      }
+    ],
+    "inputs": {
+      "design/compiler/gen_layout.py": "sha256:bc1b0ce6f2cc65d5b5581e0dbfb2c015fa7d79312ecfdc991d1a46a617ad9efe",
+      "design/compiler/cells.py": "sha256:7beaacd659e0d34633fa401cd3133141ea0284f4849feb7203bce7adf87fdb14",
+      "design/compiler/sizing.json": "sha256:eea3a86e5cd8a6eaaf904139fd2ad0939d729170b757018245d875157cc323a5",
+      "design/compiler/sram_compile.py": "sha256:691cf54027f41e52ca1c69d08e3db30da58e807d9bcd8e8ef8061792021560f9",
+      "design/bitcell/bitcell_6t.gds": "sha256:6d3a7792d9baa2bda77acc892c0fd10795d42b652edb721eec2aa2a4a0948c93",
+      "layout/sram_256x32_m4.lef": "sha256:6e3627fa3ee23db125f1dbfd61650d6f32d5be539a43cd2a914446ede999726f",
+      "layout/sram_256x32_m4.socket.json": "sha256:bd7cd4ab5354b7dc1d9c3ad39119e9f560f1fb8bad8da70be90bf257860d967d"
+    }
+  },
+  "provenance": {
+    "input": {
+      "path": {
+        "path": "layout/sram_256x32_m4.gds",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
+    },
+    "regeneration": {
+      "generator": "uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 -o layout/sram_256x32_m4.gds",
+      "regenerated_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
+    }
+  }
+}
