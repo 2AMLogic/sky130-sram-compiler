@@ -22,6 +22,14 @@
       "file": "evidence/item2-digital.json",
       "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
     },
+    "3.analog": {
+      "file": "design/compiler/evidence/item3.json",
+      "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
+    },
+    "3.digital": {
+      "file": "evidence/item3-digital.json",
+      "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    },
     "4.analog": {
       "file": "design/macro/evidence/lvs-sram_256x32_m4.json",
       "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
@@ -29,6 +37,14 @@
     "4.digital": {
       "file": "design/control/evidence/lvs-sram_ctrl.json",
       "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    },
+    "9.analog": {
+      "file": "evidence/item9.json",
+      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
+    },
+    "9.digital": {
+      "file": "evidence/item9.json",
+      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
     }
   }
 }

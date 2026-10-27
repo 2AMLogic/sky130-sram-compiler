@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 9,
+  "summary": "T1 item 9 (Testbenches shipped): 48/48 attestation checks passed (klt signoff --attest)",
+  "source": "sim/testbench-inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 48,
+    "passed_count": 48,
+    "checks": [
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/cocotb/run.py",
+        "passed": true,
+        "content_hash": "sha256:25586d9c4a59d6f3af3a6436e4e397a91cf1f35959fbd63a3b9360b2782dfc24"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/cocotb/run.sh",
+        "passed": true,
+        "content_hash": "sha256:e5c407414505c3049f2834e44356b18c68a6f28ab7c62adb8e0f473fb3ebfc25"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/cocotb/tb_top.v",
+        "passed": true,
+        "content_hash": "sha256:8115b778f0ee4c42f426757601aaef0815adb4fe158a4dd412d21a752f9486d7"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/cocotb/test_sram_ctrl.py",
+        "passed": true,
+        "content_hash": "sha256:19aa7554cfa4eb812b781c8656a07d460499500bce96f975d75130a9ef40a2bf"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/run.sh",
+        "passed": true,
+        "content_hash": "sha256:bfc82de25fe2a36ecc819be13e67f2cfa48aed05cdd53ab7be4e7ca566332d0c"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/tb_sram_behav.v",
+        "passed": true,
+        "content_hash": "sha256:f39f1761eb3e6d0d19814a24ea9fc2fc817d7dfd158c2033994da633739a4ca5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "rtl/tb/tb_sram_ctrl.v",
+        "passed": true,
+        "content_hash": "sha256:a1f4cb9536005f9ffeb124b7964f2830fa6ec6dd1870e324585486d7a773c5d9"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/fetch_pinned.sh",
+        "passed": true,
+        "content_hash": "sha256:18a78204754d2872e28bf10daf47e2ca1b436e5c29f257de942f19ae4678994c"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/README.md",
+        "passed": true,
+        "content_hash": "sha256:9857de281cdfe0a718f45aa27324a5ce2f02c7f6592a315ff45000bd0a0a3342"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/lib/check_probe.py",
+        "passed": true,
+        "content_hash": "sha256:7b557722b4e1d17c6177071ba4e6bbc37d46d55d7052ffac1b3dc6065e878ae4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/lib/make_column_record.py",
+        "passed": true,
+        "content_hash": "sha256:3c8a5b2a6142ed99ac5d2bbe644ced49ae192cab683d6c8852b06624a90ca379"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/lib/make_column_tb.py",
+        "passed": true,
+        "content_hash": "sha256:4ecd67f871b58e493ca8d08fbd168f46b299157717277089c4ebe0ba4108f1a5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_hold_snm.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:20baa72a0534617bc9d77c2fc6b94805525fcd285ea9b16f90131c131fd0dddd"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_hold_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:b5bfb51ab05db7391b52d2627a5c5dd36a7a7b2fedc786ecad1ff02f20941aae"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_mc_hold_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:154224a5ad6be11f5df2037b5758ee7a0f8526967246884bbdec64c9873e88e0"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_mc_hold_snm_neg.request.json",
+        "passed": true,
+        "content_hash": "sha256:181c6a5aebe1dd29d0794596f392b811fc94fd583e807a3891afd03020a8d9b8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_mc_read_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:053e713fc52fff91658b5bf2ba478dd90407072f6c2affcdc5d4250513a8ee9f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_mc_read_snm_neg.request.json",
+        "passed": true,
+        "content_hash": "sha256:212f9c720032f21bbaec2e6a0782c9788e549da3877e1dd38c5dea5f8b94fb89"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read0.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:f1fc7a0c88db0346c2f213823cf55d9f458d7ddead702c7d6b6244f7585bb85b"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read0.request.json",
+        "passed": true,
+        "content_hash": "sha256:4822693dee7f540b8ddec6509ff26928a0d3b625f80e629442526c443855ba4c"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read1.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:31e0eae7b5dcea27ebff91a9188ade993e7d6e1d3f3b9d4142632c27f40d4199"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read1.request.json",
+        "passed": true,
+        "content_hash": "sha256:8e38660af1e61ed9cdd59a4d9e26e22136840ffa0174f90a1d147932cadad8b2"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read_snm.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:f88c069bad1827efc221a37dd92d3902b5c6c0fb27a17804f8509354c505a842"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_read_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:125944f22b05833e15df55163e2706808f89b7273e95a99bb263e715207fda31"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write0.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:504372f1555592753b7072c6ce549ff4cec23c47eb71be4ec196c156df0c7822"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write0.request.json",
+        "passed": true,
+        "content_hash": "sha256:6b143a4ce4bd9835901504c5933ae42f220cb0cc97239d54677110e73906b614"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write0_nowen.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:042650bbc4ce724cc6c6b538c2999eba7854e0220b6f6c32b95392dbf1e2af84"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write0_nowen.request.json",
+        "passed": true,
+        "content_hash": "sha256:50e0d3a83f09f49f3dd64036159bb3080717aba1bac815d14fe5de20c8084e32"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write1.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:6b9ab2f080a29c8b03c9498e8860689a9c79a58e6590a779c6fd1e036155dea0"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/col_write1.request.json",
+        "passed": true,
+        "content_hash": "sha256:c3c76fcc41afb6e8ac494f434f21a74760d157f358c594aee249ae9b955ccb5a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/run.sh",
+        "passed": true,
+        "content_hash": "sha256:a5d3604a523606bb6b71cc746be7021411bb6193f387a4afea4b30cfdad2bbd5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_hold_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:f08fd5adf3d8d067bd15d72a3f8dee31025b549b9cd98556c6bb4393b7e4b5ff"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_mc_hold_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:f13c60bba274c6c69df6a21c412c13826b647e1b5a79590a54519b96f4decd6e"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_mc_hold_snm_neg.sp",
+        "passed": true,
+        "content_hash": "sha256:0a553a7a9547a0ad2b80b8703a9189a65e822ac408b06bc436a3f35697885fc4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_mc_read_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:99a512b7655b06a89f059a7ed077a489f7798030d33ef377353be36878b1c187"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_mc_read_snm_neg.sp",
+        "passed": true,
+        "content_hash": "sha256:02bbbf3cdf5a63ec0ec27c1bc042de6547a74ce548aa2aa64edc02bd5f56de30"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_read0.sp",
+        "passed": true,
+        "content_hash": "sha256:749c90d18232ccc857beee6405b5fe88c4a45ad2656f40a01f358c810f5461c0"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_read1.sp",
+        "passed": true,
+        "content_hash": "sha256:ff11c2be24b638e51682568d8f189afe6b2e401394473247bea77e5bbd57c107"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_read_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:3abdaccfbc57d1fd26515918590e1a08ebfa9d7d9db1e7774c21c8950dec8e19"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_write0.sp",
+        "passed": true,
+        "content_hash": "sha256:13e6f5d49ab8ca7eccd98e943c38489c7d9d293fd5665acbf02181605d3e59de"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_write0_nowen.sp",
+        "passed": true,
+        "content_hash": "sha256:7bbcc09b39d0080e2133eaa957a072e42df40392bccbaed0f5a5d314d048f5c0"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/col_write1.sp",
+        "passed": true,
+        "content_hash": "sha256:b40824ed8d4de4096fd679305f1b5ced7928a7a336674f9e0e070e90f8d3e24e"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/env.sh",
+        "passed": true,
+        "content_hash": "sha256:161abe04516c124e7f9a0593eca4acfcd50be51bda205a3e35cac70518658cb2"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/pdk.json",
+        "passed": true,
+        "content_hash": "sha256:6f9318b213e21f89dafea66374dcbc7bae552fb86158afeec49ba7b733ad34c5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/run_all_benches.sh",
+        "passed": true,
+        "content_hash": "sha256:2eb20dce99cff8e50e6c5bbd949f6932d4cfe3bc5288566e0a66041d75b67fcc"
+      },
+      {
+        "check": "command",
+        "role": "cold_start",
+        "argv": [
+          "bash",
+          "sim/run_all_benches.sh"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "pin",
+        "role": "pdk",
+        "passed": true,
+        "value": {
+          "name": "sky130A",
+          "revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+        }
+      },
+      {
+        "check": "pin",
+        "role": "tools",
+        "passed": true,
+        "value": {
+          "cocotb": "2.1.0",
+          "gf180-sram snm_extract.py": "74ba8a621c9edab9b7a75ecb19ca7ea6771588da",
+          "iverilog": "13.0",
+          "klt": "0.8.1 (client; fleet runs use 0.7.0)",
+          "ngspice": "46",
+          "yosys": "0.67"
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.1.dev94+g85c26c13cfae",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "sim/testbench-inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
+    }
+  }
+}

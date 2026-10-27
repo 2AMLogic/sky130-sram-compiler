@@ -12,7 +12,10 @@ item 10).
   map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and T1 item 2 (analog),
   the committed 256 x 32 GDS bound by hash (`design/compiler/evidence/item2.json`, written by
   `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
-  2AMLogic/klayout-tools#4221); every other item grades `unmet`. The
+  2AMLogic/klayout-tools#4221), and T1 item 3 (both partitions), the unmodified `klt drc --deck sky130`
+  envelopes `design/compiler/evidence/item3.json` and `evidence/item3-digital.json` (written by
+  `verification/drc/make_record.py`, record in `verification/drc/records/`), and T1 item 9 (both partitions),
+  `klt signoff --attest 9` over `sim/testbench-inventory.json` (`evidence/item9.json`); every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
@@ -53,10 +56,11 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 5 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, for the analog partition (issue #26) and the digital partition
-(issue #27), T1 item 2, Layout, for both partitions (issues #30, #31), and T1 item 4, LVS clean, for the analog
-partition (issue #33, `design/macro/records/`). Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
+**Not-T1: 9 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, each for
+the analog and the digital partition (issues #26, #27, #29, #30, #31, #32), and T1 item 4, LVS clean, for the
+analog partition only (issue #33, `design/macro/records/`). Item 3 grades the curated-deck `status: clean` report with
+its coverage block cited; the report discloses unruled layers and skipped rules. Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
 netlist but `power_connectivity` is `mismatch` on the pwell VNB pin
 (`design/control/records/`, klayout-tools#4363). The `klt` pin is
 0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
