@@ -21,6 +21,14 @@
     "2.digital": {
       "file": "evidence/item2-digital.json",
       "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
+    },
+    "4.analog": {
+      "file": "design/macro/evidence/lvs-sram_256x32_m4.json",
+      "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c"
+    },
+    "4.digital": {
+      "file": "design/control/evidence/lvs-sram_ctrl.json",
+      "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
     }
   }
 }

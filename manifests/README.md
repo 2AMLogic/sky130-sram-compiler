@@ -53,8 +53,11 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 3 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+**Not-T1: 5 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
 Design sources, for the analog partition (issue #26) and the digital partition
-(issue #27), and T1 item 2, Layout, for the analog partition (issue #30). The `klt` pin is
+(issue #27), T1 item 2, Layout, for both partitions (issues #30, #31), and T1 item 4, LVS clean, for the analog
+partition (issue #33, `design/macro/records/`). Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
+netlist but `power_connectivity` is `mismatch` on the pwell VNB pin
+(`design/control/records/`, klayout-tools#4363). The `klt` pin is
 0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
 and the record reproduce under it. Each unmet row's `reason` is in the record.
