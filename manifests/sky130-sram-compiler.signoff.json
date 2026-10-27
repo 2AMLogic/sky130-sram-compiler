@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 2,
+  "t1_met_count": 3,
   "source_doc": "manifests/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:a26b90262320d0fbd32b3f549a02b6300832706041797a559d8bf6bdb62efdc7",
   "build": {
@@ -119,10 +119,34 @@
       "partition_boundary": "sram_ctrl (rtl/sram_ctrl.v), parameters WORDS/BITS, 256x32 reference instance: inputs clk rst_n ce we addr[7:0] din[31:0] sa_q[31:0]; outputs ready pch wl_en sae wen addr_q[7:0] din_q[31:0] dout[31:0]; plus the behavioural model sram_behav (rtl/sram_behav.v)",
       "text": "committed routed GDS/OASIS from place-and-route, reproducibly generated from the gate-level netlist (P&R script/flow committed, not a one-off hand edit). For the same full-custom sub-case, this item is satisfied instead by the Analog column's artifact: committed GDS/OASIS, reproducibly generated or with documented provenance \u2014 hand-drawn layout, not P&R output.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "evidence/item2-digital.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 2,
+          "path": {
+            "path": "layout/control/control.gds",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
+          "input_verified": true,
+          "summary": "T1 item 2 (Layout, digital): routed sram_ctrl GDS from klt place-and-route (route stage reached, power.pdn true, tapcell sky130_fd_sc_hd__tapvpwrvgnd_1); layout/control/run_pnr.sh --check regenerated it twice byte-identical to the committed stream",
+          "source": "layout/control/control.gds",
+          "regeneration": {
+            "generator": "bash layout/control/run_pnr.sh --check",
+            "regenerated_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
+            "executed_by_klt": false
+          }
+        }
+      }
     },
     {
       "tier": "T1",

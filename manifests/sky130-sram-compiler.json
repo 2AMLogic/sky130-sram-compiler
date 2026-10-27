@@ -13,6 +13,10 @@
     "1.digital": {
       "file": "evidence/item1-digital.json",
       "content_hash": "sha256:63c08c9a000cd8c763479bab5426f4ea087f661e19ebaa87391fc37158c8f802"
+    },
+    "2.digital": {
+      "file": "evidence/item2-digital.json",
+      "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
     }
   }
 }
