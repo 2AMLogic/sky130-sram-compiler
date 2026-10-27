@@ -50,7 +50,8 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 1 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, analog partition (issue #26). The `klt` pin moved to 0.8.0
-because `klt signoff --attest` (the item 1 producer) first ships there. Each
+**Not-T1: 2 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, for the analog partition (issue #26) and the digital partition
+(issue #27). The `klt` pin is 0.8.0 because `klt signoff --attest` (the item 1
+producer) first ships there; both envelopes and the record reproduce under it. Each
 unmet row's `reason` is in the record.

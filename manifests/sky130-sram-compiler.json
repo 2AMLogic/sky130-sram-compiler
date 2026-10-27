@@ -3,12 +3,16 @@
   "kind": "mixed-signal",
   "partition_boundary": {
     "analog": "Macro subckt sram_<words>x<bits>_m<mux> (reference sram_256x32_m4: 64 rows x 128 cols, mux 4) built from bitcell_6t and the periphery subckts sram_inv, sram_nand2/3/4, sram_wldrv, sram_precharge, sram_colmux, sram_senseamp, sram_wdrv. Ports: A0..A<n-1> address, D0..D31 data in, Q0..Q31 data out, WLEN, PCHB, SAE, WEN (control inputs, driven by the digital partition) and VDD, VSS. Everything behind those ports is analog; the digital partition (#27) drives WLEN/PCHB/SAE/WEN. Internal nets: WL<r>, BL<c>/BLB<c>, SBL<b>/SBLB<b>, CS<m>, PD<g>_<v>.",
-    "digital": "PLACEHOLDER until the spec (#2) fixes it: synthesized control logic and the behavioural model (rtl/)"
+    "digital": "sram_ctrl (rtl/sram_ctrl.v), parameters WORDS/BITS, 256x32 reference instance: inputs clk rst_n ce we addr[7:0] din[31:0] sa_q[31:0]; outputs ready pch wl_en sae wen addr_q[7:0] din_q[31:0] dout[31:0]; plus the behavioural model sram_behav (rtl/sram_behav.v)"
   },
   "evidence": {
     "1.analog": {
       "file": "design/compiler/evidence/item1.json",
       "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7"
+    },
+    "1.digital": {
+      "file": "evidence/item1-digital.json",
+      "content_hash": "sha256:63c08c9a000cd8c763479bab5426f4ea087f661e19ebaa87391fc37158c8f802"
     }
   }
 }

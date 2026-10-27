@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "T1 item 1 (digital partition): control RTL + behavioural model, and the synthesized sky130_fd_sc_hd netlist derived from sram_ctrl.v (256 x 32 reference instance).",
+  "sources": [
+    "rtl/sram_ctrl.v",
+    "rtl/sram_behav.v",
+    "rtl/synth/request.json",
+    "rtl/synth/regen.sh"
+  ],
+  "derived": [
+    {
+      "path": "rtl/synth/sram_ctrl_256x32_synth.v",
+      "generator": "klt synthesize",
+      "check": {"argv": ["bash", "rtl/synth/regen.sh", "--check"], "local_only": true}
+    }
+  ]
+}
