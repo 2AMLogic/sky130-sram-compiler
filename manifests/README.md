@@ -9,10 +9,10 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map is empty: no artifact is cited yet, so every item grades `unmet`. The
-  `partition_boundary` entries are placeholders until the target spec
-  ([#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)) fixes
-  what the two partitions cover. Evidence is added one item at a time, each
+  map cites only T1 item 1 (analog), attested from `design/compiler/inventory.json`; every other item grades `unmet`. The
+  `partition_boundary.digital` entry is a placeholder until the digital
+  partition is specified (the analog one is set, #26; spec:
+  [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
   citation pinning the `content_hash` of what it cites.
 - **`design-evidence-tiers.md`** — the T1-T4 checklist the grader parses.
   Vendored **byte-identical** from
@@ -27,8 +27,7 @@ item 10).
 ## Regenerate
 
 ```console
-pip install 'klayout-tools>=0.8.0'       # --attest (item 1 evidence) needs >= 0.8.0; the committed
-                                        # record was rendered by a 0.8.1 dev build
+pip install klayout-tools==0.8.0        # or: uvx --from klayout-tools==0.8.0 klt ...
 klt signoff --manifest manifests/sky130-sram-compiler.json \
             --tiers-doc manifests/design-evidence-tiers.md \
             --format json > manifests/sky130-sram-compiler.signoff.json
@@ -42,7 +41,7 @@ bump) regenerates and commits the record in the same PR.
 ## Freshness is CI-enforced
 
 [`.github/workflows/signoff.yml`](../.github/workflows/signoff.yml) pins
-`klayout-tools==0.7.0`, runs the grader (exit 0 or 3 accepted, anything else
+`klayout-tools==0.8.0`, runs the grader (exit 0 or 3 accepted, anything else
 fails), then runs the same command with
 `--check manifests/sky130-sram-compiler.signoff.json`. `--check` re-grades
 and compares to the committed record, ignoring the `build` block (two
@@ -51,5 +50,8 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 0 of 22 rows met** (11 T1 items, rendered once per partition). No
-evidence is cited; each row's `reason` is in the record.
+**Not-T1: 2 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, for the analog partition (issue #26) and the digital partition
+(issue #27). The `klt` pin is 0.8.0 because `klt signoff --attest` (the item 1
+producer) first ships there; both envelopes and the record reproduce under it. Each
+unmet row's `reason` is in the record.

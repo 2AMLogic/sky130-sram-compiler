@@ -1,0 +1,11 @@
+** sch_path: design/compiler/cells/sram_colmux.sch
+.subckt sram_colmux BL BLB SBL SBLB SEL VSS
+*.iopin BL
+*.iopin BLB
+*.iopin SBL
+*.iopin SBLB
+*.iopin SEL
+*.iopin VSS
+XMN1 SBL SEL BL VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMN2 SBLB SEL BLB VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+.ends

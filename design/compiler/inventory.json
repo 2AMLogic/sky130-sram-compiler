@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "Analog partition design sources: bitcell + periphery generators/schematics and the compiled 256x32 (mux 4) macro netlist. 256x32 uses column mux 4 (64 rows x 128 cols): near-square, and the middle of the README mux range 1/2/4/8.",
+  "sources": [
+    "design/compiler/cells.py",
+    "design/compiler/gen_schematic.py",
+    "design/compiler/netlists.py",
+    "design/compiler/sram_compile.py",
+    "design/compiler/sizing.json",
+    "design/compiler/test_compiler.py",
+    "design/compiler/xschemrc",
+    "design/bitcell/gen_schematic.py",
+    "design/bitcell/sizing.json",
+    "design/bitcell/bitcell_6t.sch",
+    "design/bitcell/xschemrc"
+  ],
+  "derived": [
+    {
+      "path": "design/compiler/cells/sram_colmux.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_inv.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_nand2.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_nand3.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_nand4.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_precharge.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_senseamp.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_wdrv.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/cells/sram_wldrv.sch",
+      "generator": "design/compiler/gen_schematic.py",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/gen_schematic.py",
+          "--check"
+        ]
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_colmux.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_inv.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_nand2.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_nand3.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_nand4.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_precharge.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_senseamp.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_wdrv.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/netlist/sram_wldrv.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/bitcell/netlist/bitcell_6t.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/netlists.py",
+          "--check"
+        ],
+        "local_only": true
+      }
+    },
+    {
+      "path": "design/compiler/macro/sram_256x32_m4.spice",
+      "generator": "design/compiler/sram_compile.py 256 32 4",
+      "check": {
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/sram_compile.py",
+          "256",
+          "32",
+          "4",
+          "--check",
+          "design/compiler/macro/sram_256x32_m4.spice"
+        ]
+      }
+    }
+  ]
+}

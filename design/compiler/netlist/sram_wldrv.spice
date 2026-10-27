@@ -1,0 +1,9 @@
+** sch_path: design/compiler/cells/sram_wldrv.sch
+.subckt sram_wldrv A Y VDD VSS
+*.iopin A
+*.iopin Y
+*.iopin VDD
+*.iopin VSS
+XMP Y A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=3.36 nf=1 ad=0.9744 as=0.9744 pd=7.3 ps=7.3 nrd=0.08631 nrs=0.08631 sa=0 sb=0 sd=0 mult=1 m=1
+XMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.68 nf=1 ad=0.4872 as=0.4872 pd=3.94 ps=3.94 nrd=0.1726 nrs=0.1726 sa=0 sb=0 sd=0 mult=1 m=1
+.ends

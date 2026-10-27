@@ -1,0 +1,15 @@
+** sch_path: design/compiler/cells/sram_wdrv.sch
+.subckt sram_wdrv SBL SBLB DIN WEN VDD VSS
+*.iopin SBL
+*.iopin SBLB
+*.iopin DIN
+*.iopin WEN
+*.iopin VDD
+*.iopin VSS
+XMIP DINB DIN VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMIN DINB DIN VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42 nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+XMW1 SBL DINB X1 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.26 nf=1 ad=0.3654 as=0.3654 pd=3.1 ps=3.1 nrd=0.2302 nrs=0.2302 sa=0 sb=0 sd=0 mult=1 m=1
+XMW2 X1 WEN VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.26 nf=1 ad=0.3654 as=0.3654 pd=3.1 ps=3.1 nrd=0.2302 nrs=0.2302 sa=0 sb=0 sd=0 mult=1 m=1
+XMW3 SBLB DIN X2 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.26 nf=1 ad=0.3654 as=0.3654 pd=3.1 ps=3.1 nrd=0.2302 nrs=0.2302 sa=0 sb=0 sd=0 mult=1 m=1
+XMW4 X2 WEN VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.26 nf=1 ad=0.3654 as=0.3654 pd=3.1 ps=3.1 nrd=0.2302 nrs=0.2302 sa=0 sb=0 sd=0 mult=1 m=1
+.ends

@@ -1,0 +1,19 @@
+** sch_path: design/compiler/cells/sram_senseamp.sch
+.subckt sram_senseamp SBL SBLB SAE SAEB DOUT VDD VSS
+*.iopin SBL
+*.iopin SBLB
+*.iopin SAE
+*.iopin SAEB
+*.iopin DOUT
+*.iopin VDD
+*.iopin VSS
+XMIL SAN SAEB SBL VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMIR SANB SAEB SBLB VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMPL SAN SANB VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMPR SANB SAN VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMNL SAN SANB TAIL VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMNR SANB SAN TAIL VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMT TAIL SAE VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.68 nf=1 ad=0.4872 as=0.4872 pd=3.94 ps=3.94 nrd=0.1726 nrs=0.1726 sa=0 sb=0 sd=0 mult=1 m=1
+XMOP DOUT SANB VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 nf=1 ad=0.2436 as=0.2436 pd=2.26 ps=2.26 nrd=0.3452 nrs=0.3452 sa=0 sb=0 sd=0 mult=1 m=1
+XMON DOUT SANB VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 nf=1 ad=0.1218 as=0.1218 pd=1.42 ps=1.42 nrd=0.6905 nrs=0.6905 sa=0 sb=0 sd=0 mult=1 m=1
+.ends
