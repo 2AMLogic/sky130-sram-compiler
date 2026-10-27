@@ -56,9 +56,9 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 6 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, item 2, Layout, and item 3, DRC clean, each for the analog and the digital
-partition (issues #26, #27, #30, #32). Item 3 grades the curated-deck `status: clean` report with
+**Not-T1: 8 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, each for
+the analog and the digital partition (issues #26, #27, #29, #30, #32). Item 3 grades the curated-deck `status: clean` report with
 its coverage block cited; the report discloses unruled layers and skipped rules. The `klt` pin is
 0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
 and the record reproduce under it. Each unmet row's `reason` is in the record.
