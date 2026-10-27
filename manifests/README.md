@@ -12,7 +12,9 @@ item 10).
   map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and T1 item 2 (analog),
   the committed 256 x 32 GDS bound by hash (`design/compiler/evidence/item2.json`, written by
   `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
-  2AMLogic/klayout-tools#4221); every other item grades `unmet`. The
+  2AMLogic/klayout-tools#4221), and T1 item 3 (both partitions), the unmodified `klt drc --deck sky130`
+  envelopes `design/compiler/evidence/item3.json` and `evidence/item3-digital.json` (written by
+  `verification/drc/make_record.py`, record in `verification/drc/records/`); every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
@@ -53,8 +55,9 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 3 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, for the analog partition (issue #26) and the digital partition
-(issue #27), and T1 item 2, Layout, for the analog partition (issue #30). The `klt` pin is
+**Not-T1: 6 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, and item 3, DRC clean, each for the analog and the digital
+partition (issues #26, #27, #30, #32). Item 3 grades the curated-deck `status: clean` report with
+its coverage block cited; the report discloses unruled layers and skipped rules. The `klt` pin is
 0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
 and the record reproduce under it. Each unmet row's `reason` is in the record.
