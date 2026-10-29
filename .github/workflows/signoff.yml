@@ -62,4 +62,19 @@ jobs:
             python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(json.dumps(d.get('drift'), indent=2))" "$RUNNER_TEMP/check.json" || cat "$RUNNER_TEMP/check.json"
             exit 1
           fi
+          # The README verdict sentence is hand-written; it must quote the
+          # record's own counts ("N of M rows met").
+          python3 - <<'PY' || exit 1
+          import json, re, sys
+          d = json.load(open('manifests/sky130-sram-compiler.signoff.json'))
+          m = re.search(r'(\d+) of (\d+) rows met', open('manifests/README.md').read())
+          want = (d['t1_met_count'], d['t1_item_count'])
+          if not m:
+              print('::error::manifests/README.md has no "N of M rows met" verdict sentence')
+              sys.exit(1)
+          got = (int(m.group(1)), int(m.group(2)))
+          if got != want:
+              print('::error::manifests/README.md says %d of %d rows met but the signoff record has %d of %d' % (got + want))
+              sys.exit(1)
+          PY
           python3 -c "import json; d=json.load(open('manifests/sky130-sram-compiler.signoff.json')); print('tier verdict of record:', d['tier'], '(T1 items met: %d/%d)' % (d['t1_met_count'], d['t1_item_count']))"

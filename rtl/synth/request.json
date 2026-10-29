@@ -1,0 +1,13 @@
+{
+  "schema": "klt.synthesize.request/1",
+  "engine": "yosys",
+  "sources": ["../sram_ctrl.v"],
+  "hdl_toplevel": "sram_ctrl",
+  "parameters": {"WORDS": 256, "BITS": 32},
+  "pdk": {
+    "cell_library": "sky130_fd_sc_hd",
+    "corner": "tt_025C_1v80"
+  },
+  "constraints": {"clock_period_ns": null},
+  "outputs": {"dir": "../../sim/build/synth/run"}
+}

@@ -1,0 +1,144 @@
+{
+  "netlist": "../tb/col_write0_nowen.sp",
+  "engine": "ngspice",
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/ngspice/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt"
+    ],
+    "supply_v": {
+      "vvdd": [
+        1.8
+      ]
+    },
+    "temperature_c": [
+      25
+    ]
+  },
+  "analysis": {
+    "kind": "tran",
+    "args": "0.04n 87.55n"
+  },
+  "measurements": [
+    {
+      "name": "q00",
+      "spice": ".meas tran q00 find v(xc0_0.q) at=6.25n",
+      "unit": "V"
+    },
+    {
+      "name": "q01",
+      "spice": ".meas tran q01 find v(xc0_0.q) at=9.95n",
+      "unit": "V"
+    },
+    {
+      "name": "q02",
+      "spice": ".meas tran q02 find v(xc0_0.q) at=13.7n",
+      "unit": "V"
+    },
+    {
+      "name": "q03",
+      "spice": ".meas tran q03 find v(xc0_0.q) at=17.5n",
+      "unit": "V"
+    },
+    {
+      "name": "q04",
+      "spice": ".meas tran q04 find v(xc0_0.q) at=21.35n",
+      "unit": "V"
+    },
+    {
+      "name": "q05",
+      "spice": ".meas tran q05 find v(xc0_0.q) at=25.25n",
+      "unit": "V"
+    },
+    {
+      "name": "q06",
+      "spice": ".meas tran q06 find v(xc0_0.q) at=29.2n",
+      "unit": "V"
+    },
+    {
+      "name": "q07",
+      "spice": ".meas tran q07 find v(xc0_0.q) at=33.2n",
+      "unit": "V"
+    },
+    {
+      "name": "q08",
+      "spice": ".meas tran q08 find v(xc0_0.q) at=37.25n",
+      "unit": "V"
+    },
+    {
+      "name": "q09",
+      "spice": ".meas tran q09 find v(xc0_0.q) at=41.35n",
+      "unit": "V"
+    },
+    {
+      "name": "q10",
+      "spice": ".meas tran q10 find v(xc0_0.q) at=45.5n",
+      "unit": "V"
+    },
+    {
+      "name": "q11",
+      "spice": ".meas tran q11 find v(xc0_0.q) at=49.7n",
+      "unit": "V"
+    },
+    {
+      "name": "q12",
+      "spice": ".meas tran q12 find v(xc0_0.q) at=53.95n",
+      "unit": "V"
+    },
+    {
+      "name": "q13",
+      "spice": ".meas tran q13 find v(xc0_0.q) at=58.25n",
+      "unit": "V"
+    },
+    {
+      "name": "q14",
+      "spice": ".meas tran q14 find v(xc0_0.q) at=62.6n",
+      "unit": "V"
+    },
+    {
+      "name": "q15",
+      "spice": ".meas tran q15 find v(xc0_0.q) at=67n",
+      "unit": "V"
+    },
+    {
+      "name": "q16",
+      "spice": ".meas tran q16 find v(xc0_0.q) at=71.6n",
+      "unit": "V"
+    },
+    {
+      "name": "q17",
+      "spice": ".meas tran q17 find v(xc0_0.q) at=76.45n",
+      "unit": "V"
+    },
+    {
+      "name": "q18",
+      "spice": ".meas tran q18 find v(xc0_0.q) at=81.55n",
+      "unit": "V"
+    },
+    {
+      "name": "q19",
+      "spice": ".meas tran q19 find v(xc0_0.q) at=87.15n",
+      "unit": "V"
+    },
+    {
+      "name": "hs1",
+      "spice": ".meas tran hs1 min v(xc0_1.q) from=3n to=87.55n",
+      "unit": "V"
+    },
+    {
+      "name": "hs2",
+      "spice": ".meas tran hs2 max v(xc0_2.q) from=3n to=87.55n",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 900,
+    "stage_model_inputs": true,
+    "waveforms": false,
+    "keep_artifacts": false
+  },
+  "backend": "local"
+}

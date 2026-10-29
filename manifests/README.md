@@ -9,7 +9,13 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and item 10 (all partitions), attested from `hygiene-inventory.json`; every other item grades `unmet`. The
+  map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and T1 item 2 (analog),
+  the committed 256 x 32 GDS bound by hash (`design/compiler/evidence/item2.json`, written by
+  `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
+  2AMLogic/klayout-tools#4221), and T1 item 3 (both partitions), the unmodified `klt drc --deck sky130`
+  envelopes `design/compiler/evidence/item3.json` and `evidence/item3-digital.json` (written by
+  `verification/drc/make_record.py`, record in `verification/drc/records/`), and T1 item 9 (both partitions),
+  `klt signoff --attest 9` over `sim/testbench-inventory.json` (`evidence/item9.json`), and T1 item 10 (all partitions), attested from `hygiene-inventory.json`; every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
@@ -55,8 +61,12 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 3 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, analog partition (issue #26); T1 item 10, Repo hygiene, both
-partitions (issue #28). The `klt` pin moved to 0.8.0
-because `klt signoff --attest` (the item 1 producer) first ships there. Each
-unmet row's `reason` is in the record.
+**Not-T1: 11 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, and item 10, Repo hygiene, each for
+the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32), and T1 item 4, LVS clean, for the
+analog partition only (issue #33, `design/macro/records/`). Item 3 grades the curated-deck `status: clean` report with
+its coverage block cited; the report discloses unruled layers and skipped rules. Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
+netlist but `power_connectivity` is `mismatch` on the pwell VNB pin
+(`design/control/records/`, klayout-tools#4363). The `klt` pin is
+0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
+and the record reproduce under it. Each unmet row's `reason` is in the record.

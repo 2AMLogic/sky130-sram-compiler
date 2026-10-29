@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "T1 item 1 (Design sources): 6/6 attestation checks passed (klt signoff --attest)",
+  "source": "rtl/inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 6,
+    "passed_count": 6,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "rtl/sram_behav.v",
+        "passed": true,
+        "content_hash": "sha256:42a9794cac56ac224d1d83a40a2af5b82c564c43769772c0d3b1ae0b04709a2c"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "rtl/sram_ctrl.v",
+        "passed": true,
+        "content_hash": "sha256:9cfb51601927caea2c32895065bf91e7523c1d911823e4211760967af0b4b1d6"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "rtl/synth/regen.sh",
+        "passed": true,
+        "content_hash": "sha256:bb74d8ab81ebcc27b3e7028326e778638efc901c709e35c50fcda3b7ace28980"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "rtl/synth/request.json",
+        "passed": true,
+        "content_hash": "sha256:7e732391929226a9fff0ca5bb153b401b3665c739abb96f93ce01c796626376e"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "rtl/synth/sram_ctrl_256x32_synth.v",
+        "passed": true,
+        "content_hash": "sha256:5b59146fce19dc2e1a3f38c75382e7b1de546a7e4a680d5d617e2d7d44e175c8"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "rtl/synth/sram_ctrl_256x32_synth.v",
+        "generator": "klt synthesize",
+        "argv": [
+          "bash",
+          "rtl/synth/regen.sh",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.1.dev58+g78f36d8f316c",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "rtl/inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:63c08c9a000cd8c763479bab5426f4ea087f661e19ebaa87391fc37158c8f802"
+    }
+  }
+}
