@@ -7,7 +7,8 @@ into a DRC/LVS-clean macro with its abstract and timing views, built on a
 [klayout-tools](https://github.com/2AMLogic/klayout-tools), xschem + ngspice
 for the bitcell and periphery, and Yosys/OpenROAD for the control logic.
 
-**Status: just opened, specification phase.** Nothing is designed yet.
+**Status: specification phase, with the bitcell and a compiled 256 × 32 netlist
+in tree.** Nothing here is silicon-proven; the spec below is still a draft.
 
 **T1 status.** The evidence-tier verdict is graded by `klt signoff`, not
 hand-read. The verdict of record is
@@ -77,6 +78,42 @@ Maturity ladder: spec ratified → bitcell characterized across PVT →
 periphery characterized → first instance DRC/LVS-clean → reference
 instances DRC/LVS-clean → views generated and checked → shuttle seat →
 measured silicon. **Current position: pre-spec.**
+
+## Reproduce
+
+Every committed result is append-only evidence; each command below either
+regenerates it into a new dated record or checks that the committed bytes still
+match their generator. Per-directory READMEs hold the detail.
+
+**PDK-free (run by CI, [`hygiene.yml`](.github/workflows/hygiene.yml)).**
+Needs only `python3` and `git`; the last line also needs `pip install klayout-tools==0.8.0`.
+
+```bash
+python3 -I verification/hygiene/check_formats.py          # JSON parses, Python compiles
+python3 -I design/compiler/test_compiler.py               # compiler generator tests
+python3 -I design/compiler/gen_schematic.py --check       # periphery schematics vs generator
+python3 -I design/compiler/sram_compile.py 256 32 4 --check design/compiler/macro/sram_256x32_m4.spice
+python3 -I sim/bitcell/lib/make_tb.py --check             # bitcell testbenches + klt sim requests
+klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
+    --check manifests/sky130-sram-compiler.item10.attest.json   # this section's own attestation
+```
+
+**Needs the PDK and/or simulators** (sky130A at the revision pinned in
+[`sim/pdk.json`](sim/pdk.json), `ngspice`, `yosys`, `klt`, standalone `klayout`,
+`xschem`). Not run in CI.
+
+| Record | Command | Writes | Detail |
+|---|---|---|---|
+| Toolchain smoke (inverter, Yosys) | `source sim/env.sh && sim/smoke/run.sh` | `sim/smoke/records/` | [`sim/README.md`](sim/README.md) |
+| SRAM-marker deck behaviour | `verification/marker/run_checks.sh <scratch>` | `verification/marker/records/` | [`verification/marker/README.md`](verification/marker/README.md) |
+| Bitcell DRC (three decks) | `design/bitcell/run_drc.sh <gds> <scratch>` | `design/bitcell/records/` | [`design/bitcell/README.md`](design/bitcell/README.md) |
+| Bitcell LVS + negative control | `design/bitcell/lvs/run_lvs.sh <gds> <scratch>` | `design/bitcell/records/` | [`design/bitcell/README.md`](design/bitcell/README.md) |
+| Bitcell corners (read/hold SNM, write trip) and Monte Carlo | `klt sim` requests in `sim/bitcell/requests/` (batch fleet), then `snm_from_artifacts.py`, `make_record.py`, `make_write_mc_record.py`, `make_controls_record.py` | `sim/bitcell/corners/`, `sim/bitcell/records/` | [`sim/bitcell/README.md`](sim/bitcell/README.md) |
+| Compiler netlists (periphery, 256 × 32 macro) | `design/compiler/` steps 1-3 (steps 1-2 need xschem + PDK) | `design/compiler/{cells,netlist,macro}/` | [`design/compiler/README.md`](design/compiler/README.md) |
+| T1 item 1 attestation | `klt signoff --attest 1 --inventory design/compiler/inventory.json -o design/compiler/evidence/item1.json` | `design/compiler/evidence/` | [`manifests/README.md`](manifests/README.md) |
+
+Multi-corner and Monte Carlo work goes through `klt sim` requests, never
+hand-written `ngspice` loops.
 
 ## Repo layout
 

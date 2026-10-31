@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 10,
+  "description": "Repo hygiene: README (what the block is, spec table, Reproduce section), license, CI workflows, and the PDK-free commands CI runs.",
+  "hygiene": [
+    "README.md",
+    "LICENSE",
+    ".github/workflows/signoff.yml",
+    ".github/workflows/hygiene.yml",
+    "verification/hygiene/check_formats.py"
+  ],
+  "checks": [
+    {"name": "formats", "argv": ["python3", "-I", "verification/hygiene/check_formats.py"]},
+    {"name": "compiler-tests", "argv": ["python3", "-I", "design/compiler/test_compiler.py"]},
+    {"name": "compiler-schematics", "argv": ["python3", "-I", "design/compiler/gen_schematic.py", "--check"]},
+    {"name": "macro-256x32-m4", "argv": ["python3", "-I", "design/compiler/sram_compile.py", "256", "32", "4", "--check", "design/compiler/macro/sram_256x32_m4.spice"]},
+    {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]}
+  ]
+}

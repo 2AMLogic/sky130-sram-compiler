@@ -15,7 +15,7 @@ item 10).
   2AMLogic/klayout-tools#4221), and T1 item 3 (both partitions), the unmodified `klt drc --deck sky130`
   envelopes `design/compiler/evidence/item3.json` and `evidence/item3-digital.json` (written by
   `verification/drc/make_record.py`, record in `verification/drc/records/`), and T1 item 9 (both partitions),
-  `klt signoff --attest 9` over `sim/testbench-inventory.json` (`evidence/item9.json`); every other item grades `unmet`. The
+  `klt signoff --attest 9` over `sim/testbench-inventory.json` (`evidence/item9.json`), and T1 item 10 (all partitions), attested from `hygiene-inventory.json`; every other item grades `unmet`. The
   `partition_boundary.digital` entry is a placeholder until the digital
   partition is specified (the analog one is set, #26; spec:
   [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
@@ -27,6 +27,11 @@ item 10).
   this repo's Apache-2.0 `LICENSE` does not relicense the vendored copy.
   When upstream moves, re-vendor the file, update the commit above, and
   regenerate the record in the same PR.
+- **`hygiene-inventory.json`** / **`sky130-sram-compiler.item10.attest.json`** — the item 10
+  (repo hygiene) inventory and its `klt signoff --attest 10` envelope; CI
+  (`hygiene.yml`) re-checks it with `--check`. Regenerate with
+  `klt signoff --attest 10 --inventory manifests/hygiene-inventory.json -o manifests/sky130-sram-compiler.item10.attest.json`,
+  then update the `content_hash` cited in the manifest (the inventory's hash).
 - **`sky130-sram-compiler.signoff.json`** — **the verdict of record**:
   committed output of the command below. Never hand-edit it.
 
@@ -56,9 +61,9 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 9 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, each for
-the analog and the digital partition (issues #26, #27, #29, #30, #31, #32), and T1 item 4, LVS clean, for the
+**Not-T1: 11 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, and item 10, Repo hygiene, each for
+the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32), and T1 item 4, LVS clean, for the
 analog partition only (issue #33, `design/macro/records/`). Item 3 grades the curated-deck `status: clean` report with
 its coverage block cited; the report discloses unruled layers and skipped rules. Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
 netlist but `power_connectivity` is `mismatch` on the pwell VNB pin
