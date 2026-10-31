@@ -28,18 +28,20 @@ Benches
 Pre-layout: no bit-line/word-line wire parasitics; the 124 other columns' word-line load is the gate
 area of their access devices (248 NMOS gates, m=248). Strobe edges are ideal 50 ps ramps.
 """
+import functools
 import json
 import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "bitcell/lib"))
+import tb_common  # noqa: E402
+from tb_common import PROCESS, TEMPS, VDDS, mm_scale_params, with_params  # noqa: E402,F401
+
 root = pathlib.Path(__file__).resolve().parents[3]
 MACRO = "design/compiler/macro/sram_256x32_m4.spice"
 INC = f"../../../{MACRO}"
 
-PROCESS = ["tt", "ff", "ss", "sf", "fs"]
-TEMPS = [-40, 25, 125]
-VDDS = [1.62, 1.8, 1.98]
 ROWS, COLS = 64, 4          # 256 x 32, mux 4: 64 rows; one bit slice = 4 columns
 E = 0.05                    # strobe edge, ns
 T_START = 3.0               # first trial after the initialisation phase, ns
@@ -51,13 +53,6 @@ TRAN_STEP = "0.04n"
 # Monte Carlo / controls: same parameters as sim/bitcell (make_tb.py)
 MC_N, MC_SEED = 60, 20261018
 NEG_N, NEG_SEED, NEG_SCALE = 20, 20261019, 6
-MM_SLOPES = {
-    "nfet_01v8": {"toxe_slope": "3.443e-03", "voff_slope": "0.007", "vth0_slope": "3.356e-03",
-                  "vth0_slope1": "7.356e-03"},
-    "pfet_01v8": {"toxe_slope": "4.443e-03", "toxe_slope1": "6.443e-03", "toxe_slope2": "3.443e-03",
-                  "nfactor_slope": "0.1", "nfactor_slope1": "0.1", "voff_slope2": "0.007",
-                  "vth0_slope": "5.856e-03", "vth0_slope1": "7.356e-03", "vth0_slope2": "4.356e-03"},
-}
 
 files = {}
 
@@ -272,35 +267,8 @@ def snm_tb(mode, pair):
     return "\n".join(L) + "\n"
 
 
-def mm_scale_params(scale):
-    lines = [f"* NEGATIVE CONTROL: every per-instance mismatch sigma x {scale} (slope params of the pinned",
-             "* open_pdks mismatch.corner files, x mm_scale); nominal parameters and process corner unchanged.",
-             f".param mm_scale={scale}"]
-    for dev, ps in MM_SLOPES.items():
-        lines += [f".param sky130_fd_pr__{dev}__{k}='{v}*mm_scale'" for k, v in ps.items()]
-    return "\n".join(lines) + "\n"
-
-
-def with_params(body, params):
-    lines = body.split("\n")
-    i = 0
-    while lines[i].startswith("*"):
-        i += 1
-    return "\n".join(lines[:i]) + "\n" + params + "\n".join(lines[i:])
-
-
 # ------------------------------------------------------------------ requests
-def base_req(netlist, analysis, meas, extra_opts=None, mc=None, process=None, vdds=None, temps=None):
-    opts = {"timeout_s": 900, "stage_model_inputs": True, "waveforms": True, "keep_artifacts": True}
-    opts.update(extra_opts or {})
-    r = {"netlist": f"../tb/{netlist}", "engine": "ngspice",
-         "models": {"pdk": "sky130A", "lib": "libs.tech/ngspice/sky130.lib.spice"},
-         "corners": {"process": process or PROCESS, "supply_v": {"vvdd": vdds or VDDS},
-                     "temperature_c": temps or TEMPS},
-         "analysis": analysis, "measurements": meas, "options": opts}
-    if mc:
-        r["monte_carlo"] = mc
-    return r
+base_req = functools.partial(tb_common.base_req, timeout_s=900)
 
 
 def probe_of(req):
