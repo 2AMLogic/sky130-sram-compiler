@@ -38,7 +38,7 @@ item 10).
 ## Regenerate
 
 ```console
-pip install klayout-tools==0.8.0        # or: uvx --from klayout-tools==0.8.0 klt ...
+pip install klayout-tools==0.9.0        # or: uvx --from klayout-tools==0.9.0 klt ...
 klt signoff --manifest manifests/sky130-sram-compiler.json \
             --tiers-doc manifests/design-evidence-tiers.md \
             --format json > manifests/sky130-sram-compiler.signoff.json
@@ -52,7 +52,7 @@ bump) regenerates and commits the record in the same PR.
 ## Freshness is CI-enforced
 
 [`.github/workflows/signoff.yml`](../.github/workflows/signoff.yml) pins
-`klayout-tools==0.8.0`, runs the grader (exit 0 or 3 accepted, anything else
+`klayout-tools==0.9.0`, runs the grader (exit 0 or 3 accepted, anything else
 fails), then runs the same command with
 `--check manifests/sky130-sram-compiler.signoff.json`. `--check` re-grades
 and compares to the committed record, ignoring the `build` block (two
@@ -61,12 +61,10 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 11 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, item 2, Layout, item 3, DRC clean, and item 9, Testbenches shipped, and item 10, Repo hygiene, each for
-the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32), and T1 item 4, LVS clean, for the
-analog partition only (issue #33, `design/macro/records/`). Item 3 grades the curated-deck `status: clean` report with
-its coverage block cited; the report discloses unruled layers and skipped rules. Item 4 digital is unmet (`check_failed`): signal LVS matches the post-route
-netlist but `power_connectivity` is `mismatch` on the pwell VNB pin
-(`design/control/records/`, klayout-tools#4363). The `klt` pin is
-0.8.0 because `klt signoff --attest` (the item 1 producer) first ships there; the envelopes
-and the record reproduce under it. Each unmet row's `reason` is in the record.
+**Not-T1: 10 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, and item 10, Repo hygiene, each for
+the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33). Item 4 grades the
+`status: match` reports with `power_connectivity: match` (`design/macro/records/`, `design/control/records/`,
+klt 0.9.0 for the digital one). Item 9 is `unmet` (`stale_evidence`): `sim/column/lib/make_column_tb.py`
+changed after `evidence/item9.json` was attested; re-attesting needs the local cold start. The `klt` pin is
+0.9.0, which contains the klayout-tools#4366 fix for the pwell `VNB` power-connectivity artifact. Each unmet row's `reason` is in the record.

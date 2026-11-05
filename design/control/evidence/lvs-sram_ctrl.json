@@ -212,6 +212,13 @@
   "reference": "layout/control/sram_ctrl_routed.v",
   "top": "sram_ctrl",
   "reference_top": "SRAM_CTRL",
+  "reference_conversion": {
+    "form": "gate-level-verilog",
+    "library": "sky130_fd_sc_hd",
+    "pdk": "sky130A",
+    "pdk_root": "/home/ubuntu/.ciel",
+    "pin_order_files": null
+  },
   "parameter_tolerance": null,
   "options": {
     "combine_devices": false,
@@ -240,12 +247,10 @@
   "constant_nets_applied": null,
   "status": "match",
   "power_connectivity": {
-    "status": "mismatch",
+    "status": "match",
     "reason": null,
     "power_pins": [
       "VGND",
-      "VNB",
-      "VPB",
       "VPWR"
     ],
     "power_pins_derivation": {
@@ -282,323 +287,78 @@
     "instance_count": 1332,
     "expected_nets": null,
     "unchecked_expected_pins": [],
-    "findings": [
+    "excluded_pins": [
       {
-        "rule": "power.inconsistent_pin_net",
-        "severity": "error",
         "pin": "VNB",
-        "expected_net": null,
-        "description": "standard-cell power/ground pin 'VNB' reaches 17 distinct nets across 1196 instance(s) -- 'VDD' (2 instance(s), e.g. sky130_fd_sc_hd__mux2_4_22); 'VSS' (1097 instance(s), e.g. sky130_fd_sc_hd__a21o_1_0); 'addr[5]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_1_0); 'addr[6]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_1_1); 'clk' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_1_2); 'dout[12]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_25); 'dout[17]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_24); 'dout[23]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_27); 'dout[25]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_5); 'dout[26]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_29); 'dout[29]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_28); 'dout[5]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_17); 'ready' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_0); 'rst_n' (82 instance(s), e.g. sky130_fd_sc_hd__dfrtp_1_0); 'sa_q[0]' (2 instance(s), e.g. sky130_fd_sc_hd__mux2_4_10); 'sa_q[22]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_11); 'sa_q[6]' (1 instance(s), e.g. sky130_fd_sc_hd__mux2_4_9). A single-power-domain block must wire every instance's same-named supply pin to the same net; declare options.power_connectivity.expected_nets to state which one is correct, or set options.power_connectivity: false if this design is genuinely multi-domain. If this design has no power distribution network routed at all -- every instance's supply pin landing on its own net is the same signature as no PDN having been added -- the more likely fix is request.power in klt place-and-route rather than either option above. Caveat for this ground pin: substrate continuity through the cells' own taps is not modelled in abstract-cell extraction, so separate Metal1 ground rails that a transistor-level extraction joins through the substrate are reported here as distinct nets -- this finding may be an artifact. To classify it, re-run klt extract without --abstract-cells and compare the pin's net count",
+        "cells": [
+          "sky130_fd_sc_hd__a21o_1",
+          "sky130_fd_sc_hd__a22o_1",
+          "sky130_fd_sc_hd__a2bb2oi_1",
+          "sky130_fd_sc_hd__buf_4",
+          "sky130_fd_sc_hd__bufinv_16",
+          "sky130_fd_sc_hd__clkinv_2",
+          "sky130_fd_sc_hd__clkinvlp_4",
+          "sky130_fd_sc_hd__dfrtp_1",
+          "sky130_fd_sc_hd__dfstp_2",
+          "sky130_fd_sc_hd__fill_1",
+          "sky130_fd_sc_hd__fill_2",
+          "sky130_fd_sc_hd__fill_4",
+          "sky130_fd_sc_hd__fill_8",
+          "sky130_fd_sc_hd__inv_1",
+          "sky130_fd_sc_hd__inv_2",
+          "sky130_fd_sc_hd__inv_6",
+          "sky130_fd_sc_hd__mux2_1",
+          "sky130_fd_sc_hd__mux2_2",
+          "sky130_fd_sc_hd__mux2_4",
+          "sky130_fd_sc_hd__nand2_1",
+          "sky130_fd_sc_hd__nand3_1",
+          "sky130_fd_sc_hd__nor2_1",
+          "sky130_fd_sc_hd__nor2b_4",
+          "sky130_fd_sc_hd__nor3_1",
+          "sky130_fd_sc_hd__o21ai_0",
+          "sky130_fd_sc_hd__o22a_1",
+          "sky130_fd_sc_hd__o22ai_1"
+        ],
         "instance_count": 1196,
-        "nets": [
-          {
-            "net": "VDD",
-            "instance_count": 2,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_22",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_8",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "VSS",
-            "instance_count": 1097,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__a21o_1_0",
-                "cell": "sky130_fd_sc_hd__a21o_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__a22o_1_0",
-                "cell": "sky130_fd_sc_hd__a22o_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__a2bb2oi_1_0",
-                "cell": "sky130_fd_sc_hd__a2bb2oi_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_0",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_1",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_2",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_3",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_4",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_5",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__buf_4_6",
-                "cell": "sky130_fd_sc_hd__buf_4"
-              }
-            ],
-            "instances_truncated": true
-          },
-          {
-            "net": "addr[5]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_1_0",
-                "cell": "sky130_fd_sc_hd__mux2_1"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "addr[6]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_1_1",
-                "cell": "sky130_fd_sc_hd__mux2_1"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "clk",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_1_2",
-                "cell": "sky130_fd_sc_hd__mux2_1"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[12]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_25",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[17]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_24",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[23]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_27",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[25]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_5",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[26]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_29",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[29]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_28",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "dout[5]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_17",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "ready",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_0",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "rst_n",
-            "instance_count": 82,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_0",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_1",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_10",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_11",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_12",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_13",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_14",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_15",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_16",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__dfrtp_1_17",
-                "cell": "sky130_fd_sc_hd__dfrtp_1"
-              }
-            ],
-            "instances_truncated": true
-          },
-          {
-            "net": "sa_q[0]",
-            "instance_count": 2,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_10",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              },
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_3",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "sa_q[22]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_11",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          },
-          {
-            "net": "sa_q[6]",
-            "instance_count": 1,
-            "instances": [
-              {
-                "circuit": "sram_ctrl",
-                "instance": "sky130_fd_sc_hd__mux2_4_9",
-                "cell": "sky130_fd_sc_hd__mux2_4"
-              }
-            ],
-            "instances_truncated": false
-          }
-        ]
+        "reason": "well/substrate-layer LEF pin; its per-instance net comes from probing whatever conductor crosses the well, and substrate continuity through the cells' taps is not modelled in abstract-cell extraction, so it is not checked"
+      },
+      {
+        "pin": "VPB",
+        "cells": [
+          "sky130_fd_sc_hd__a21o_1",
+          "sky130_fd_sc_hd__a22o_1",
+          "sky130_fd_sc_hd__a2bb2oi_1",
+          "sky130_fd_sc_hd__buf_4",
+          "sky130_fd_sc_hd__bufinv_16",
+          "sky130_fd_sc_hd__clkinv_2",
+          "sky130_fd_sc_hd__clkinvlp_4",
+          "sky130_fd_sc_hd__dfrtp_1",
+          "sky130_fd_sc_hd__dfstp_2",
+          "sky130_fd_sc_hd__fill_1",
+          "sky130_fd_sc_hd__fill_2",
+          "sky130_fd_sc_hd__fill_4",
+          "sky130_fd_sc_hd__fill_8",
+          "sky130_fd_sc_hd__inv_1",
+          "sky130_fd_sc_hd__inv_2",
+          "sky130_fd_sc_hd__inv_6",
+          "sky130_fd_sc_hd__mux2_1",
+          "sky130_fd_sc_hd__mux2_2",
+          "sky130_fd_sc_hd__mux2_4",
+          "sky130_fd_sc_hd__nand2_1",
+          "sky130_fd_sc_hd__nand3_1",
+          "sky130_fd_sc_hd__nor2_1",
+          "sky130_fd_sc_hd__nor2b_4",
+          "sky130_fd_sc_hd__nor3_1",
+          "sky130_fd_sc_hd__o21ai_0",
+          "sky130_fd_sc_hd__o22a_1",
+          "sky130_fd_sc_hd__o22ai_1"
+        ],
+        "instance_count": 1196,
+        "reason": "well/substrate-layer LEF pin; its per-instance net comes from probing whatever conductor crosses the well, and substrate continuity through the cells' taps is not modelled in abstract-cell extraction, so it is not checked"
       }
     ],
-    "finding_count": 1
+    "findings": [],
+    "finding_count": 0
   },
   "body_verification": {
     "status": "verified",
@@ -659,7 +419,9 @@
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.0",
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
     "klayout_version": "0.30.12",
     "pdk": {
       "name": "sky130A",
@@ -668,7 +430,7 @@
     },
     "deck": {
       "name": "sky130",
-      "content_hash": "sha256:ba0f97887e3d231aec8b54f1f52f2941ded0228f0234b6759712bcaca0e942e6",
+      "content_hash": "sha256:029ef177c1f4e872c13cc81093f94a02a9bbfe1f51939a88194a83532d60bf7c",
       "released": true
     },
     "input": {
@@ -1381,7 +1143,7 @@
       "layout": "vsubs",
       "reference": null,
       "pin": true,
-      "heuristic": false
+      "heuristic": true
     },
     {
       "layout": "A",
@@ -1597,13 +1359,13 @@
       "layout": "addr[5]",
       "reference": "ADDR[5]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "addr[6]",
       "reference": "ADDR[6]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "addr[7]",
@@ -1771,19 +1533,19 @@
       "layout": "CLK",
       "reference": "CLK",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "CLK",
       "reference": "CLK",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "clk",
       "reference": "CLK",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "\\$366",
@@ -2257,7 +2019,7 @@
       "layout": "dout[12]",
       "reference": "DOUT[12]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[13]",
@@ -2287,7 +2049,7 @@
       "layout": "dout[17]",
       "reference": "DOUT[17]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[18]",
@@ -2329,7 +2091,7 @@
       "layout": "dout[23]",
       "reference": "DOUT[23]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[24]",
@@ -2341,13 +2103,13 @@
       "layout": "dout[25]",
       "reference": "DOUT[25]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[26]",
       "reference": "DOUT[26]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[27]",
@@ -2365,7 +2127,7 @@
       "layout": "dout[29]",
       "reference": "DOUT[29]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[2]",
@@ -2401,7 +2163,7 @@
       "layout": "dout[5]",
       "reference": "DOUT[5]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "dout[6]",
@@ -2473,7 +2235,7 @@
       "layout": "ready",
       "reference": "READY",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "RESET_B",
@@ -2485,7 +2247,7 @@
       "layout": "rst_n",
       "reference": "RST_N",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "S",
@@ -2515,7 +2277,7 @@
       "layout": "sa_q[0]",
       "reference": "SA_Q[0]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "sa_q[10]",
@@ -2599,7 +2361,7 @@
       "layout": "sa_q[22]",
       "reference": "SA_Q[22]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "sa_q[23]",
@@ -2683,7 +2445,7 @@
       "layout": "sa_q[6]",
       "reference": "SA_Q[6]",
       "pin": true,
-      "heuristic": true
+      "heuristic": false
     },
     {
       "layout": "sa_q[7]",
