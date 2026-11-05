@@ -138,8 +138,7 @@ Where the generator breaks (and says so, exit 1, never a wrong layout):
 
 ## Not claimed
 
-DRC and LVS of the committed instance as signoff evidence (#32, #33), power delivery and tap
-distance (#34), extraction, timing, any other reference instance, 1RW1R. The development
+DRC and LVS of the committed instance as signoff evidence (#32, #33), tap distance, IR drop / EM, extraction, timing, any other reference instance, 1RW1R. The development
 checks above were run to find generator bugs; they are listed in `records/` and do not replace
 those issues' records.
 
@@ -171,3 +170,33 @@ period is a placeholder, not a spec value; timing closure is out of scope.
 
 The as-built netlist with CTS buffers (`verilog_path` in the response) is the
 LVS reference for #33, not the pre-CTS `rtl/synth` netlist.
+
+## erc/ — supply evidence (T1 item 11, both partitions)
+
+`klt erc` supply specs are generated, not hand-written: `design/compiler/gen_erc_spec.py macro W B M`
+derives the macro spec from `gen_layout.build()` (layer table, strap-row and column-mux tap
+positions), so it follows the size (`design/compiler/test_erc_spec.py`). Supplies are `VDD` / `VSS`,
+the names the layout labels carry. `layout/erc/run_erc.sh [--write] <scratch>` regenerates and checks
+the specs, runs klt 0.9.0 on the macro GDS and `layout/control/control.gds`, and runs two
+negative controls on copies of the macro (both VSS columns, resp. both VDD columns, of one bitcell
+row cut; cutting only one of the two columns reads clean because the cell bridges the rail).
+
+| File | What |
+|---|---|
+| `erc/erc_macro_spec.json`, `erc/erc_control_spec.json` | generated specs |
+| `erc/erc_macro.json`, `erc/erc_control.json` | reports: `erc_status: clean`, each supply one island, ties checked |
+| `erc/erc_macro_severed_{vss,vdd}.json` | negative controls: `erc.unconnected_net` + `erc.unlabelled_conductor` (VSS also `erc.floating_gate`) |
+
+What the macro run does and does not prove (the spec header says the same):
+
+* n-well: every drawn nwell polygon (130, array and periphery) holds an n-tap on VDD.
+* p-substrate: the 5 array strap rows and the 128 column-mux bulk taps are asserted with
+  `well_boxes` (no drawn substrate layer) and each reaches VSS. The row-decoder / control-row
+  p-taps are not asserted (`well_assertion_coverage` in the report gives the uncovered tap fraction).
+* Severed-rail detection (`roles`): VSS owns met1, VDD owns met2, both own met3 and met4, inside the
+  array; the periphery's internal signal nets on met1 / met2 are unlabelled in the macro, so the four
+  slabs around the array are carved out (`unlabelled_allowed_boxes`). Periphery rails on met1 / met2
+  are only proven where a label reaches them.
+* The negative controls' reports name scratch GDS paths; rerun `run_erc.sh` to reproduce.
+* Digital: control block clean (VPWR/VGND cell rails tied to the VDD/VSS met5 pins with `same_net_as`),
+  P&R response `power.pdn: true`, tapcell `sky130_fd_sc_hd__tapvpwrvgnd_1`, straps met1/met4/met5 all in the stackup.

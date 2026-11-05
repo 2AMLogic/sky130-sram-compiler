@@ -61,8 +61,8 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 12 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
-Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, item 9, Testbenches shipped, and item 10, Repo hygiene, each for
+**Not-T1: 14 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, item 9, Testbenches shipped, item 10, Repo hygiene, and item 11, Power delivery (`layout/erc/`, #34), each for
 the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33). Item 4 grades the
 `status: match` reports with `power_connectivity: match` (`design/macro/records/`, `design/control/records/`,
 klt 0.9.0 for the digital one). Item 9 was re-attested under klt 0.9.0 after the `make_column_tb.py` refactor (`evidence/item9.json`, 48/48 checks, local cold start). The `klt` pin is
