@@ -94,7 +94,7 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_tb.py",
         "passed": true,
-        "content_hash": "sha256:4ecd67f871b58e493ca8d08fbd168f46b299157717277089c4ebe0ba4108f1a5"
+        "content_hash": "sha256:4a5e789484ab0f002ab41c755ad22c65dbe1d190c096cb5fdcea411c6918cb29"
       },
       {
         "check": "present",
@@ -364,7 +364,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.1.dev94+g85c26c13cfae",
+    "klt_version": "0.9.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
