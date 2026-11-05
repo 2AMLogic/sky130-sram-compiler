@@ -1,0 +1,751 @@
+{
+  "samples": "sim/bitcell/corners/20261018-mc-controls/write_trip_baseline.samples.json",
+  "limits": null,
+  "source": {
+    "kind": "sample-set",
+    "netlist": null,
+    "monte_carlo": null,
+    "provenance": null,
+    "sample_count": 480
+  },
+  "schema_version": 1,
+  "confidence": 0.95,
+  "target_ci_halfwidth": 0.01,
+  "min_samples": 2,
+  "status": "reported",
+  "measurement_count": 8,
+  "measurements": [
+    {
+      "name": "write_trip_lb_V/fs_mm/1.62V/-40C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.2927812500000004,
+        "stddev": 0.02651386374839857,
+        "min": 0.253125,
+        "max": 0.354375,
+        "median": 0.30375,
+        "skewness": -0.22255854181196166,
+        "excess_kurtosis": -0.09317159521062957,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 9.702048415376838,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 3.6808573403751743,
+        "cpk_confidence_interval": {
+          "low": 3.011388512546623,
+          "high": 4.3503261682037255
+        },
+        "sigma_to_spec": 11.042572021125522,
+        "sigma_to_spec_confidence_interval": {
+          "low": 9.034165537639868,
+          "high": 13.050978504611177
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/-40C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 9.7020 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/-40C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/-40C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/fs_mm/1.62V/125C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.21262500000000015,
+        "stddev": 0.030631333658443866,
+        "min": 0.151875,
+        "max": 0.30375,
+        "median": 0.2025,
+        "skewness": 0.3518518518518367,
+        "excess_kurtosis": 0.4814814814814743,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 7.589944692466394,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 0.9999999999980591,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9999999999806423,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 2.313807188100103,
+        "cpk_confidence_interval": {
+          "low": 1.887893790695967,
+          "high": 2.7397205855042395
+        },
+        "sigma_to_spec": 6.94142156430031,
+        "sigma_to_spec_confidence_interval": {
+          "low": 5.6636813720879005,
+          "high": 8.219161756512719
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/125C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 7.5899 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/125C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/fs_mm/1.62V/125C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/fs_mm/1.98V/-40C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.4537500000000005,
+        "stddev": 0.029414303853507084,
+        "min": 0.433125,
+        "max": 0.495,
+        "median": 0.433125,
+        "skewness": 0.7071067811864958,
+        "excess_kurtosis": -1.5000000000000504,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 12.387842044224485,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 5.142056081057534,
+        "cpk_confidence_interval": {
+          "low": 4.210452548984133,
+          "high": 6.0736596131309355
+        },
+        "sigma_to_spec": 15.426168243172603,
+        "sigma_to_spec_confidence_interval": {
+          "low": 12.631357646952399,
+          "high": 18.220978839392806
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/-40C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 12.3878 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/-40C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/-40C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/fs_mm/1.98V/125C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.33928125,
+        "stddev": 0.033197140225834636,
+        "min": 0.2475,
+        "max": 0.37125,
+        "median": 0.3403125,
+        "skewness": -0.26567640499437994,
+        "excess_kurtosis": -1.2190037954044857,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 9.382278005111544,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 3.4067317013044494,
+        "cpk_confidence_interval": {
+          "low": 2.7862977846710435,
+          "high": 4.027165617937856
+        },
+        "sigma_to_spec": 10.220195103913348,
+        "sigma_to_spec_confidence_interval": {
+          "low": 8.35889335401313,
+          "high": 12.081496853813567
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/125C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 9.3823 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/125C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/fs_mm/1.98V/125C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/sf_mm/1.62V/-40C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.7146562499999994,
+        "stddev": 0.02103216645886464,
+        "min": 0.658125,
+        "max": 0.759375,
+        "median": 0.70875,
+        "skewness": 0.7962682223403764,
+        "excess_kurtosis": 1.9749063138693712,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 14.190057073054177,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 11.326400942381062,
+        "cpk_confidence_interval": {
+          "low": 9.281046482932808,
+          "high": 13.371755401829315
+        },
+        "sigma_to_spec": 33.97920282714318,
+        "sigma_to_spec_confidence_interval": {
+          "low": 27.843139448798425,
+          "high": 40.11526620548794
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/-40C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 14.1901 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/-40C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/-40C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/sf_mm/1.62V/125C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.7256249999999992,
+        "stddev": 0.028979600876291468,
+        "min": 0.658125,
+        "max": 0.81,
+        "median": 0.70875,
+        "skewness": 0.4049794617343644,
+        "excess_kurtosis": -0.039239001189010914,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 8.42476537574927,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 8.346388241595154,
+        "cpk_confidence_interval": {
+          "low": 6.838095094163309,
+          "high": 9.854681389026998
+        },
+        "sigma_to_spec": 25.03916472478546,
+        "sigma_to_spec_confidence_interval": {
+          "low": 20.51428528248993,
+          "high": 29.564044167080993
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/125C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 8.4248 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/125C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/sf_mm/1.62V/125C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/sf_mm/1.98V/-40C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.933281250000001,
+        "stddev": 0.023600282166242662,
+        "min": 0.86625,
+        "max": 0.99,
+        "median": 0.928125,
+        "skewness": 0.8684707552966144,
+        "excess_kurtosis": 3.270619285512156,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 15.417837923605783,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 13.181780955355785,
+        "cpk_confidence_interval": {
+          "low": 10.801906271324246,
+          "high": 15.561655639387325
+        },
+        "sigma_to_spec": 39.54534286606736,
+        "sigma_to_spec_confidence_interval": {
+          "low": 32.40571881397274,
+          "high": 46.684966918161976
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/-40C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 15.4178 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/-40C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/-40C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    },
+    {
+      "name": "write_trip_lb_V/sf_mm/1.98V/125C",
+      "unit": null,
+      "n": 60,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 0.0
+      },
+      "source_corners": [],
+      "distribution": {
+        "model": "normal",
+        "mean": 0.9405000000000011,
+        "stddev": 0.02495886446243574,
+        "min": 0.928125,
+        "max": 0.99,
+        "median": 0.928125,
+        "skewness": 1.499999999999863,
+        "excess_kurtosis": 0.24999999999972422,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 16.056221242490885,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "rejected"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9403705077138331,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 1.0,
+            "high": 1.0
+          },
+          "n": 60
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": null,
+        "cpk": 12.560667592543425,
+        "cpk_confidence_interval": {
+          "low": 10.292786085023337,
+          "high": 14.828549100063512
+        },
+        "sigma_to_spec": 37.682002777630274,
+        "sigma_to_spec_confidence_interval": {
+          "low": 30.87835825507001,
+          "high": 44.485647300190536
+        },
+        "limiting_side": "lower"
+      },
+      "sample_size": {
+        "n": 60,
+        "observed_ci_halfwidth": 0.029814746143083437,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": null,
+        "verdict": "insufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "reported",
+      "warnings": [
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/125C': the sample set is not consistent with a normal distribution (Anderson-Darling A2* = 16.0562 > 0.787); treat the parametric yield estimate and Cpk as indicative only and prefer the empirical estimate",
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/125C': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 94.0371% at 95% confidence, N = 60\" is the honest statement, not \"100% yield\"",
+        "measurement 'write_trip_lb_V/sf_mm/1.98V/125C': N = 60 resolves the yield only to +/-0.0298 at 95% confidence; 183 samples are needed for the requested +/-0.01"
+      ],
+      "spec_row": null
+    }
+  ],
+  "warnings": [
+    "no measurement declared a target_yield, so no yield claim was checked -- the estimates below are reported, never failed",
+    "no measurement declared a negative_control -- this campaign has no seeded, known-bad variant demonstrating that the statistics above can actually detect a degraded design; see docs/cli/yield.md#negative-control"
+  ]
+}
