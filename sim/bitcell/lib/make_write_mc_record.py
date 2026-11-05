@@ -25,14 +25,9 @@ import statistics
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from record_common import LADDER, git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_of, load, scrub, write_ladder  # noqa: E402
 
 repo = pathlib.Path(__file__).resolve().parents[3]
-
-
-def load(p):
-    p = pathlib.Path(p)
-    return json.load(gzip.open(p) if p.suffix == ".gz" else open(p))
 
 
 def point_key(c):

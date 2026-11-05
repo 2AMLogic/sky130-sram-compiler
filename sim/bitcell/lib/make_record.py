@@ -16,20 +16,14 @@ import gzip
 import hashlib
 import json
 import pathlib
-import statistics
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import snm_from_artifacts as sa  # noqa: E402
-from record_common import git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
+from record_common import dirname, fmt_mc, git_short_sha, klt_version_of, mc_stats, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
-
-
-def dirname(corner_id):
-    p = corner_id.replace("/", "_").replace(".", "p").replace("-", "n")
-    return p
 
 
 def snm_table(report, art):
@@ -54,36 +48,6 @@ def write_table(report):
         k, mono, n = w
         rows[c["corner_id"]] = (k, vdd * k / (n - 1) if k >= 0 else None, mono, n)
     return rep, rows
-
-
-def mc_stats(art_dirs, pair=True):
-    pts = {}
-    for a in art_dirs:
-        for d in sorted(pathlib.Path(a).glob("*/waveform.raw.json")):
-            name = d.parent.name
-            key = name.rsplit("_mc", 1)[0]
-            try:
-                (plo, phi), (elo, ehi) = sa.snm_for(d, pair)
-                pts.setdefault(key, []).append((min(elo, ehi), min(plo, phi)))
-            except Exception as e:  # kept visible as an extraction failure
-                pts.setdefault(key, []).append((None, str(e)))
-    return pts
-
-
-def fmt_mc(pts, det):
-    out = ["| point | n | extract fail | mean eye SNM (V) | sigma (V) | min (V) | n <= 0 | sigmas to 0 (mean/sigma) | mean pinned (V) | deterministic corner eye SNM (V) |",
-           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
-    for k, v in sorted(pts.items()):
-        ok = [x[0] for x in v if x[0] is not None]
-        pin = [x[1] for x in v if x[0] is not None]
-        bad = len(v) - len(ok)
-        if len(ok) < 2:
-            out.append(f"| {k} | {len(v)} | {bad} | - | - | - | - | - | - | - |")
-            continue
-        m, s = statistics.mean(ok), statistics.stdev(ok)
-        out.append(f"| {k} | {len(v)} | {bad} | {m:.4f} | {s:.4f} | {min(ok):.4f} | "
-                   f"{sum(1 for x in ok if x <= 0)} | {m / s:.1f} | {statistics.mean(pin):.4f} | {det.get(k, float('nan')):.4f} |")
-    return out
 
 
 def sha(p):
