@@ -1,8 +1,23 @@
 """Helpers shared by the bitcell margin-record generators (make_record.py, make_write_mc_record.py, make_controls_record.py)."""
 
+import gzip
+import json
+import pathlib
+import statistics
 import subprocess
 
 LADDER = 33
+
+
+def dirname(corner_id):
+    """Artifact directory name `klt sim` gives a corner_id."""
+    return corner_id.replace("/", "_").replace(".", "p").replace("-", "n")
+
+
+def load(p):
+    """JSON report, plain or gzip-compressed (.gz)."""
+    p = pathlib.Path(p)
+    return json.load(gzip.open(p) if p.suffix == ".gz" else open(p))
 
 
 def scrub(o):
@@ -50,3 +65,45 @@ def write_ladder(c):
             break
         k = i
     return k, not any(flipped[k + 1:]), len(q)
+
+
+def mc_stats(art_dirs, pair=True):
+    """Per-point (eye SNM, pinned SNM) samples from Monte Carlo artifact dirs, keyed by point name.
+
+    An extraction failure is kept visible as (None, message), never dropped.
+    """
+    import snm_from_artifacts as sa  # sibling module; the caller has sim/bitcell/lib on sys.path
+
+    pts = {}
+    for a in art_dirs:
+        for d in sorted(pathlib.Path(a).glob("*/waveform.raw.json")):
+            key = d.parent.name.rsplit("_mc", 1)[0]
+            try:
+                (plo, phi), (elo, ehi) = sa.snm_for(d, pair)
+                pts.setdefault(key, []).append((min(elo, ehi), min(plo, phi)))
+            except Exception as e:
+                pts.setdefault(key, []).append((None, str(e)))
+    return pts
+
+
+def fmt_mc(pts, det=None):
+    """Markdown Monte Carlo SNM table. With `det` (point -> deterministic-corner eye SNM) it also has the
+    mean-pinned and deterministic columns; without, only the eye-SNM columns."""
+    cols = ["point", "n", "extract fail", "mean eye SNM (V)", "sigma (V)", "min (V)", "n <= 0", "sigmas to 0 (mean/sigma)"]
+    if det is not None:
+        cols += ["mean pinned (V)", "deterministic corner eye SNM (V)"]
+    out = ["| " + " | ".join(cols) + " |", "|---|" + "---:|" * (len(cols) - 1)]
+    for k, v in sorted(pts.items()):
+        ok = [x[0] for x in v if x[0] is not None]
+        bad = len(v) - len(ok)
+        if len(ok) < 2:
+            out.append(f"| {k} | {len(v)} | {bad} |" + " - |" * (len(cols) - 3))
+            continue
+        m, s = statistics.mean(ok), statistics.stdev(ok)
+        row = (f"| {k} | {len(v)} | {bad} | {m:.4f} | {s:.4f} | {min(ok):.4f} | "
+               f"{sum(1 for x in ok if x <= 0)} | {m / s:.1f}")
+        if det is not None:
+            pin = [x[1] for x in v if x[0] is not None]
+            row += f" | {statistics.mean(pin):.4f} | {det.get(k, float('nan')):.4f}"
+        out.append(row + " |")
+    return out

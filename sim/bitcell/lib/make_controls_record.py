@@ -33,8 +33,8 @@ here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import make_record as mr  # noqa: E402
 from make_tb import DET_N, NEG_N, NEG_SCALE, NEG_SEED  # noqa: E402
-from make_write_mc_record import load, merge, point_key, stats  # noqa: E402
-from record_common import LADDER, git_short_sha, klt_version_of, scrub, write_ladder  # noqa: E402
+from make_write_mc_record import merge, point_key, stats  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_of, load, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 SIGMA_RATIO_MIN = 2.0
@@ -70,7 +70,10 @@ def parse_base_snm(record):
     return out
 
 
-def klt_version():
+def local_klt_version():
+    """Version of the klt on THIS host. Only for the `klt yield` note: that step runs locally (not on the batch
+    fleet), so this is the build that produced the yield output. Everything else uses record_common.klt_version_of,
+    the build recorded in the sim report."""
     r = subprocess.run(["klt", "--version"], capture_output=True, text=True)
     return (r.stdout or r.stderr).strip()
 
@@ -187,7 +190,7 @@ def main():
         except ValueError:
             pass
     if "error" in yout:
-        yield_note = (f"`klt yield` did not run: `{yout['error']['message']}` (klt `{klt_version()}`). No yield, interval or Cpk is "
+        yield_note = (f"`klt yield` did not run: `{yout['error']['message']}` (klt `{local_klt_version()}`). No yield, interval or Cpk is "
                       "reported here and none is hand-computed in its place. Known gap: 2AMLogic/klayout-tools#2900 (the documented "
                       "`klayout-tools[yield]` install path does not resolve; `klt-yield-native` is not on the package index). "
                       f"The input is committed (`{ev.name}/{ypath.name}`: the {len(ydoc['measurements'])} points x "
@@ -198,7 +201,7 @@ def main():
     else:
         keep_yield = ev / "write_trip_baseline.yield.json"
         keep_yield.write_text(json.dumps(yout, indent=1) + "\n")
-        yield_note = (f"`klt yield` (klt `{klt_version()}`) ran on `{ev.name}/{ypath.name}` (n=60 per point, seed 20261018, limit min 0 V); "
+        yield_note = (f"`klt yield` (klt `{local_klt_version()}`) ran on `{ev.name}/{ypath.name}` (n=60 per point, seed 20261018, limit min 0 V); "
                       f"full output in `{ev.name}/{keep_yield.name}`:\n\n```json\n{json.dumps(yout, indent=1)[:6000]}\n```")
 
     git = git_short_sha(repo)

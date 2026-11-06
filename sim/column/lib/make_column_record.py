@@ -13,7 +13,6 @@ import gzip
 import hashlib
 import json
 import pathlib
-import statistics
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
@@ -22,15 +21,11 @@ sys.path.insert(0, str(repo / "sim/bitcell/lib"))
 sys.path.insert(0, str(here))
 import make_column_tb as gen  # noqa: E402
 import snm_from_artifacts as sa  # noqa: E402
-from record_common import git_short_sha, klt_version_of, scrub  # noqa: E402
+from record_common import dirname, fmt_mc, git_short_sha, klt_version_of, load, mc_stats, scrub  # noqa: E402
 
 
-def dirname(cid):
-    return cid.replace("/", "_").replace(".", "p").replace("-", "n")
-
-
-def load(scratch, bench):
-    return json.load(open(scratch / f"{bench}.json"))
+def load_bench(scratch, bench):
+    return load(scratch / f"{bench}.json")
 
 
 def meas(c):
@@ -69,7 +64,7 @@ def waveform_series(path, names):
 
 def read_rows(scratch, bench):
     want = 1 if bench.endswith("1") else 0
-    rep = load(scratch, bench)
+    rep = load_bench(scratch, bench)
     rows = []
     for c in rep["corners"]:
         vdd, m = c["supply_v"]["vvdd"], meas(c)
@@ -104,7 +99,7 @@ def read_rows(scratch, bench):
 
 
 def write_rows(scratch, bench, want):
-    rep = load(scratch, bench)
+    rep = load_bench(scratch, bench)
     rows = []
     for c in rep["corners"]:
         vdd, m = c["supply_v"]["vvdd"], meas(c)
@@ -120,39 +115,13 @@ def write_rows(scratch, bench, want):
 
 
 def snm_rows(scratch, bench):
-    rep = load(scratch, bench)
+    rep = load_bench(scratch, bench)
     rows = {}
     for c in rep["corners"]:
         d = scratch / bench / dirname(c["corner_id"])
         (plo, phi), (elo, ehi) = sa.snm_for(d / "waveform.raw.json", False)
         rows[cname(c)] = (min(elo, ehi), min(plo, phi))
     return rep, rows
-
-
-def mc_stats(scratch, bench):
-    pts = {}
-    for d in sorted((scratch / bench).glob("*/waveform.raw.json")):
-        key = d.parent.name.rsplit("_mc", 1)[0]
-        try:
-            (plo, phi), (elo, ehi) = sa.snm_for(d, True)
-            pts.setdefault(key, []).append(min(elo, ehi))
-        except Exception:
-            pts.setdefault(key, []).append(None)
-    return pts
-
-
-def fmt_mc(pts):
-    out = ["| point | n | extract fail | mean eye SNM (V) | sigma (V) | min (V) | n <= 0 | sigmas to 0 (mean/sigma) |",
-           "|---|---:|---:|---:|---:|---:|---:|---:|"]
-    for k, v in sorted(pts.items()):
-        ok = [x for x in v if x is not None]
-        if len(ok) < 2:
-            out.append(f"| {k} | {len(v)} | {len(v) - len(ok)} | - | - | - | - | - |")
-            continue
-        m, s = statistics.mean(ok), statistics.stdev(ok)
-        out.append(f"| {k} | {len(v)} | {len(v) - len(ok)} | {m:.4f} | {s:.4f} | {min(ok):.4f} | "
-                   f"{sum(x <= 0 for x in ok)} | {m / s:.1f} |")
-    return out
 
 
 def f(x, nd=3):
@@ -172,7 +141,7 @@ def main():
                "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
     reps = {}
     for b in benches:
-        reps[b] = load(scratch, b)
+        reps[b] = load_bench(scratch, b)
         data = json.dumps(scrub(reps[b]), indent=1, sort_keys=True).encode()
         with gzip.GzipFile(ev / f"{b}.report.json.gz", "wb", mtime=0) as g:
             g.write(data)
@@ -259,7 +228,7 @@ def main():
     for b, t in (("col_mc_read_snm", "read SNM, n = 60 per point"), ("col_mc_hold_snm", "hold SNM, n = 60 per point"),
                  ("col_mc_read_snm_neg", "read SNM NEGATIVE CONTROL (mismatch sigma x6, n = 20)"),
                  ("col_mc_hold_snm_neg", "hold SNM NEGATIVE CONTROL (mismatch sigma x6, n = 20)")):
-        L += [f"### {t}", ""] + fmt_mc(mc_stats(scratch, b)) + [""]
+        L += [f"### {t}", ""] + fmt_mc(mc_stats([scratch / b])) + [""]
 
     # ---- summary
     rmin = min(rs.items(), key=lambda kv: kv[1][0])
