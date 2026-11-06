@@ -9,17 +9,30 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map cites T1 item 1 (analog), attested from `design/compiler/inventory.json`, and T1 item 2 (analog),
-  the committed 256 x 32 GDS bound by hash (`design/compiler/evidence/item2.json`, written by
-  `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
-  2AMLogic/klayout-tools#4221), and T1 item 3 (both partitions), the unmodified `klt drc --deck sky130`
-  envelopes `design/compiler/evidence/item3.json` and `evidence/item3-digital.json` (written by
-  `verification/drc/make_record.py`, record in `verification/drc/records/`), and T1 item 9 (both partitions),
-  `klt signoff --attest 9` over `sim/testbench-inventory.json` (`evidence/item9.json`), and T1 item 10 (all partitions), attested from `hygiene-inventory.json`; every other item grades `unmet`. The
-  `partition_boundary.digital` entry is a placeholder until the digital
-  partition is specified (the analog one is set, #26; spec:
-  [#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). Evidence is added one item at a time, each
-  citation pinning the `content_hash` of what it cites.
+  map cites 13 keys (`<item>.<partition>`, one key for a whole-block item), each pinning the `content_hash` of what it cites:
+  - **1.analog / 1.digital** — `design/compiler/evidence/item1.json` (from `design/compiler/inventory.json`) and
+    `evidence/item1-digital.json` (from `rtl/inventory.json`), both `klt signoff --attest 1`.
+  - **2.analog / 2.digital** — `design/compiler/evidence/item2.json` (the committed 256 x 32 GDS bound by hash, written by
+    `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
+    2AMLogic/klayout-tools#4221) and `evidence/item2-digital.json` (binds `layout/control/control.gds`, the routed
+    `sram_ctrl` stream that `layout/control/run_pnr.sh` writes and `--check` regenerates).
+  - **3.analog / 3.digital** — the unmodified `klt drc --deck sky130` envelopes `design/compiler/evidence/item3.json` and
+    `evidence/item3-digital.json`, written by `verification/drc/make_record.py` (record in `verification/drc/records/`).
+  - **4.analog / 4.digital** — the `klt lvs` envelopes `design/macro/evidence/lvs-sram_256x32_m4.json` and
+    `design/control/evidence/lvs-sram_ctrl.json`, written by `design/macro/lvs/run_lvs.sh` and `design/control/lvs/run_lvs.sh`
+    (`--report`).
+  - **9.analog / 9.digital** — `evidence/item9.json` (one envelope for both partitions), `klt signoff --attest 9` over
+    `sim/testbench-inventory.json`.
+  - **10** — `manifests/sky130-sram-compiler.item10.attest.json`, `klt signoff --attest 10` over `hygiene-inventory.json`
+    (all partitions).
+  - **11.analog / 11.digital** — the `klt erc` supply reports `layout/erc/erc_macro.json` and `layout/erc/erc_control.json`
+    (written by `layout/erc/run_erc.sh --write`), each cited together with its LVS envelope above; the digital entry also
+    cites `layout/control/place-and-route.response.json` (from `layout/control/run_pnr.sh`).
+
+  Items 5, 6, 7 and 8 are the uncited ones and grade `unmet`; they need the ratified spec
+  ([#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). `partition_boundary.digital` is set (like the analog
+  one, #26): it declares `sram_ctrl` (`rtl/sram_ctrl.v`) and `sram_behav` (`rtl/sram_behav.v`) with their ports. Evidence is
+  added one item at a time. A PR that adds or changes an `evidence` key updates this bullet in the same PR.
 - **`design-evidence-tiers.md`** — the T1-T4 checklist the grader parses.
   Vendored **byte-identical** from
   [`2AMLogic/klayout-tools@44cc42323184`](https://github.com/2AMLogic/klayout-tools/blob/44cc42323184a2f3a440b89789bf174488a6b1e4/docs/design-evidence-tiers.md)
