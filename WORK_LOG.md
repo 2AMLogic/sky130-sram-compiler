@@ -5,6 +5,13 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-14
 
+- **PR #86**: feat(evidence): attest both T1 item 2 envelopes with klt signoff --attest 2
+- **PR #81**: fix: derive sim/column batch unit caps from timeout_s and bound shard concurrency
+- **Issue #85** (closed): check_formats.py's JSON globs miss the item-2 inventories and evidence/item2-digital.json
+- **Issue #79** (closed): check_formats.py PY_GLOBS is still a hand-maintained list: 7 tracked project .py files are not syntax-checked
+- **Issue #72** (closed): Produce the T1 item 2 analog envelope with `klt signoff --attest 2` and retire attest_layout.py
+- **Issue #71** (closed): Regenerate the six over-limit sim/column batch requests and correct the stale fleet note
+- **Issue #69** (closed): Remove the dead init_drivers() helper and the ignored cells_hs parameter from the column testbench generator
 - **PR #66**: refactor(design): take the sky130 layer table and PDK drawing rules from one module
 - **PR #70**: docs: roadmap as of 2026-11-13
 - **Issue #65** (closed): Deduplicate the sky130 layer table and PDK drawing constants shared by the bitcell and compiler generators
