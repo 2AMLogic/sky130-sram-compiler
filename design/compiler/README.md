@@ -21,7 +21,10 @@ Layout (issue #30, details in `layout/README.md`; needs klayout's python module,
 uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 \
     -o layout/sram_256x32_m4.gds --socket layout/sram_256x32_m4.socket.json --lef layout/sram_256x32_m4.lef
 uv run --no-project --with klayout python -I design/compiler/test_layout.py
-python3 -I design/compiler/attest_layout.py              # T1 item 2 envelope (no klt --attest 2 yet, klayout-tools#4221)
+klt signoff --attest 2 --input layout/sram_256x32_m4.gds \
+    --inventory design/compiler/item2-inventory.json \
+    --generator "$GEN" --regenerated-hash "sha256:$(sha256sum layout/sram_256x32_m4.gds | cut -d' ' -f1)" \
+    -o design/compiler/evidence/item2.json    # T1 item 2 envelope; $GEN in layout/README.md
 ```
 
 `gen_layout.py` takes the geometry from `sram_compile.geometry()` and the logic connectivity

@@ -60,13 +60,7 @@ Startable today; none depends on the ratified spec.
    notes" still names a 0.7.0 client. Done when: `make_column_tb.py --check`
    passes with every request at or under the limit, the note is corrected, and
    item 9 is re-attested. Filed as #71; first step of #29.
-3. **Move the item 2 analog envelope to `klt signoff --attest 2`.**
-   `design/compiler/attest_layout.py` exists only because the producer was
-   missing (klayout-tools#4221, now closed); klt 0.9.0, the pin in
-   `signoff.yml`, has `--attest 2`. Done when: `design/compiler/evidence/item2.json`
-   is written by klt, the manifest and signoff record are regenerated, and the
-   workaround script and its README mentions are removed. Filed as #72.
-4. **Bring the README status and Reproduce table up to the tree.** The status
+3. **Bring the README status and Reproduce table up to the tree.** The status
    line still says the tree holds "the bitcell and a compiled 256 x 32
    netlist"; the Reproduce table has no row for the layout, macro DRC, LVS,
    ERC, column-bench or cocotb records; the layout lines for `verification/`
@@ -119,7 +113,7 @@ Startable today; none depends on the ratified spec.
 - **Column grids** (#29, `loom:blocked`): runner/client version handling in
   `klt sim` batch, klayout-tools#4675, open as read today.
 - **Tracker state today:** Now 1 is drawable only as review-fix work on
-  PR #12; Now 2 to 4 are filed as #71, #72 and #73.
+  PR #12; Now 2 and 3 are filed as #71 and #73.
 
 ## Not planned
 

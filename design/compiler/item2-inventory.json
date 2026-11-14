@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 2,
+  "description": "T1 item 2 (Layout, analog): the committed 256x32 (mux 4) macro stream regenerates byte-identically from design/compiler/gen_layout.py, and the LEF abstract and socket descriptor the same run writes reproduce. All three commands need klayout's python module (via uv) and the LEF one also needs PDK_ROOT/PDK, so each is local_only: `--attest` runs them, `--attest --check` carries the committed outcome.",
+  "checks": [
+    {
+      "name": "regenerate-gds",
+      "argv": [
+        "uv",
+        "run",
+        "--no-project",
+        "--with",
+        "klayout",
+        "python",
+        "-I",
+        "design/compiler/gen_layout.py",
+        "256",
+        "32",
+        "4",
+        "--check",
+        "layout/sram_256x32_m4.gds"
+      ],
+      "local_only": true
+    },
+    {
+      "name": "regenerate-lef",
+      "argv": [
+        "uv",
+        "run",
+        "--no-project",
+        "--with",
+        "klayout",
+        "python",
+        "-I",
+        "design/compiler/gen_layout.py",
+        "256",
+        "32",
+        "4",
+        "--check-lef",
+        "layout/sram_256x32_m4.lef"
+      ],
+      "local_only": true
+    },
+    {
+      "name": "regenerate-socket",
+      "argv": [
+        "uv",
+        "run",
+        "--no-project",
+        "--with",
+        "klayout",
+        "python",
+        "-I",
+        "design/compiler/gen_layout.py",
+        "256",
+        "32",
+        "4",
+        "--check-socket",
+        "layout/sram_256x32_m4.socket.json"
+      ],
+      "local_only": true
+    }
+  ]
+}

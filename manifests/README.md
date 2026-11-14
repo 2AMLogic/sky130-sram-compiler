@@ -19,12 +19,17 @@ item 10).
     through `provenance.input.paths`, and the hash to cite here is that set's combined digest
     (`provenance.input.content_hash`, 33 members for the analog partition), which is what makes editing any member
     grade the row stale. The analog envelope was re-attested under klt 0.9.0 after the `sky130_pdk.py` refactor
-    (52/52 checks); `evidence/item1-digital.json` is untouched by that change. Every other item binds its inventory
-    alone, so for those the cited hash *is* the inventory's sha256.
+    (52/52 checks); `evidence/item1-digital.json` is untouched by that change. Items 9 and 10 bind their inventory
+    alone, so for those the cited hash *is* the inventory's sha256. Item 2 pins an inventory too (below) but is
+    anchored to its `--input` stream, so its cited hash is that stream's — never the inventory's or the envelope's.
   - **2.analog / 2.digital** — `design/compiler/evidence/item2.json` (the committed 256 x 32 GDS bound by hash, written by
-    `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
-    2AMLogic/klayout-tools#4221) and `evidence/item2-digital.json` (binds `layout/control/control.gds`, the routed
-    `sram_ctrl` stream that `layout/control/run_pnr.sh` writes and `--check` regenerates).
+    `klt signoff --attest 2 --input layout/sram_256x32_m4.gds --inventory design/compiler/item2-inventory.json`; the
+    inventory declares the three `gen_layout.py` regeneration commands as `local_only` audit checks, so `--attest` runs
+    them and `--attest --check` carries their committed outcome — command in `layout/README.md`) and
+    `evidence/item2-digital.json` (the same command over `layout/control/control.gds` — the routed `sram_ctrl` stream
+    `layout/control/run_pnr.sh` writes — with `--inventory layout/control/item2-inventory.json`, whose one `local_only`
+    check is `run_pnr.sh --check`: it reruns the flow twice and requires both streams byte-identical to each other and
+    to the committed GDS, with the response at the route stage, `power.pdn` true and a tapcell master).
   - **3.analog / 3.digital** — the unmodified `klt drc --deck sky130` envelopes `design/compiler/evidence/item3.json` and
     `evidence/item3-digital.json`, written by `verification/drc/make_record.py` (record in `verification/drc/records/`).
   - **4.analog / 4.digital** — the `klt lvs` envelopes `design/macro/evidence/lvs-sram_256x32_m4.json` and
