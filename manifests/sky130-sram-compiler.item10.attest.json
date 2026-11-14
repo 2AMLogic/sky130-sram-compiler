@@ -45,7 +45,7 @@
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:3d13a209ecb729c146418e33e6891fb85a41e41ba89ac59c3bbfbd80f6690a2b"
+        "content_hash": "sha256:da97ce4371e7b23e23557c9a82a5ed3d982e7e8f62eaa07c46397843d5f7658a"
       },
       {
         "check": "command",
