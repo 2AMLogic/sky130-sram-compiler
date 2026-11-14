@@ -22,9 +22,12 @@ import sys
 
 import klayout.db as db
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
+from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
+                        POLY_DIFF, POLY_END, VIA)
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -32,32 +35,20 @@ BITCELL_GDS = ROOT / "design/bitcell/bitcell_6t.gds"
 BITCELL = "sky130_sram_bitcell_6t"
 
 # ---- layers (GDS layer, datatype) ------------------------------------------------
-LAYERS = {
-    "nwell": (64, 20), "diff": (65, 20), "tap": (65, 44), "poly": (66, 20),
-    "licon": (66, 44), "li": (67, 20), "mcon": (67, 44), "m1": (68, 20),
-    "via": (68, 44), "m2": (69, 20), "via2": (69, 44), "m3": (70, 20),
-    "via3": (70, 44), "m4": (71, 20), "nsdm": (93, 44), "psdm": (94, 20),
-    "npc": (95, 20), "bound": (235, 4),
-    "li_lbl": (67, 5), "m1_lbl": (68, 5), "m2_lbl": (69, 5), "m3_lbl": (70, 5),
-    "m4_lbl": (71, 5),
-}
+# LAYERS is the shared table imported above; it stays a gen_layout attribute because
+# gen_erc_spec.py and test_layout.py read it as gen_layout.LAYERS.
 LBL = {"li": "li_lbl", "m1": "m1_lbl", "m2": "m2_lbl", "m3": "m3_lbl", "m4": "m4_lbl"}
 
 # ---- drawing constants (um), all multiples of the 0.005 grid ----------------------
-LIC = 0.17           # licon / mcon edge
+# LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL, NPC_ENC and NW_P are shared PDK
+# rules, imported above from design/sky130_pdk.py; only compiler-local dimensions
+# are defined here.
 LI_W = 0.17          # li bar width
 M1_W = 0.23          # m1 stub / pad width (mcon 0.17 + 0.03 enclosure each side)
 M1_H = 0.37          # m1 pad height: 0.10 beyond the mcon (m1.5) and area >= 0.083
-VIA = 0.15
 VIA2 = 0.20
 PAD1 = 0.32          # m1 / m2 pad around via (0.085 enclosure)
 PAD3 = 0.38          # m3 pad around via2 / via3 (0.09 enclosure)
-DIFF_END = 0.06      # diff beyond licon along the strip
-POLY_END = 0.13      # poly beyond diff at a gate
-POLY_DIFF = 0.075    # poly to unrelated diff
-IMPL = 0.125         # nsdm/psdm beyond diff/tap
-NPC_ENC = 0.10
-NW_P = 0.18          # nwell around p diff / n tap
 POLY_PAD = 0.33      # poly contact pad
 GATE_PITCH = 0.74    # gate-to-gate pitch of the periphery cells
 RAIL = 0.29          # m1 supply rail width in the standard-height cells

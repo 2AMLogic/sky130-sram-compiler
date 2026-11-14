@@ -8,6 +8,10 @@ design/bitcell/README.md.
 """
 import json
 import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
+import sky130_pdk as pdk  # noqa: E402
 
 here = pathlib.Path(__file__).resolve().parent
 sz = json.loads((here / "sizing.json").read_text())
@@ -35,40 +39,35 @@ out = [HDR]
 counter = [0]
 
 
-def pin(x, y, net, rot=0):
+def pin(x, y, net):
     counter[0] += 1
-    out.append(f"C {{devices/lab_pin.sym}} {x} {y} {rot} 0 {{name=l{counter[0]} lab={net}}}")
+    out.append(f"C {{devices/lab_pin.sym}} {x} {y} 0 0 {{name=l{counter[0]} lab={net}}}")
 
 
 def wire(x0, y0, x1, y1):
     out.append(f"N {x0} {y0} {x1} {y1} {{}}")
 
 
-def dev(name, kind, x, y, d, g, s, b, w, l, mirror=False):
+def dev(name, kind, x, y, d, g, s, b, w, l):
     model = sz[kind]["model"]
-    flip = 1 if mirror else 0
-    sx = -1 if mirror else 1
-    # The PDK symbols derive ad/as/pd/ps/nrd/nrs with expr(); xschem < 3.4.5 leaves
-    # that unevaluated (klt netlist refuses it), so the nf=1 values are written
-    # out here with the same formulas (ad=as=W*0.29, pd=ps=2*(W+0.29), nrd=nrs=0.29/W).
-    wv = float(w)
-    geo = (f"ad={wv * 0.29:.4g} as={wv * 0.29:.4g} pd={2 * (wv + 0.29):.4g} ps={2 * (wv + 0.29):.4g} "
-           f"nrd={0.29 / wv:.4g} nrs={0.29 / wv:.4g} sa=0 sb=0 sd=0")
+    # The nf=1 ad/as/pd/ps/nrd/nrs values the PDK symbols would derive with expr();
+    # the formula is shared with design/compiler via design/sky130_pdk.py.
+    geo = pdk.device_geometry(w)
     out.append(
-        f"C {{sky130_fd_pr/{model}.sym}} {x} {y} 0 {flip} "
+        f"C {{sky130_fd_pr/{model}.sym}} {x} {y} 0 0 "
         f"{{name={name} L={l} W={w} nf=1 mult=1 {geo} model={model} spiceprefix=X}}"
     )
     pm = kind == "pu"
     dy, sy = (30, -30) if pm else (-30, 30)
     # drain / source stubs (vertical), gate / bulk stubs (horizontal)
-    wire(x + sx * 20, y + dy, x + sx * 20, y + dy * 5 // 3)
-    pin(x + sx * 20, y + dy * 5 // 3, d, 0)
-    wire(x + sx * 20, y + sy, x + sx * 20, y + sy * 5 // 3)
-    pin(x + sx * 20, y + sy * 5 // 3, s, 0)
-    wire(x - sx * 20, y, x - sx * 40, y)
-    pin(x - sx * 40, y, g, 0)
-    wire(x + sx * 20, y, x + sx * 40, y)
-    pin(x + sx * 40, y, b, 0)
+    wire(x + 20, y + dy, x + 20, y + dy * 5 // 3)
+    pin(x + 20, y + dy * 5 // 3, d)
+    wire(x + 20, y + sy, x + 20, y + sy * 5 // 3)
+    pin(x + 20, y + sy * 5 // 3, s)
+    wire(x - 20, y, x - 40, y)
+    pin(x - 40, y, g)
+    wire(x + 20, y, x + 40, y)
+    pin(x + 40, y, b)
 
 
 pd, ax, pu = sz["pd"], sz["ax"], sz["pu"]
