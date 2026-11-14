@@ -469,6 +469,7 @@
   },
   "batch": {
     "max_units_per_job": 3,
+    "max_concurrent_jobs": 7,
     "poll_timeout_s": 14400
   }
 }

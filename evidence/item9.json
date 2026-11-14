@@ -73,7 +73,7 @@
         "role": "testbench",
         "path": "sim/column/README.md",
         "passed": true,
-        "content_hash": "sha256:9857de281cdfe0a718f45aa27324a5ce2f02c7f6592a315ff45000bd0a0a3342"
+        "content_hash": "sha256:1849067d600d30a257877ac6d1b2363cf371d7183db0912a57a78d4a5eb0a109"
       },
       {
         "check": "present",
@@ -87,14 +87,14 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_record.py",
         "passed": true,
-        "content_hash": "sha256:17fabe12b2aa397c32240103d6f3fba562af4653816a1670db2efc96aceb12bd"
+        "content_hash": "sha256:17f3d68de0225863c137a44bb3c76034f8da0eaa97cc6eacf880cf80c6f26ee5"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/lib/make_column_tb.py",
         "passed": true,
-        "content_hash": "sha256:4a5e789484ab0f002ab41c755ad22c65dbe1d190c096cb5fdcea411c6918cb29"
+        "content_hash": "sha256:ae354b9ff63b0c181f7cc7c3d473b6d96ef41c165cfa4d3c76ca842de65684a6"
       },
       {
         "check": "present",
@@ -108,35 +108,35 @@
         "role": "testbench",
         "path": "sim/column/requests/col_hold_snm.request.json",
         "passed": true,
-        "content_hash": "sha256:b5bfb51ab05db7391b52d2627a5c5dd36a7a7b2fedc786ecad1ff02f20941aae"
+        "content_hash": "sha256:a7f15f296b61cff4e6ae7badbf01e1977f94b9c5963fe74082f933882b41113f"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/requests/col_mc_hold_snm.request.json",
         "passed": true,
-        "content_hash": "sha256:154224a5ad6be11f5df2037b5758ee7a0f8526967246884bbdec64c9873e88e0"
+        "content_hash": "sha256:5c186d8a69d14e1fa3ecc7c1b061435489e264296754f09ac2abf949b2393ae4"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/requests/col_mc_hold_snm_neg.request.json",
         "passed": true,
-        "content_hash": "sha256:181c6a5aebe1dd29d0794596f392b811fc94fd583e807a3891afd03020a8d9b8"
+        "content_hash": "sha256:8104ba1cd56fa258a91ef31fbc8c2b9d58d9b6c4df9d34aa46d9572af53acb06"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/requests/col_mc_read_snm.request.json",
         "passed": true,
-        "content_hash": "sha256:053e713fc52fff91658b5bf2ba478dd90407072f6c2affcdc5d4250513a8ee9f"
+        "content_hash": "sha256:77fa5c0e485a55c7887257cc7861632e6e9d74591592ec164c350db811d10dab"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/requests/col_mc_read_snm_neg.request.json",
         "passed": true,
-        "content_hash": "sha256:212f9c720032f21bbaec2e6a0782c9788e549da3877e1dd38c5dea5f8b94fb89"
+        "content_hash": "sha256:1937ceb6daf318db2b750ddacf21c04a63fa4e435ac19b41c9897cca4476b0ab"
       },
       {
         "check": "present",
@@ -150,7 +150,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_read0.request.json",
         "passed": true,
-        "content_hash": "sha256:4822693dee7f540b8ddec6509ff26928a0d3b625f80e629442526c443855ba4c"
+        "content_hash": "sha256:2c10c4a427f38014ec9796b7de8b1e14cdeb924c33852a99a9672fd0e7948fb9"
       },
       {
         "check": "present",
@@ -164,7 +164,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_read1.request.json",
         "passed": true,
-        "content_hash": "sha256:8e38660af1e61ed9cdd59a4d9e26e22136840ffa0174f90a1d147932cadad8b2"
+        "content_hash": "sha256:e239bf3ef42b08cdf88e8b2034528e12a26ecf5c7b94fd0fccc37be21bd89d5e"
       },
       {
         "check": "present",
@@ -178,7 +178,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_read_snm.request.json",
         "passed": true,
-        "content_hash": "sha256:125944f22b05833e15df55163e2706808f89b7273e95a99bb263e715207fda31"
+        "content_hash": "sha256:8b279d6a54a05c1507c039d5afa2bab11ba7379c0d3e3fd519b4e1eccc9fa30e"
       },
       {
         "check": "present",
@@ -192,7 +192,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_write0.request.json",
         "passed": true,
-        "content_hash": "sha256:6b143a4ce4bd9835901504c5933ae42f220cb0cc97239d54677110e73906b614"
+        "content_hash": "sha256:8af599b9ac082fdfbdb5dee3f6cad3d1d6cf4649df95648d58ffeecd39f8f79b"
       },
       {
         "check": "present",
@@ -206,7 +206,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_write0_nowen.request.json",
         "passed": true,
-        "content_hash": "sha256:50e0d3a83f09f49f3dd64036159bb3080717aba1bac815d14fe5de20c8084e32"
+        "content_hash": "sha256:7e3a464fd51e4328f09caa4495934edd5f4085bca7ccc67b33c6f495841bb696"
       },
       {
         "check": "present",
@@ -220,7 +220,7 @@
         "role": "testbench",
         "path": "sim/column/requests/col_write1.request.json",
         "passed": true,
-        "content_hash": "sha256:c3c76fcc41afb6e8ac494f434f21a74760d157f358c594aee249ae9b955ccb5a"
+        "content_hash": "sha256:4dd7e0785fc85d1ec76c168c8cce6544c385dc964171571e9f6fe354843d691b"
       },
       {
         "check": "present",
@@ -356,7 +356,7 @@
           "cocotb": "2.1.0",
           "gf180-sram snm_extract.py": "74ba8a621c9edab9b7a75ecb19ca7ea6771588da",
           "iverilog": "13.0",
-          "klt": "0.8.1 (client; fleet runs use 0.7.0)",
+          "klt": "0.9.0 (client; each fleet run's runner version is in its report's environment.remote.runner_klt_version)",
           "ngspice": "46",
           "yosys": "0.67"
         }
@@ -373,7 +373,7 @@
         "path": "sim/testbench-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:e8c49473c1aa0911d3723b025b9274a5a6398548437478f61f4cd225e2fc6b84"
+      "content_hash": "sha256:2d7495887e9599bc96c6a38919a5fedf6d9cc6f1a7ec77df5c5f9879de19e91b"
     }
   }
 }
