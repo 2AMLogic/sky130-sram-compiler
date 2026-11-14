@@ -3,6 +3,13 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-14
+
+- **PR #66**: refactor(design): take the sky130 layer table and PDK drawing rules from one module
+- **PR #70**: docs: roadmap as of 2026-11-13
+- **Issue #65** (closed): Deduplicate the sky130 layer table and PDK drawing constants shared by the bitcell and compiler generators
+- **Issue #68** (closed): check_formats.py PY_GLOBS misses design/*.py, and fixing it requires regenerating the item-10 attestation
+
 ### 2026-11-12
 
 - **PR #61**: Bump Repo Skills 0.25.10 -> 0.26.1
