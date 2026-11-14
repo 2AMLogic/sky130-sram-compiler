@@ -4,7 +4,7 @@
 Usage: verification/drc/make_record.py <outdir from run_drc.sh>
 Copies the two graded `klt drc` envelopes (unmodified) to design/compiler/evidence/item3.json and
 evidence/item3-digital.json, and writes verification/drc/records/<UTC date>-<git sha>.md, never
-overwriting one. The manifest cites the evidence files; regenerate the signoff record after
+overwriting the record or the evidence it describes. The manifest cites the evidence files; regenerate the signoff record after
 (manifests/README.md). Quoted coverage fields are dumped from the JSON, not retyped.
 """
 import datetime
@@ -20,13 +20,17 @@ out = pathlib.Path(sys.argv[1])
 J = lambda p: json.loads((out / p).read_text())
 run = lambda *c: subprocess.run(c, capture_output=True, text=True, cwd=repo).stdout.strip()
 
-shutil.copyfile(out / "analog/curated-graded.json", repo / "design/compiler/evidence/item3.json")
-shutil.copyfile(out / "digital/curated.json", repo / "evidence/item3-digital.json")
-
 sha = run("git", "rev-parse", "--short", "HEAD")
 day = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
 rec = here / "records" / f"{day}-{sha}.md"
-assert not rec.exists(), rec
+if not sha:
+    sys.exit("make_record.py: `git rev-parse --short HEAD` failed; refusing to write a record named without a sha")
+if rec.exists():
+    sys.exit(f"make_record.py: append-only record {rec} already exists; refusing to re-run at the same HEAD on the same day, which would also overwrite the committed evidence files it describes")
+
+shutil.copyfile(out / "analog/curated-graded.json", repo / "design/compiler/evidence/item3.json")
+shutil.copyfile(out / "digital/curated.json", repo / "evidence/item3-digital.json")
+
 times = (out / "times.txt").read_text().strip().splitlines()
 summary = (out / "analog/summary.txt").read_text().strip()
 seam = J("seam/curated.json")
