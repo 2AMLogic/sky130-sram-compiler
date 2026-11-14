@@ -7,8 +7,12 @@ into a DRC/LVS-clean macro with its abstract and timing views, built on a
 [klayout-tools](https://github.com/2AMLogic/klayout-tools), xschem + ngspice
 for the bitcell and periphery, and Yosys/OpenROAD for the control logic.
 
-**Status: specification phase, with the bitcell and a compiled 256 × 32 netlist
-in tree.** Nothing here is silicon-proven; the spec below is still a draft.
+**Status: specification phase.** In tree: the 6T bitcell; the compiled 256 × 32
+netlist with its macro layout, LEF and socket descriptor; the routed control
+block; macro and control DRC, LVS and supply-ERC records; the column benches and
+a cocotb control bench. The graded evidence verdict is
+[`manifests/sky130-sram-compiler.signoff.json`](manifests/sky130-sram-compiler.signoff.json),
+not this line. Nothing here is silicon-proven; the spec below is still a draft.
 
 **T1 status.** The evidence-tier verdict is graded by `klt signoff`, not
 hand-read. The verdict of record is
@@ -110,6 +114,15 @@ klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
 | Bitcell LVS + negative control | `design/bitcell/lvs/run_lvs.sh <gds> <scratch>` | `design/bitcell/records/` | [`design/bitcell/README.md`](design/bitcell/README.md) |
 | Bitcell corners (read/hold SNM, write trip) and Monte Carlo | `klt sim` requests in `sim/bitcell/requests/` (batch fleet), then `snm_from_artifacts.py`, `make_record.py`, `make_write_mc_record.py`, `make_controls_record.py` | `sim/bitcell/corners/`, `sim/bitcell/records/` | [`sim/bitcell/README.md`](sim/bitcell/README.md) |
 | Compiler netlists (periphery, 256 × 32 macro) | `design/compiler/` steps 1-3 (steps 1-2 need xschem + PDK) | `design/compiler/{cells,netlist,macro}/` | [`design/compiler/README.md`](design/compiler/README.md) |
+| Macro layout, LEF and socket descriptor | `uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 -o layout/sram_256x32_m4.gds --socket layout/sram_256x32_m4.socket.json --lef layout/sram_256x32_m4.lef --report` (`--check` instead of `-o` for the drift gate) | `layout/sram_256x32_m4.{gds,lef,socket.json}` | [`layout/README.md`](layout/README.md) |
+| Control place-and-route (routed `sram_ctrl`) | `layout/control/run_pnr.sh` (`--check` runs the flow twice, exit 3 on drift) | `layout/control/` | [`layout/README.md`](layout/README.md) |
+| Macro and control DRC (T1 item 3) | `verification/drc/run_drc.sh <scratch>`, then `python3 -I verification/drc/make_record.py <scratch>` | `verification/drc/records/`, `design/compiler/evidence/item3.json`, `evidence/item3-digital.json` | [`verification/README.md`](verification/README.md) |
+| Macro LVS + negative control (T1 item 4 analog) | `design/macro/lvs/run_lvs.sh --report <evidence.json> <gds> <scratch>` | `design/macro/evidence/`, `design/macro/records/` | [`manifests/README.md`](manifests/README.md) |
+| Control LVS, gate-level + negative control (T1 item 4 digital) | `design/control/lvs/run_lvs.sh --report <evidence.json> <scratch>` | `design/control/evidence/`, `design/control/records/` | [`manifests/README.md`](manifests/README.md) |
+| Supply ERC: macro, control, severed-rail controls (T1 item 11) | `layout/erc/run_erc.sh [--write] <scratch>` | `layout/erc/` | [`layout/README.md`](layout/README.md) |
+| Column (bit-slice) benches, one local corner each | `sim/column/run.sh [bench ...]` | `sim/build/column-probe/` (scratch; the corner and Monte Carlo grids are the committed `klt sim` requests in `sim/column/requests/`) | [`sim/column/README.md`](sim/column/README.md) |
+| cocotb control bench (RTL and synthesized netlist) | `rtl/tb/cocotb/run.sh [rtl\|synth\|mutants\|both]` | `sim/build/venv-cocotb/` (scratch; no committed record — the attestation is `evidence/item9.json`) | [`sim/column/README.md`](sim/column/README.md) |
+| Every T1 item 9 bench at once (digital + analog) | `sim/run_all_benches.sh` | `sim/build/` (scratch) | [`sim/column/README.md`](sim/column/README.md) |
 | T1 item 1 attestation | `klt signoff --attest 1 --inventory design/compiler/inventory.json -o design/compiler/evidence/item1.json` | `design/compiler/evidence/` | [`manifests/README.md`](manifests/README.md) |
 
 Multi-corner and Monte Carlo work goes through `klt sim` requests, never
@@ -118,13 +131,16 @@ hand-written `ngspice` loops.
 ## Repo layout
 
 ```
-spec/          ratified spec + decision records
-design/        bitcell and periphery schematics, compiler sources
-rtl/           control logic + behavioural model
-verification/  cocotb testbenches for control logic and the behavioural model
+spec/          target spec + decision records
+design/        bitcell and periphery schematics, compiler sources, macro/control LVS
+rtl/           control logic + behavioural model, synthesis, cocotb + Icarus benches
+verification/  SRAM-marker deck study, macro/control DRC, PDK-free hygiene checks
 sim/           testbenches + PVT corner results (ngspice)
-layout/        generated GDS + DRC/LVS reports per instance
+layout/        generated GDS + LEF, routed control block, supply ERC
+manifests/     block manifest + the klt signoff verdict of record
+evidence/      attestation envelopes the manifest cites (digital partition, item 9)
 measurements/  silicon characterization (empty until tape-out)
+ratification/  EE-key and market-key review rubrics
 ```
 
 ## License
