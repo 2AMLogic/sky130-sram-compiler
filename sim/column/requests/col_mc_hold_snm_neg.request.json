@@ -50,7 +50,8 @@
     "k_sigma": 3
   },
   "batch": {
-    "max_units_per_job": 36,
+    "max_units_per_job": 11,
+    "max_concurrent_jobs": 7,
     "poll_timeout_s": 5400
   }
 }

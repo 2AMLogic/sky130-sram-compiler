@@ -54,7 +54,46 @@ TRAN_STEP = "0.04n"
 MC_N, MC_SEED = 60, 20261018
 NEG_N, NEG_SEED, NEG_SCALE = 20, 20261019, 6
 
+# ----------------------------------------------------------------- batch sizing
+# The fleet's whole-job ceiling and per-job overhead, as klt's own batch client
+# models them: `DEFAULT_BATCH_MAX_JOB_SECONDS` = 3600.0 and `_BATCH_JOB_OVERHEAD_S`
+# = 120.0 in `klayout_tools/sim_batch.py`. A job's bound is every unit burning its
+# full `options.timeout_s` one after another plus the overhead, and it must stay
+# inside the ceiling, so the largest shard the client accepts is
+# floor((3600 - 120) / timeout_s) -- the formula `klt sim` states in its own
+# `batch_max_units_per_job_invalid` refusal. Derived here, never written as a
+# literal, so a `timeout_s` change cannot leave a stale cap behind.
+BATCH_MAX_JOB_S = 3600
+BATCH_JOB_OVERHEAD_S = 120
+# A capped request shards and `klt sim` submits every shard at once, so each
+# capped request also bounds the jobs in flight. These jobs take one 16-vCPU
+# m7i.4xlarge each, and `BATCH_MAX_VCPU` = 224 (2AMLogic/2am
+# `infra/aws/batch-fleet.env`, "224 = 7 x 32 or 14 x 16") is this execution
+# layer's whole share of the account's spot vCPU quota -- 14 such instances is
+# the entire layer, shared with every other block's sweeps. Half of that is the
+# self-limit: under `BATCH_VCPU_BUDGET_MODE=enforce` a request holding the whole
+# budget refuses everyone else's launches. The instance cap
+# (`BATCH_MAX_CONCURRENT_INSTANCES` = 50) is the looser second bound.
+BATCH_MAX_CONCURRENT_JOBS = 7
+
 files = {}
+
+
+def max_units_per_job(timeout_s):
+    """Largest `batch.max_units_per_job` the fleet's whole-job ceiling allows at `timeout_s`."""
+    cap = int((BATCH_MAX_JOB_S - BATCH_JOB_OVERHEAD_S) // timeout_s)
+    if cap < 1:
+        sys.exit(f"make_column_tb: options.timeout_s {timeout_s:g} leaves no room inside the "
+                 f"{BATCH_MAX_JOB_S} s whole-job ceiling ({BATCH_JOB_OVERHEAD_S} s overhead)")
+    return cap
+
+
+def batch_block(req, poll_timeout_s):
+    """`request.batch` for `req`: the cap derived from its own `options.timeout_s`, plus the
+    concurrency bound the resulting shards need. Call after `options.timeout_s` is final."""
+    return {"max_units_per_job": max_units_per_job(req["options"]["timeout_s"]),
+            "max_concurrent_jobs": BATCH_MAX_CONCURRENT_JOBS,
+            "poll_timeout_s": poll_timeout_s}
 
 
 def macro_subckt(name):
@@ -296,8 +335,9 @@ def build():
         keep = {"save_vectors": save[name]} if name in save else {"waveforms": False, "keep_artifacts": False}
         files[f"requests/{name}.request.json"] = base_req(
             f"{name}.sp", {"kind": "tran", "args": f"{TRAN_STEP} {tmax:g}n"}, meas, keep)
-        # ~2-7 min per transient unit: 3 units per job stays inside the fleet's 3600 s job ceiling
-        files[f"requests/{name}.request.json"]["batch"] = {"max_units_per_job": 3, "poll_timeout_s": 14400}
+        # ~2-7 min per transient unit; the cap is what the job ceiling allows at timeout_s 900
+        files[f"requests/{name}.request.json"]["batch"] = batch_block(
+            files[f"requests/{name}.request.json"], 14400)
         files[f"requests/{name}.probe.request.json"] = probe_of(files[f"requests/{name}.request.json"])
     # the negative control only needs the skew corners that bound write margin
     files["requests/col_write0_nowen.request.json"]["corners"] = {
@@ -312,21 +352,22 @@ def build():
         files[f"tb/col_{mode}_snm.sp"] = snm_tb(mode, False)
         files[f"tb/col_mc_{mode}_snm.sp"] = snm_tb(mode, True)
         files[f"tb/col_mc_{mode}_snm_neg.sp"] = with_params(snm_tb(mode, True), mm_scale_params(NEG_SCALE))
-        files[f"requests/col_{mode}_snm.request.json"] = base_req(f"col_{mode}_snm.sp", sweep, trip, keep)
-        files[f"requests/col_{mode}_snm.request.json"]["options"]["timeout_s"] = 300
-        files[f"requests/col_{mode}_snm.request.json"]["batch"] = {"max_units_per_job": 15, "poll_timeout_s": 5400}
+        r = base_req(f"col_{mode}_snm.sp", sweep, trip, keep)
+        r["options"]["timeout_s"] = 300
+        r["batch"] = batch_block(r, 5400)
+        files[f"requests/col_{mode}_snm.request.json"] = r
         files[f"requests/col_{mode}_snm.probe.request.json"] = probe_of(files[f"requests/col_{mode}_snm.request.json"])
         mcm = [{"name": "vtrip_a", "spice": ".meas dc vtrip_a when v(outa)=0.9 fall=1", "unit": "V"}]
         mc_axes = dict(process=["tt_mm", "sf_mm", "fs_mm"], vdds=[1.62, 1.98], temps=[125])
         mc = {"n": MC_N, "seed": MC_SEED, "vary": "mismatch", "k_sigma": 3}
         r = base_req(f"col_mc_{mode}_snm.sp", {"kind": "dc", "args": "VNRM 0 1 0.01"}, mcm, keep2, mc=mc, **mc_axes)
-        r["batch"] = {"max_units_per_job": 36, "poll_timeout_s": 5400}
         r["options"]["timeout_s"] = 300
+        r["batch"] = batch_block(r, 5400)
         files[f"requests/col_mc_{mode}_snm.request.json"] = r
         neg = {"n": NEG_N, "seed": NEG_SEED, "vary": "mismatch", "k_sigma": 3}
         r = base_req(f"col_mc_{mode}_snm_neg.sp", {"kind": "dc", "args": "VNRM 0 1 0.01"}, mcm, keep2, mc=neg, **mc_axes)
-        r["batch"] = {"max_units_per_job": 36, "poll_timeout_s": 5400}
         r["options"]["timeout_s"] = 300
+        r["batch"] = batch_block(r, 5400)
         files[f"requests/col_mc_{mode}_snm_neg.request.json"] = r
 
 
