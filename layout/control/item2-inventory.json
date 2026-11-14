@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 2,
+  "description": "T1 item 2 (Layout, digital): the committed routed sram_ctrl stream layout/control/control.gds regenerates from the committed gate-level netlist through `klt place-and-route`. run_pnr.sh --check runs the flow twice, requires both streams byte-identical to each other and to the committed GDS, and asserts per run that the response reached the route stage with power.pdn true and a tapcell master. It needs klt, the openroad container and the pinned PDK, so it is local_only: `--attest` runs it, `--attest --check` carries the committed outcome.",
+  "checks": [
+    {
+      "name": "regenerate-control-gds",
+      "argv": [
+        "bash",
+        "layout/control/run_pnr.sh",
+        "--check"
+      ],
+      "local_only": true,
+      "timeout_s": 3600
+    }
+  ]
+}

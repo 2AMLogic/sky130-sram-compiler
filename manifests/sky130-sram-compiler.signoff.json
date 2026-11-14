@@ -388,16 +388,16 @@
           },
           "content_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c",
           "input_verified": true,
-          "summary": "T1 item 2 (Layout, analog): layout/sram_256x32_m4.gds regenerates byte-identically from design/compiler/gen_layout.py; LEF and socket descriptor reproduce",
+          "summary": "T1 item 2 (Layout): 6/6 attestation checks passed (klt signoff --attest)",
           "source": "layout/sram_256x32_m4.gds",
           "attestation": {
-            "producer": "design/compiler/attest_layout.py",
+            "producer": "klt signoff --attest",
             "inventory_schema_version": null,
-            "check_count": 3,
-            "passed_count": 3
+            "check_count": 6,
+            "passed_count": 6
           },
           "regeneration": {
-            "generator": "uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 -o layout/sram_256x32_m4.gds",
+            "generator": "uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 -o layout/sram_256x32_m4.gds --socket layout/sram_256x32_m4.socket.json --lef layout/sram_256x32_m4.lef --report",
             "regenerated_hash": "sha256:ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c",
             "executed_by_klt": false
           }
@@ -431,10 +431,16 @@
           },
           "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
           "input_verified": true,
-          "summary": "T1 item 2 (Layout, digital): routed sram_ctrl GDS from klt place-and-route (route stage reached, power.pdn true, tapcell sky130_fd_sc_hd__tapvpwrvgnd_1); layout/control/run_pnr.sh --check regenerated it twice byte-identical to the committed stream",
+          "summary": "T1 item 2 (Layout): 4/4 attestation checks passed (klt signoff --attest)",
           "source": "layout/control/control.gds",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": null,
+            "check_count": 4,
+            "passed_count": 4
+          },
           "regeneration": {
-            "generator": "bash layout/control/run_pnr.sh --check",
+            "generator": "bash layout/control/run_pnr.sh",
             "regenerated_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
             "executed_by_klt": false
           }

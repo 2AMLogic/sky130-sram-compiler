@@ -28,7 +28,14 @@ uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 3
     --check layout/sram_256x32_m4.gds --check-socket layout/sram_256x32_m4.socket.json \
     --check-lef layout/sram_256x32_m4.lef                   # exit 3 on drift
 uv run --no-project --with klayout python -I design/compiler/test_layout.py
-python3 -I design/compiler/attest_layout.py                 # rewrites design/compiler/evidence/item2.json
+GEN="uv run --no-project --with klayout python -I design/compiler/gen_layout.py 256 32 4 \
+-o layout/sram_256x32_m4.gds --socket layout/sram_256x32_m4.socket.json \
+--lef layout/sram_256x32_m4.lef --report"                   # echoed, never run by klt
+klt signoff --attest 2 --input layout/sram_256x32_m4.gds \
+    --inventory design/compiler/item2-inventory.json \
+    --generator "$GEN" \
+    --regenerated-hash "sha256:$(sha256sum layout/sram_256x32_m4.gds | cut -d' ' -f1)" \
+    -o design/compiler/evidence/item2.json                   # rewrites the T1 item 2 envelope
 ```
 
 The output is deterministic (GDS timestamps off, no host paths); two runs are byte-identical
@@ -155,8 +162,21 @@ those issues' records.
 | `run_pnr.sh` | reproducible wrapper; `--check` runs the flow twice and requires both GDS identical to each other and to the committed one (exit 3 on drift) |
 | `control.gds`, `control.gds.sha256` | committed routed stream and its hash |
 | `place-and-route.response.json` | committed P&R response (`power.pdn: true`, named `power.tapcell_master`); item 11 consumes it |
+| `item2-inventory.json` | the item-2 attestation inventory: one `local_only` audit check, `run_pnr.sh --check` |
 
 Regenerate: `layout/control/run_pnr.sh`; verify: `layout/control/run_pnr.sh --check`.
+Then rewrite the T1 item 2 digital envelope (`--check` instead of `-o` to verify
+one; `run_pnr.sh --check` is the inventory's own audit check, so `--attest` reruns
+the flow and takes a few minutes, while `--attest --check` skips it):
+
+```console
+klt signoff --attest 2 --input layout/control/control.gds \
+    --inventory layout/control/item2-inventory.json \
+    --generator "bash layout/control/run_pnr.sh" \
+    --regenerated-hash "sha256:$(sha256sum layout/control/control.gds | cut -d' ' -f1)" \
+    -o evidence/item2-digital.json
+```
+
 The wrapper runs klt from the repo root on purpose: the `openroad` on `PATH`
 is a container that mounts only its working directory, so the netlist
 (outside `layout/control/`) is only visible from the root.
