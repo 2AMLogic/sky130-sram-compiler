@@ -7,6 +7,7 @@ Carlo is a `klt sim` request to the batch fleet; nothing here loops `ngspice`.
 source sim/env.sh                         # PDK pin check
 sim/bitcell/lib/fetch_pinned.sh           # fetch gf180-sram snm_extract.py @ pinned commit, verify sha256
 python3 -I sim/bitcell/lib/make_tb.py     # regenerate tb/ + requests/ from design/bitcell/sizing.json (--check = drift gate)
+python3 -I sim/bitcell/lib/test_record_common.py   # PDK-free: write-trip ladder seam (one LADDER, wrong length is loud)
 cd sim/bitcell/requests
 klt sim read_snm_corners.request.json --backend batch -o <scratch> --report-out <scratch>/read.json.gz
 python3 -I ../lib/snm_from_artifacts.py <scratch>          # SNM per corner from the waveform artifacts
@@ -16,9 +17,28 @@ python3 -I ../lib/snm_from_artifacts.py <scratch>          # SNM per corner from
 |---|---|
 | `tb/` | Testbench bodies (generated). `read_snm`/`hold_snm`: decoupled half cell; `mc_*`: two independently mismatched half cells; `write_trip`: full cell (schematic subckt) with a 33-trial ladder; `mc_write_trip`: the same ladder under `_mm` mismatch (fs, sf x 1.62/1.98 V x -40/125 C, 60 requested per point; record via `lib/make_write_mc_record.py`; batch jobs are capped at 5 units by the fleet's 3600 s ceiling, so run it when the fleet has free instances). `records/2026-10-18-write-mc-complete.md` merges the partial `20261018-write-mc` report with a full re-run (`corners/20261018-write-mc-complete/`, `make_write_mc_record.py --report <base> <rerun>`) to n = 60 valid at all 8 points. |
 | `requests/` | `klt sim` requests (generated): 45 corners = {tt,ff,ss,sf,fs} x {-40,25,125 C} x {1.62,1.80,1.98 V}; MC requests use the `_mm` library sections. |
-| `lib/` | `make_tb.py`, `fetch_pinned.sh`, `snm_from_artifacts.py`, `make_record.py`, `make_write_mc_record.py`, `make_controls_record.py`. |
+| `lib/` | `make_tb.py`, `tb_common.py`, `fetch_pinned.sh`, `snm_from_artifacts.py`, `make_record.py`, `make_write_mc_record.py`, `make_controls_record.py`, `record_common.py`, `test_record_common.py`. |
 | Controls | `mc_write_trip_det` (mismatch switched off, n=3), `mc_write_trip_neg` / `mc_{read,hold}_snm_neg` (mismatch sigma x6 via the `_slope` params, n=20, seed 20261019); record `records/2026-10-18-write-mc-controls.md` via `lib/make_controls_record.py`; `klt yield` report on the n=60 baseline in `records/2026-11-05-write-mc-yield.md` (klt 0.9.0). Fleet only. |
 | `corners/`, `records/` | Append-only evidence: compressed `klt sim` reports and dated records. |
+
+### The write-trip ladder length is declared once
+
+`klt sim` owns the `.control` block, so the write trip voltage cannot be bisected the way gf180-sram
+does it; it is a ladder of independent trials inside one transient (`tb_common.LADDER`, currently 33
+levels at `VDD * k / (LADDER - 1)`). The generator that emits the ladder (`make_tb.py`) and the helper
+that validates it (`record_common.write_ladder`) read that one declaration, so the two sides of the
+seam cannot be built from different lengths (issue #76).
+
+`write_ladder` keeps two outcomes distinct, because they are not the same kind of fact:
+
+- a **missing measurement** at the right length returns `None` -- the unit failed, and the record
+  generators count it as a failure row / a failed Monte Carlo unit;
+- a ladder whose **length is not `LADDER`** raises `record_common.LadderLengthError` -- the report came
+  from a bench built with another ladder length, which is a regeneration error, not physics. Folding it
+  into `None` would publish a record asserting the cell never flips.
+
+`lib/test_record_common.py` holds both halves (PDK-free; it stubs the pinned SNM extractor, which the
+ladder does not use).
 
 ## Margin definitions (taken from `gf180-sram` @ `74ba8a62`, pinned)
 

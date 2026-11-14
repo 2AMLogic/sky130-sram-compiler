@@ -6,7 +6,22 @@ import pathlib
 import statistics
 import subprocess
 
-LADDER = 33
+# The ladder length is declared once, by the generator side that emits the ladder; this module validates
+# against that same object, so a bench and a record can never be built from two different lengths.
+# Re-exported because make_write_mc_record.py and make_controls_record.py import LADDER from here.
+# tb_common is a sibling module: every caller already puts sim/bitcell/lib on sys.path before importing
+# this one, so no path plumbing is added here (same convention as the snm_from_artifacts import below).
+from tb_common import LADDER  # noqa: E402
+
+
+class LadderLengthError(ValueError):
+    """A report corner/unit carries a number of write-trip measurements that is not LADDER.
+
+    That is a tooling error -- the bench that produced the report and this helper were built from
+    different ladder lengths -- and never a margin result, so it is raised rather than folded into
+    the `None` that means "this unit failed". Reporting it as a unit failure would publish a record
+    asserting the cell never flips.
+    """
 
 
 def dirname(corner_id):
@@ -50,13 +65,22 @@ def write_ladder(c):
     """Write-trip ladder of one report corner/unit -> (kstar, monotone, n_levels), or None.
 
     kstar is the highest BL level index in the leading run of levels that flipped the cell
-    (value < VDD/2), -1 if even level 0 did not flip. None means the unit did not produce a
-    complete ladder (a missing measurement or fewer/more than LADDER levels); callers count
-    that as a failure rather than a lower trip.
+    (value < VDD/2), -1 if even level 0 did not flip. None means the unit has a missing
+    measurement; callers count that as a failure rather than a lower trip.
+
+    A ladder whose length is not LADDER is a different thing entirely -- the report was produced
+    by a bench built from another ladder length -- and raises LadderLengthError, because counting
+    it as a unit failure would record a tooling mismatch as physics.
     """
     vdd = c["supply_v"]["vvdd"]
     q = [m["value"] for m in sorted(c["measurements"], key=lambda m: m["name"])]
-    if len(q) != LADDER or any(v is None for v in q):
+    if len(q) != LADDER:
+        raise LadderLengthError(
+            f"corner {c.get('corner_id', '<unnamed>')} has {len(q)} write-trip measurements, expected "
+            f"LADDER={LADDER}: this report was produced by a bench with a different ladder length. "
+            "Regenerate the benches and requests (python3 -I sim/bitcell/lib/make_tb.py) and re-run the "
+            "sim; this is not a write-margin failure.")
+    if any(v is None for v in q):
         return None
     flipped = [v < vdd / 2 for v in q]
     k = -1

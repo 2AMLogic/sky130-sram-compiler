@@ -42,7 +42,7 @@ def write_table(report):
     for c in rep["corners"]:
         vdd = c["supply_v"]["vvdd"]
         w = write_ladder(c)
-        if w is None:  # incomplete ladder: a failure row, not a lower trip
+        if w is None:  # missing measurement: a failure row, not a lower trip
             rows[c["corner_id"]] = (None, None, False, len(c["measurements"]))
             continue
         k, mono, n = w
