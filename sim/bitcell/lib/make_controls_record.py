@@ -79,7 +79,19 @@ def local_klt_version():
 
 
 def ref_kstar(det_ref):
-    return {c["corner_id"]: write_ladder(c)[0] for c in det_ref["corners"]}
+    """kstar of every corner of the deterministic write reference the determinism control is compared against.
+
+    The reference has to be complete to anchor the control, so a unit with a missing measurement is an
+    error here rather than a silently dropped row (a wrong ladder length raises in write_ladder itself).
+    """
+    out = {}
+    for c in det_ref["corners"]:
+        s = write_ladder(c)
+        if s is None:
+            raise ValueError(f"determinism reference corner {c['corner_id']} has a missing write-trip "
+                             "measurement, so it cannot anchor the determinism control")
+        out[c["corner_id"]] = s[0]
+    return out
 
 
 def main():

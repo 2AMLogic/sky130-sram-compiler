@@ -9,7 +9,7 @@ Margin definitions are taken by pinned reference from gf180-sram (see sim/bitcel
   write margin    : write trip voltage, fixed 2 ns write pulse -- the weakest '0' on the losing
                     bit line that still flips the cell. gf180-sram finds it by bisection inside a
                     `.control` loop, which `klt sim` cannot express (it owns the .control block),
-                    so here it is a 33-level ladder of independent trials inside ONE transient.
+                    so here it is a ladder of tb_common.LADDER independent trials inside ONE transient.
 """
 import functools
 import json
@@ -18,12 +18,11 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import tb_common  # noqa: E402
-from tb_common import PROCESS, TEMPS, VDDS, mm_scale_params, with_params  # noqa: E402,F401
+from tb_common import LADDER, PROCESS, TEMPS, VDDS, mm_scale_params, with_params  # noqa: E402,F401
 
 root = pathlib.Path(__file__).resolve().parents[3]
 sz = json.loads((root / "design/bitcell/sizing.json").read_text())
 
-LADDER = 33          # write-trip trial levels: VDD * k / (LADDER - 1)
 TRIAL_NS = 8.0
 MC_WRITE_N = 60        # samples per (process, VDD, T) point
 MC_WRITE_SEED = 20261018
@@ -102,9 +101,9 @@ def write_tb():
         return f"{name} PWL({s})"
 
     lines = [
-        "* WRITE trip-voltage ladder: full cell (schematic subckt), 33 independent trials in one transient.",
+        f"* WRITE trip-voltage ladder: full cell (schematic subckt), {n} independent trials in one transient.",
         "* Each trial: preset Q=1 with a full write, idle, then a 2 ns WL pulse with BLB=VDD and",
-        "* BL=VDD*k/32; Q is sampled 0.1 ns before the next trial. Write trip voltage = the highest",
+        f"* BL=VDD*k/{n - 1}; Q is sampled 0.1 ns before the next trial. Write trip voltage = the highest",
         "* BL level that still flipped the cell (Q < VDD/2).",
         ".include '../../../design/bitcell/netlist/bitcell_6t.spice'",
         "VVDD vdd 0 dc 1.8",
@@ -150,7 +149,7 @@ def build():
     wtran = {"kind": "tran", "args": f"0.02n {LADDER * TRIAL_NS:g}n"}
     files["requests/write_trip_corners.request.json"] = base_req(
         "write_trip.sp", wtran, meas, {"waveforms": False, "keep_artifacts": False})
-    # Write-trip Monte Carlo (issue #14): the 33-level ladder under per-instance mismatch, at the
+    # Write-trip Monte Carlo (issue #14): the same LADDER-level ladder under per-instance mismatch, at the
     # {fs, sf} x {1.62, 1.98 V} x {-40, 125 C} points (the skewed corners that bound write margin).
     files["requests/mc_write_trip.request.json"] = base_req(
         "mc_write_trip.sp", wtran, meas, {"waveforms": False, "keep_artifacts": False, "timeout_s": 600},

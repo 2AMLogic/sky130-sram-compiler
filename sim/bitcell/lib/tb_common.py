@@ -1,12 +1,19 @@
 """Testbench-generator helpers shared by sim/bitcell/lib/make_tb.py and sim/column/lib/make_column_tb.py.
 
-One copy of the corner grid, the pinned mismatch slope table and the `klt sim` request skeleton, so the
-bitcell and column margin records stay comparable (methodology taken by reference from gf180-sram).
+One copy of the corner grid, the write-trip ladder length, the pinned mismatch slope table and the
+`klt sim` request skeleton, so the bitcell and column margin records stay comparable (methodology taken
+by reference from gf180-sram).
 """
 
 PROCESS = ["tt", "ff", "ss", "sf", "fs"]
 TEMPS = [-40, 25, 125]
 VDDS = [1.62, 1.8, 1.98]
+
+# Write-trip trial levels: VDD * k / (LADDER - 1) for k = 0 .. LADDER - 1. Declared here, on the
+# testbench side, because the ladder is a property of the emitted bench -- and read from here by
+# record_common.write_ladder, so the generator that emits the ladder and the helper that validates
+# it can never disagree about its length.
+LADDER = 33
 
 # Per-instance MOS mismatch in the sky130 `_mm` library sections is
 #   param = nominal + MC_MM_SWITCH * AGAUSS(0, 1, 1) * (<device>__<param>_slope / sqrt(l*w*mult)),
