@@ -59,20 +59,20 @@ Startable today; none depends on the ratified spec.
    over the 11-unit limit (builder note on #29). `sim/column/README.md` "Fleet
    notes" still names a 0.7.0 client. Done when: `make_column_tb.py --check`
    passes with every request at or under the limit, the note is corrected, and
-   item 9 is re-attested. No issue yet (seed 1); first step of #29.
+   item 9 is re-attested. Filed as #71; first step of #29.
 3. **Move the item 2 analog envelope to `klt signoff --attest 2`.**
    `design/compiler/attest_layout.py` exists only because the producer was
    missing (klayout-tools#4221, now closed); klt 0.9.0, the pin in
    `signoff.yml`, has `--attest 2`. Done when: `design/compiler/evidence/item2.json`
    is written by klt, the manifest and signoff record are regenerated, and the
-   workaround script and its README mentions are removed. No issue yet (seed 2).
+   workaround script and its README mentions are removed. Filed as #72.
 4. **Bring the README status and Reproduce table up to the tree.** The status
    line still says the tree holds "the bitcell and a compiled 256 x 32
    netlist"; the Reproduce table has no row for the layout, macro DRC, LVS,
    ERC, column-bench or cocotb records; the layout lines for `verification/`
    and `layout/` do not match their contents. Done when: those three are
    corrected and item 10 is re-attested (the README is in
-   `manifests/hygiene-inventory.json`). No issue yet (seed 3).
+   `manifests/hygiene-inventory.json`). Filed as #73.
 
 ## Next
 
@@ -118,8 +118,8 @@ Startable today; none depends on the ratified spec.
   Agents draft (Now 1) and do not ratify.
 - **Column grids** (#29, `loom:blocked`): runner/client version handling in
   `klt sim` batch, klayout-tools#4675, open as read today.
-- **Tracker state today:** no issue carries `loom:issue`. Now 1 is drawable
-  only as review-fix work on PR #12; Now 2 to 4 need their issues filed.
+- **Tracker state today:** Now 1 is drawable only as review-fix work on
+  PR #12; Now 2 to 4 are filed as #71, #72 and #73.
 
 ## Not planned
 
