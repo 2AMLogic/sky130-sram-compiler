@@ -62,8 +62,8 @@ def _r(v):
 
 def macro_spec(words, bits, mux):
     import gen_layout as gl
-    ly, T, env = gl.build(words, bits, mux)
-    ag, hcm = env["ag"], env["hcm"]
+    ly, T, geom = gl.build(words, bits, mux)
+    ag, hcm = geom.ag, geom.hcm
     bb = T.cell.dbbox()
     W, H = ag.width, ag.height
     stackup, vias = _stackup()

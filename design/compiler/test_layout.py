@@ -73,7 +73,7 @@ class Layout(unittest.TestCase):
         self.assertEqual((round(bb.width(), 3), round(bb.height(), 3)), (gl.BC_W, gl.BC_H))
 
     def check_instance(self, words, bits, mux):
-        ly, T, env = gl.build(words, bits, mux)
+        ly, T, geom = gl.build(words, bits, mux)
         g = sc.geometry(words, bits, mux)
         self.assertEqual(count_instances(ly, T, gl.BITCELL), g["rows"] * g["cols"])
         self.assertEqual(count_instances(ly, T, "sram_precharge"), g["cols"])
@@ -83,8 +83,8 @@ class Layout(unittest.TestCase):
         # macro pins are exactly the netlist ports
         self.assertEqual(sorted(T.pins), sorted(sc.top_ports(words, bits, mux)))
         # array height = rows * pitch + strap rows
-        self.assertAlmostEqual(env["ag"].height,
-                               g["rows"] * gl.PITCH_Y + len(env["ag"].B) * gl.STRAP_H, places=6)
+        self.assertAlmostEqual(geom.ag.height,
+                               g["rows"] * gl.PITCH_Y + len(geom.ag.B) * gl.STRAP_H, places=6)
         return T
 
     def test_instances(self):
@@ -98,6 +98,13 @@ class Layout(unittest.TestCase):
         c = self.check_instance(16, 16, 2).size         # 2x the columns
         self.assertGreater(b[1], a[1] + 3 * 8 * gl.PITCH_Y * 0.9)
         self.assertGreater(c[0], a[0] + 8 * 2 * gl.BC_W * 0.9)
+
+    def test_build_returns_named_geometry(self):
+        """build()'s third value is the named geometry record, not a dict."""
+        geom = gl.build(16, 8, 2)[2]
+        self.assertEqual(sorted(vars(geom)), ["ag", "hcm"])
+        self.assertEqual((geom.ag.rows, geom.ag.cols), (8, 16))
+        self.assertGreater(geom.hcm, 0)
 
     def test_out_of_range_rejected(self):
         for bad in [(8, 32, 1), (256, 4, 1), (256, 32, 3)]:
