@@ -11,7 +11,16 @@ item 10).
   (analog bitcell and periphery, synthesized control logic). The `evidence`
   map cites 13 keys (`<item>.<partition>`, one key for a whole-block item), each pinning the `content_hash` of what it cites:
   - **1.analog / 1.digital** — `design/compiler/evidence/item1.json` (from `design/compiler/inventory.json`) and
-    `evidence/item1-digital.json` (from `rtl/inventory.json`), both `klt signoff --attest 1`.
+    `evidence/item1-digital.json` (from `rtl/inventory.json`), both `klt signoff --attest 1`. The analog inventory's
+    `sources` includes the shared `design/sky130_pdk.py` (the layer table and PDK drawing rules all four generators
+    import), so a change to it makes this row `stale_evidence` rather than silently leaving the `.sch`/`.spice` it
+    determines unattested. **Item 1 is the one item whose `content_hash` is not its inventory's own sha256**: under the
+    pinned klt 0.9.0 `--attest 1` binds the *whole input set* — every source, every `derived` file and the inventory —
+    through `provenance.input.paths`, and the hash to cite here is that set's combined digest
+    (`provenance.input.content_hash`, 33 members for the analog partition), which is what makes editing any member
+    grade the row stale. The analog envelope was re-attested under klt 0.9.0 after the `sky130_pdk.py` refactor
+    (52/52 checks); `evidence/item1-digital.json` is untouched by that change. Every other item binds its inventory
+    alone, so for those the cited hash *is* the inventory's sha256.
   - **2.analog / 2.digital** — `design/compiler/evidence/item2.json` (the committed 256 x 32 GDS bound by hash, written by
     `design/compiler/attest_layout.py`: `klt signoff --attest` has no item-2 producer,
     2AMLogic/klayout-tools#4221) and `evidence/item2-digital.json` (binds `layout/control/control.gds`, the routed
@@ -61,6 +70,29 @@ klt signoff --manifest manifests/sky130-sram-compiler.json \
 valid, clean run) and `0` when every item is `met`. Any change that affects
 the verdict (new evidence, a manifest edit, a vendored-doc bump, a `klt` pin
 bump) regenerates and commits the record in the same PR.
+
+Editing a file in `design/compiler/inventory.json`'s `sources` or `derived` makes
+item 1 stale, so **re-attest before regenerating the record** — regenerating alone
+turns CI green by recording a tier regression:
+
+```console
+klt signoff --attest 1 --inventory design/compiler/inventory.json \
+            -o design/compiler/evidence/item1.json
+# then copy provenance.input.content_hash into the manifest's 1.analog
+# content_hash (the input-set digest, see the 1.analog bullet above) and
+# regenerate the record with the command above.
+```
+
+`--attest 1` runs the inventory's freshness commands, so it needs `xschem`, the
+sky130 PDK (`PDK_ROOT`, `PDK`) and — the trap — **the pinned `klt` as the default
+`klt` on `PATH`**. `klt signoff --attest` deliberately removes its own tool venv's
+`bin` from the `PATH` it hands those commands (so a bare `python3` is the repo's
+interpreter), which also removes the pinned `klt` that `design/compiler/netlists.py`
+shells out to: under `uvx`/pipx the freshness checks silently run against whatever
+`klt` is installed host-wide, and every netlist reads as drifted if that differs
+from the pin. Expose the pinned `klt` from a directory that is *not* the venv's
+`bin` (a symlink dir early on `PATH` works) or install the pin as the default
+`klt`. Filed upstream as 2AMLogic/klayout-tools#5620.
 
 ## Freshness is CI-enforced
 

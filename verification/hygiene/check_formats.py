@@ -13,8 +13,9 @@ ROOT = Path(__file__).resolve().parents[2]
 JSON_GLOBS = ("manifests/*.json", "sim/pdk.json", "sim/bitcell/requests/*.json",
               "design/*/sizing.json", "design/compiler/inventory.json",
               "design/compiler/evidence/*.json", "verification/hygiene/*.json")
-PY_GLOBS = ("sim/bitcell/lib/*.py", "design/bitcell/*.py", "design/compiler/*.py",
-            "verification/marker/*.py", "verification/hygiene/*.py")
+PY_GLOBS = ("sim/bitcell/lib/*.py", "design/*.py", "design/bitcell/*.py",
+            "design/compiler/*.py", "verification/marker/*.py",
+            "verification/hygiene/*.py")
 
 
 def tracked(globs):

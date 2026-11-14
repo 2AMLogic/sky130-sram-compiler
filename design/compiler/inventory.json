@@ -4,6 +4,7 @@
   "t1_item": 1,
   "description": "Analog partition design sources: bitcell + periphery generators/schematics and the compiled 256x32 (mux 4) macro netlist. 256x32 uses column mux 4 (64 rows x 128 cols): near-square, and the middle of the README mux range 1/2/4/8.",
   "sources": [
+    "design/sky130_pdk.py",
     "design/compiler/cells.py",
     "design/compiler/gen_schematic.py",
     "design/compiler/netlists.py",

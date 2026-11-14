@@ -23,6 +23,10 @@ import sys
 
 import klayout.db as db
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
+from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
+                        POLY_DIFF, POLY_END, VIA)
+
 # ---- sizing (drawn W/L, um): read from sizing.json, the single source of truth ----
 _SZ = json.loads((pathlib.Path(__file__).resolve().parent / "sizing.json").read_text())
 PD_W, PD_L = _SZ["pd"]["w"], _SZ["pd"]["l"]     # pull-down  nfet_01v8
@@ -31,29 +35,25 @@ PU_W, PU_L = _SZ["pu"]["w"], _SZ["pu"]["l"]     # pull-up    pfet_01v8
 # ----------------------------------------------------------------------------
 
 CELL = "sky130_sram_bitcell_6t"
-L = {
-    "nwell": (64, 20), "diff": (65, 20), "tap": (65, 44), "poly": (66, 20),
-    "licon": (66, 44), "li": (67, 20), "mcon": (67, 44), "m1": (68, 20),
-    "via": (68, 44), "m2": (69, 20), "nsdm": (93, 44), "psdm": (94, 20),
-    "npc": (95, 20), "bound": (235, 4), "via2": (69, 44), "m3": (70, 20),
-    "poly_lbl": (66, 5), "li_lbl": (67, 5), "m1_lbl": (68, 5), "m2_lbl": (69, 5),
-}
+# The layers this cell draws on, with the numbers taken from the shared table
+# (design/sky130_pdk.py). The tuple is a local fact and is ordered deliberately:
+# build() registers the klayout layers in this order and the GDS writer emits
+# shapes in registration order, so reordering it rewrites the committed GDS
+# byte-for-byte without changing one polygon.
+L_DRAWN = ("nwell", "diff", "tap", "poly", "licon", "li", "mcon", "m1", "via", "m2",
+           "nsdm", "psdm", "npc", "bound", "via2", "m3",
+           "poly_lbl", "li_lbl", "m1_lbl", "m2_lbl")
+L = {k: LAYERS[k] for k in L_DRAWN}
 
-# rules used as drawing constants
-LIC = 0.17           # licon / mcon edge
-VIA = 0.15
+# rules used as drawing constants. LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL,
+# NPC_ENC and NW_P are the shared PDK rules, imported above; only cell-local
+# constants are defined here.
 LIC_GATE = 0.055     # licon to poly gate
-DIFF_END = 0.06      # diff beyond licon (along strip)
-POLY_END = 0.13      # poly beyond diff
-POLY_DIFF = 0.075    # poly to unrelated diff
 POLY_POLY = 0.21
 LI_ENC = 0.08        # li around licon, all sides
 M1_ENC = 0.06        # m1 around mcon
 PAD = 0.33           # m1/m2 pad around via, and li/poly pad around a licon
 NW_N = 0.34          # nwell to n diff
-NW_P = 0.18          # nwell around p diff
-IMPL = 0.125         # nsdm/psdm beyond diff/tap
-NPC_ENC = 0.1
 
 Y0 = 0.20            # diff bottom (cell-local); keeps heads/diff off the boundary
 A = 0.24             # nL left edge

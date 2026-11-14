@@ -8,8 +8,10 @@ schematic differs from what this generator would write.
 import pathlib
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
 import cells  # noqa: E402
+import sky130_pdk as pdk  # noqa: E402
 
 here = pathlib.Path(__file__).resolve().parent
 out_dir = here / "cells"
@@ -39,10 +41,9 @@ E {{}}"""]
     for i, (dname, role, d, g, s, b) in enumerate(devs):
         model, w, l = cells.device(role)
         x, y = 150 * (i % 8), 250 * (i // 8)
-        # The PDK symbols derive ad/as/pd/ps/nrd/nrs with expr(); older xschem leaves
-        # that unevaluated, so the nf=1 values are written out (same as design/bitcell).
-        geo = (f"ad={w * 0.29:.4g} as={w * 0.29:.4g} pd={2 * (w + 0.29):.4g} ps={2 * (w + 0.29):.4g} "
-               f"nrd={0.29 / w:.4g} nrs={0.29 / w:.4g} sa=0 sb=0 sd=0")
+        # The nf=1 ad/as/pd/ps/nrd/nrs values the PDK symbols would derive with expr();
+        # the formula is shared with design/bitcell via design/sky130_pdk.py.
+        geo = pdk.device_geometry(w)
         out.append(f"C {{sky130_fd_pr/{model}.sym}} {x} {y} 0 0 "
                    f"{{name={dname} L={l} W={w} nf=1 mult=1 {geo} model={model} spiceprefix=X}}")
         pm = model.startswith("pfet")

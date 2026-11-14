@@ -38,24 +38,287 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7",
+        "content_hash": "sha256:132639593511ead0f8a131d55bfab4f05054423c0f3c1f011039df14fabf9e67",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
           "t1_item": 1,
-          "path": {
-            "path": "design/compiler/inventory.json",
-            "scope": "repo"
-          },
-          "content_hash": "sha256:b763b64de7ec58c1f7ff8d1355549686bc50489bad071bdb7a0ccb6565c855c7",
+          "path": null,
+          "content_hash": "sha256:132639593511ead0f8a131d55bfab4f05054423c0f3c1f011039df14fabf9e67",
           "input_verified": true,
-          "summary": "T1 item 1 (Design sources): 51/51 attestation checks passed (klt signoff --attest)",
+          "members": [
+            {
+              "path": {
+                "path": "design/bitcell/bitcell_6t.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:cf7ba52948e57d899b02531dd784aaff46c2135fa3136a0cae1630419837c969",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/bitcell/gen_schematic.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:8f69267ff7c39b2987b4def9273f17e22aaba114d8699c17f7a8fb2f6bf9965b",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/bitcell/netlist/bitcell_6t.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:a283a8edd5f9ed027c79a285e638f648e02bae7b9520777f62102992d7dfee80",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/bitcell/sizing.json",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:a08db8dcb88ee913fdfdaedde508f0c166e9266869bd3337a3df23a22457eeb1",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/bitcell/xschemrc",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:d3f6487a917c8d9698c6511af6e3c9b877055ce79bd59f13b0dd4f2c87f027d0",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:7beaacd659e0d34633fa401cd3133141ea0284f4849feb7203bce7adf87fdb14",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_colmux.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:11bc07cb6c309840dfc8c6583e20dced1259ac65e611de7ae2b5d468e350b190",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_inv.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:a11932ea6e4c0914045e2442d9f8f1b736535e7d6ec0bab5e9a7e3782a594ad0",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_nand2.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:2c3789855bfd8ca79f383b3bd14017be2c8e33ae754e84f0a7ed7275cc3c224d",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_nand3.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:7fefd0343b8b73bb063c7d23d590b8470442b958fdd3ae3bfcfdce9a99b449f0",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_nand4.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:d206b570646cffaca3629e1fb476ef1289f3aa3fba74ceb0ecfdf8e68f800a8a",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_precharge.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:9ab2647eda8923524746852d035ba7919a2b350caf2d4ea58bc631c868dca971",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_senseamp.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:def696ef7d4cbec9aefb7aaa84aab5033a9a5471629d291fcf53db655a3130bb",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_wdrv.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:43e98403a6fb550c7ff279db6e0820abc05a388e0c6060a00967c0deed2a73fb",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/cells/sram_wldrv.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:6928846fb105a222be8dca5fa986cc6e1355ee1de4b44ebbb8bd5d29647ed87c",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/gen_schematic.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:8143f4c7f0642a974a096445ef3140139113b151d454b31d4d838ca914d091fb",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/inventory.json",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:b80ad81d24f323da1d53d4693878d5b24221d20451a2f43e97b875064e7410c1",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/macro/sram_256x32_m4.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:7815e5c5631bfb4a89c1d20035e2de9fe83bf4ed4b5dde08829a9cc3e04eaddf",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_colmux.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:cb1a8161f1258ef3141685fa130a3b1a0a936697ad6ee3797eac9958eaeda372",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_inv.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:dd0f4755bfa717ff724f8efceef1128df1af19be731fd7041156aff0e750a427",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_nand2.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:9caa3650b6ae6e27e0833e10c84ce213c309154d59f8a1ac3860468395621727",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_nand3.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:874f80a4b3c4f0eebc9604dd92cfa0a96f77fcb775c7b8e7b847760b7ee3690a",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_nand4.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:56af9bb0079b7f0d6fee159db12fbce9f1c299a08d3dacf38f78cca3efba9c23",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_precharge.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:4a0b50988bd8b6137be7c1f3c3acd02c4bf01a313cd99359b82993c44a509427",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_senseamp.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:e5091961b826dfb0cf574d5fc283d02c74ec79c0cac99d24fd00510dd32c3927",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_wdrv.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:1ea77a6115760e8195763f452e768a25bdf46230342c7d68e730b4bf90d388de",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlist/sram_wldrv.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:723e05cdfe2b3915ef827ac185337aaada3f887098f5f40731cc6510b487948d",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/netlists.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:bfe56eb998c11a59eb0eed4da3991953de9c905a457b20dc8628f3bbefc38043",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/sizing.json",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:eea3a86e5cd8a6eaaf904139fd2ad0939d729170b757018245d875157cc323a5",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/sram_compile.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:691cf54027f41e52ca1c69d08e3db30da58e807d9bcd8e8ef8061792021560f9",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/test_compiler.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:7b8acf6143002eaf38148bbdf964f8a29753389cf83d025ff70e6146e76983c8",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/compiler/xschemrc",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:449e46fa3164d368589769ceba408b51bcc881ddbbfac3762c8190204bfcd9be",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/sky130_pdk.py",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:07ed727fbfc564c0cdabead590da911fcb4a3dea71f4bdafb72ee95dc7b7f2d9",
+              "status": "verified"
+            }
+          ],
+          "summary": "T1 item 1 (Design sources): 52/52 attestation checks passed (klt signoff --attest)",
           "source": "design/compiler/inventory.json",
           "attestation": {
             "producer": "klt signoff --attest",
             "inventory_schema_version": 1,
-            "check_count": 51,
-            "passed_count": 51
+            "check_count": 52,
+            "passed_count": 52
           }
         }
       }
