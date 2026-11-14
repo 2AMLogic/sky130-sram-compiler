@@ -67,7 +67,7 @@
       "iverilog": "13.0",
       "cocotb": "2.1.0",
       "yosys": "0.67",
-      "klt": "0.8.1 (client; fleet runs use 0.7.0)",
+      "klt": "0.9.0 (client; each fleet run's runner version is in its report's environment.remote.runner_klt_version)",
       "gf180-sram snm_extract.py": "74ba8a621c9edab9b7a75ecb19ca7ea6771588da"
     }
   }

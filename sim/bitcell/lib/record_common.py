@@ -46,6 +46,17 @@ def klt_version_of(report):
     return env.get("client_klt_version") or env.get("remote", {}).get("client_klt_version") or "unknown (not in report)"
 
 
+def runner_version_of(report):
+    """Fleet runner klt build that ran `report`, from environment.remote.runner_klt_version.
+
+    The runner is the klt on the fleet image, not the client that submitted: `klt sim` compares the
+    two before any S3 write and refuses a mismatch with `batch_runner_version_mismatch` under the
+    default `batch.runner_version_check: "enforce"`. Never invents a version (a local run carries no
+    `remote` block at all), so a record cannot name a fleet runner that did not produce it.
+    """
+    return report["environment"].get("remote", {}).get("runner_klt_version") or "unknown (not in report)"
+
+
 def write_ladder(c):
     """Write-trip ladder of one report corner/unit -> (kstar, monotone, n_levels), or None.
 
