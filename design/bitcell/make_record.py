@@ -14,6 +14,15 @@ import sys
 
 here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
+sys.path.insert(0, str(repo / "sim/bitcell/lib"))
+from record_common import ProvenanceError, git_short_sha, klt_version_local  # noqa: E402
+
+try:
+    sha = git_short_sha(repo)
+    klt_v = klt_version_local()
+except ProvenanceError as e:
+    sys.exit(f"make_record.py: {e}")
+
 scratch = pathlib.Path(sys.argv[1])
 scratch.mkdir(parents=True, exist_ok=True)
 gds = scratch / "bitcell_6t.gds"
@@ -39,13 +48,11 @@ def bbox(path, top):
 mine = bbox(gds, "sky130_sram_bitcell_6t")
 theirs = bbox(foundry, fcell)
 a_m, a_f = mine["width"] * mine["height"], theirs["width"] * theirs["height"]
-sha = run(["git", "rev-parse", "--short", "HEAD"]).stdout.strip()
 sz = json.loads((here / "sizing.json").read_text())
 ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 rec = here / "records" / f"{ts}-{sha}.md"
 rec.parent.mkdir(exist_ok=True)
 assert not rec.exists()
-klt_v = run(["klt", "--version"]).stdout.strip()
 L = [f"# Bitcell layout record {ts} ({sha})", "",
      "Issue: 2AMLogic/sky130-sram-compiler#7 (part of #2). Append-only: add a new dated record, never edit this one.", "",
      f"- klt: {klt_v}; klayout python in `uv run --with klayout`",

@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 12/12 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 13/13 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 12,
-    "passed_count": 12,
+    "check_count": 13,
+    "passed_count": 13,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:7fcea1463e94ae8cf75eb2621e7b4651f71386ad79494917eb881471489162c0"
+        "content_hash": "sha256:5a3acee406f103a0e016bbaa2fafa7fddda9e0b723220dfd4761a6ec16a9bca4"
       },
       {
         "check": "present",
@@ -38,14 +38,14 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:d73906e56d4fce109d744247cfbbce29c04afb4674dd0e168a53ddbbb9b096df"
+        "content_hash": "sha256:f8c0b55758e70ce34caed2b8de7030b8b1e821cc7d2a6a88207b1adf7d24ec7a"
       },
       {
         "check": "present",
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:da97ce4371e7b23e23557c9a82a5ed3d982e7e8f62eaa07c46397843d5f7658a"
+        "content_hash": "sha256:c2344c0b988898ae1ba82a76a459ce15ac7d8b58c91bcf3fa538dadd41566f9f"
       },
       {
         "check": "command",
@@ -136,6 +136,20 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "column-sim-requests",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/column/lib/make_column_tb.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "check-gates",
         "argv": [
           "python3",
@@ -158,7 +172,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:0141dc46f216e471330ffeda10912902f3026c8b8163207ebce825d14077f5bb"
+      "content_hash": "sha256:09cf4836ab9489c6d6a656cade1b2df3f44c9dec0aae978a380b06775154260d"
     }
   }
 }

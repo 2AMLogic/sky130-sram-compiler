@@ -39,6 +39,7 @@ ARTIFACTS = {
     "bitcell-schematic": "design/bitcell/bitcell_6t.sch",
     "macro-256x32-m4": "design/compiler/macro/sram_256x32_m4.spice",
     "bitcell-sim-requests": "sim/bitcell/requests/mc_hold_snm.request.json",
+    "column-sim-requests": "sim/column/requests/col_mc_read_snm.request.json",
 }
 
 COPY_IGNORE = shutil.ignore_patterns(".git", ".loom", ".snapshots", "__pycache__")

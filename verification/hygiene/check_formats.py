@@ -2,6 +2,11 @@
 """PDK-free format gate: every committed evidence/request JSON parses and every
 Python source compiles. Needs only the standard library; writes nothing.
 
+Coverage is a sweep over every tracked *.json / *.py minus one shared exclusion
+list, with the expected counts asserted as floors (MIN_JSON / MIN_PY): adding a
+tracked project file is covered automatically, and a count that falls below a
+floor means the sweep or its exclusions broke and files lost coverage silently.
+
 Usage: python3 -I verification/hygiene/check_formats.py     (exit 0 clean, 1 on any failure)
 """
 import json
@@ -10,23 +15,35 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-JSON_GLOBS = ("manifests/*.json", "sim/pdk.json", "sim/bitcell/requests/*.json",
-              "design/*/sizing.json", "design/compiler/inventory.json",
-              "design/compiler/evidence/*.json", "verification/hygiene/*.json")
-PY_GLOBS = ("sim/bitcell/lib/*.py", "design/*.py", "design/bitcell/*.py",
-            "design/compiler/*.py", "verification/marker/*.py",
-            "verification/hygiene/*.py")
+
+# Vendored tooling and workspace state, never this block's evidence:
+# .loom/ (orchestration runtime; its test fixtures may be deliberately
+# malformed), .claude/ and .agents/ (vendored assistant tooling), and the
+# npm manifest package.json.
+EXCLUDED_PREFIXES = (".loom/", ".claude/", ".agents/")
+EXCLUDED_FILES = ("package.json",)
+
+# Coverage floors. The sweep covers every tracked project file by construction,
+# so a real count can only grow; falling below a floor means the mechanism broke.
+MIN_JSON = 61
+MIN_PY = 31
 
 
-def tracked(globs):
-    out = subprocess.run(["git", "ls-files", "--", *globs], cwd=ROOT, check=True,
+def tracked_files():
+    out = subprocess.run(["git", "ls-files"], cwd=ROOT, check=True,
                          capture_output=True, text=True).stdout
-    return sorted(out.split())
+    files = out.split()
+    return [f for f in files
+            if (f.endswith(".json") or f.endswith(".py"))
+            and not f.startswith(EXCLUDED_PREFIXES)
+            and f not in EXCLUDED_FILES]
 
 
 def main():
     bad = []
-    jsons, pys = tracked(JSON_GLOBS), tracked(PY_GLOBS)
+    files = tracked_files()
+    jsons = sorted(f for f in files if f.endswith(".json"))
+    pys = sorted(f for f in files if f.endswith(".py"))
     for rel in jsons:
         try:
             json.loads((ROOT / rel).read_text())
@@ -37,8 +54,10 @@ def main():
             compile((ROOT / rel).read_text(), rel, "exec")
         except SyntaxError as e:
             bad.append(f"{rel}: {e}")
-    if not jsons or not pys:
-        bad.append("no files matched: globs are stale")
+    if len(jsons) < MIN_JSON:
+        bad.append(f"JSON coverage regressed: {len(jsons)} files, floor is {MIN_JSON}")
+    if len(pys) < MIN_PY:
+        bad.append(f"Python coverage regressed: {len(pys)} files, floor is {MIN_PY}")
     for line in bad:
         print(line, file=sys.stderr)
     print(f"checked {len(jsons)} JSON and {len(pys)} Python files: {'FAIL' if bad else 'ok'}")

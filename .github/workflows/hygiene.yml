@@ -43,6 +43,9 @@ jobs:
       - name: Bitcell testbenches and klt sim requests match their generator
         run: python3 -I sim/bitcell/lib/make_tb.py --check
 
+      - name: Column testbenches and klt sim requests match their generator
+        run: python3 -I sim/column/lib/make_column_tb.py --check
+
       - name: --check gates actually bite (drift test)
         run: python3 -I verification/hygiene/test_check_gates.py
 
