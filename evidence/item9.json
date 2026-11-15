@@ -283,7 +283,7 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_record.py",
         "passed": true,
-        "content_hash": "sha256:17f3d68de0225863c137a44bb3c76034f8da0eaa97cc6eacf880cf80c6f26ee5"
+        "content_hash": "sha256:df145b820f078047f5b1f24d50aa73c36cc6ce2c1503bdfa90132b3e083eb879"
       },
       {
         "check": "present",
