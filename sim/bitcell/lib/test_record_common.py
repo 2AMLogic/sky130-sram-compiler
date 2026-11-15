@@ -6,6 +6,7 @@ validates it, and a disagreement between the two used to be reported as a write-
 asserting the cell never flips) rather than as the tooling error it is. These tests hold both halves of
 the fix: the length is declared once (issue #76), and a length that is not LADDER is loud.
 """
+import gzip
 import json
 import os
 import pathlib
@@ -218,6 +219,58 @@ class ProvenanceLookupsRefuse(unittest.TestCase):
         sha = rc.git_short_sha(REPO)
         self.assertTrue(re.fullmatch(r"[0-9a-f]{7,}", sha),
                         f"the real repo sha should resolve, got {sha!r}")
+
+
+class SaveGzJsonIsByteReproducible(unittest.TestCase):
+    """Issue #104: the deterministic gzip-JSON write lives in one place and is held by tests.
+
+    `mtime=0` plus sort_keys/indent is what makes a committed record artifact reproducible from
+    its input; that invariant used to be spelled out inline in four generators and asserted
+    nowhere, so a change to any part of it could land in some copies and not others. These tests
+    hold the shared helper: every committed fixture replays byte-identically through it (at
+    GzipFile's default compression level, which is part of the format -- no compresslevel argument
+    exists to silently change the evidence bytes), the payload is exactly
+    `json.dumps(scrub(obj), indent=1, sort_keys=True)`, and two writes of one object agree.
+    """
+
+    def replay(self, src):
+        """save_gz_json(load(src)) into a temp dir -> bytes. The temp file keeps src's basename:
+        GzipFile embeds the output basename in the header, so a differently named destination
+        would differ in bytes without any format change."""
+        with tempfile.TemporaryDirectory() as td:
+            dst = pathlib.Path(td) / src.name
+            rc.save_gz_json(dst, rc.load(src))
+            return dst.read_bytes()
+
+    def test_every_committed_artifact_replays_byte_identically(self):
+        """The append-only evidence contract: committed artifacts are re-derivable from their inputs."""
+        artifacts = sorted((REPO / "sim/bitcell/corners").glob("**/*.json.gz"))
+        self.assertTrue(artifacts, "fixture discovery found nothing; the glob pattern broke")
+        for src in artifacts:
+            with self.subTest(artifact=str(src.relative_to(REPO))):
+                self.assertEqual(self.replay(src), src.read_bytes())
+
+    def test_payload_is_scrubbed_sorted_indent1(self):
+        """The write is exactly the former inline shape, scrub included: host-absolute artifact
+        paths are rewritten, dicts are key-sorted, indent is 1."""
+        obj = {"b": [1, {"z": 2, "y": 3}], "a": {"k": 4},
+               "p": "/tmp/scratch/klt-sim-x/waveform.raw.json", "q": "/home/u/klt-sim-run/report.json"}
+        with tempfile.TemporaryDirectory() as td:
+            p = pathlib.Path(td) / "o.json.gz"
+            rc.save_gz_json(p, obj)
+            raw = gzip.open(p).read().decode()
+        self.assertEqual(raw, json.dumps(rc.scrub(obj), indent=1, sort_keys=True))
+        self.assertNotIn("/tmp/scratch", raw)
+        self.assertNotIn("/home/u/", raw)
+
+    def test_two_writes_of_one_object_are_identical_bytes(self):
+        """The mtime=0 guarantee held directly: no wall-clock timestamp ever reaches the header."""
+        with tempfile.TemporaryDirectory() as td:
+            p = pathlib.Path(td) / "o.json.gz"
+            rc.save_gz_json(p, {"k": [1, 2, 3]})
+            first = p.read_bytes()
+            rc.save_gz_json(p, {"k": [1, 2, 3]})
+            self.assertEqual(p.read_bytes(), first)
 
 
 unittest.main()

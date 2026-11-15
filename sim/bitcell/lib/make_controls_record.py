@@ -21,7 +21,6 @@ Determinism criterion: with mismatch switched off every sample at a point has th
 and it equals k* of the matching deterministic (non-`_mm`) corner in the 45-corner write table.
 """
 import argparse
-import gzip
 import json
 import pathlib
 import re
@@ -34,7 +33,7 @@ sys.path.insert(0, str(here))
 import make_record as mr  # noqa: E402
 from make_tb import DET_N, NEG_N, NEG_SCALE, NEG_SEED  # noqa: E402
 from make_write_mc_record import merge, stats  # noqa: E402
-from record_common import LADDER, git_short_sha, klt_version_local, klt_version_of, load, scrub, write_ladder  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_local, klt_version_of, load, save_gz_json, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 SIGMA_RATIO_MIN = 2.0
@@ -112,8 +111,7 @@ def main():
     ev.mkdir(parents=True, exist_ok=True)
 
     def keep(src, name):
-        with gzip.GzipFile(ev / f"{name}.json.gz", "wb", mtime=0) as g:
-            g.write(json.dumps(scrub(load(src)), indent=1, sort_keys=True).encode())
+        save_gz_json(ev / f"{name}.json.gz", load(src))
 
     keep(a.det, "mc_write_trip_det.report")
     keep(a.neg, "mc_write_trip_neg.report")

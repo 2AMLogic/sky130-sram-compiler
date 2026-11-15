@@ -12,7 +12,6 @@ margins are `eye_snm` (largest inscribed square); `pinned_snm` is the gf180-sram
 number, shown beside it. Write margin is the write trip voltage from the 33-level ladder.
 """
 import argparse
-import gzip
 import hashlib
 import json
 import pathlib
@@ -21,7 +20,7 @@ import sys
 here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import snm_from_artifacts as sa  # noqa: E402
-from record_common import dirname, fmt_mc, git_short_sha, klt_version_of, mc_stats, scrub, write_ladder  # noqa: E402
+from record_common import dirname, fmt_mc, git_short_sha, klt_version_of, mc_stats, save_gz_json, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 
@@ -76,9 +75,7 @@ def main():
     ev.mkdir(parents=True, exist_ok=True)
 
     def keep(src, name):
-        data = json.dumps(scrub(json.load(open(src))), indent=1, sort_keys=True).encode()
-        with gzip.GzipFile(ev / f"{name}.json.gz", "wb", mtime=0) as g:
-            g.write(data)
+        save_gz_json(ev / f"{name}.json.gz", json.load(open(src)))
 
     rrep, rread = snm_table(*a.read)
     hrep, rhold = snm_table(*a.hold)
