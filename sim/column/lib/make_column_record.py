@@ -136,6 +136,9 @@ def main():
     ap.add_argument("--evidence", required=True)
     ap.add_argument("--scratch", required=True)
     a = ap.parse_args()
+    # Provenance resolves before anything is written: a failed lookup must refuse before any
+    # artifact lands, not after the evidence .json.gz files are on disk.
+    git = git_short_sha(repo)
     scratch, ev = pathlib.Path(a.scratch), pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
     benches = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
@@ -150,7 +153,7 @@ def main():
     def sha(p):
         return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
 
-    L = [f"# Column bench record {a.id} ({git_short_sha(repo)})", "",
+    L = [f"# Column bench record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#29 (T1 item 9, analog partition). Append-only: add a new dated record, never edit this one.", "",
          "## Provenance", "",
          "- design under test: bit slice (64 rows x 4 columns) of `design/compiler/macro/sram_256x32_m4.spice` (mux 4: 64-cell bit lines), "
