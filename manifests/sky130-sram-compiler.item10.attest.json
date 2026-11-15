@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 10/10 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 12/12 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 10,
-    "passed_count": 10,
+    "check_count": 12,
+    "passed_count": 12,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:ebd3983fe798330d4f1c5acd321d194d3c65b7313332fc65103662e3864656e6"
+        "content_hash": "sha256:b80b9bc91913b03e491bd2979abc7ba3f94a581b9a6b6acdab81038322006337"
       },
       {
         "check": "present",
@@ -38,14 +38,14 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:d73906e56d4fce109d744247cfbbce29c04afb4674dd0e168a53ddbbb9b096df"
+        "content_hash": "sha256:f8c0b55758e70ce34caed2b8de7030b8b1e821cc7d2a6a88207b1adf7d24ec7a"
       },
       {
         "check": "present",
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:da97ce4371e7b23e23557c9a82a5ed3d982e7e8f62eaa07c46397843d5f7658a"
+        "content_hash": "sha256:c2344c0b988898ae1ba82a76a459ce15ac7d8b58c91bcf3fa538dadd41566f9f"
       },
       {
         "check": "command",
@@ -90,6 +90,20 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "bitcell-schematic",
+        "argv": [
+          "python3",
+          "-I",
+          "design/bitcell/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "macro-256x32-m4",
         "argv": [
           "python3",
@@ -118,11 +132,25 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "column-sim-requests",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/column/lib/make_column_tb.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
   "provenance": {
-    "klt_version": "0.9.0",
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -131,7 +159,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:aa932e942f1312ac0d57612f7e90868a3850081baa680976ee9b39d4deadd555"
+      "content_hash": "sha256:4ec08495fd62dfb2123c5610e60dad0521ab4ec29c06601854a4e62659b978df"
     }
   }
 }

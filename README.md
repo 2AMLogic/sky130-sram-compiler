@@ -87,7 +87,12 @@ measured silicon. **Current position: pre-spec.**
 
 Every committed result is append-only evidence; each command below either
 regenerates it into a new dated record or checks that the committed bytes still
-match their generator. Per-directory READMEs hold the detail.
+match their generator. Per-directory READMEs hold the detail. One exception is
+deliberate: [`layout/records/`](layout/records/20261027-ca10c045.md) holds a
+historical development-checks record from when the layout generator was
+written. It was never produced by a single committed command, and the T1
+item-3 (DRC, #32) and item-4 (LVS, #33) records supersede it, so it has no row
+below.
 
 **PDK-free (run by CI, [`hygiene.yml`](.github/workflows/hygiene.yml)).**
 Needs only `python3` and `git`; the last line also needs `pip install klayout-tools==0.8.0`.

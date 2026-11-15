@@ -68,6 +68,10 @@ def main():
     ap.add_argument("--mc-report-hold", nargs="*", default=[])
     a = ap.parse_args()
 
+    # Provenance resolves before anything is written: a failed lookup must refuse before any
+    # artifact lands, not after the evidence .json.gz files are on disk.
+    git = git_short_sha(repo)
+
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
 
@@ -94,7 +98,6 @@ def main():
             (w.get("simulator", {}).get("version_banner", "").split("\n")[1:2] or [""])[0].strip("* ")
 
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
-    git = git_short_sha(repo)
     L = [f"# Bitcell margin record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#7 (part of #2). Append-only: add a new dated record, never edit this one.", "",
          "## Provenance", "",

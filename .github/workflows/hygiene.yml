@@ -34,13 +34,17 @@ jobs:
       - name: Compiler generator tests
         run: python3 -I design/compiler/test_compiler.py
 
-      - name: Compiler schematics and 256x32 macro netlist match their generators
+      - name: Schematics and 256x32 macro netlist match their generators
         run: |
           python3 -I design/compiler/gen_schematic.py --check
+          python3 -I design/bitcell/gen_schematic.py --check
           python3 -I design/compiler/sram_compile.py 256 32 4 --check design/compiler/macro/sram_256x32_m4.spice
 
       - name: Bitcell testbenches and klt sim requests match their generator
         run: python3 -I sim/bitcell/lib/make_tb.py --check
+
+      - name: Column testbenches and klt sim requests match their generator
+        run: python3 -I sim/column/lib/make_column_tb.py --check
 
       - name: Item 10 attestation still reproduces
         run: |
