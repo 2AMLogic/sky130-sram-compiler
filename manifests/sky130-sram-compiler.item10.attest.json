@@ -38,7 +38,7 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:d73906e56d4fce109d744247cfbbce29c04afb4674dd0e168a53ddbbb9b096df"
+        "content_hash": "sha256:f8c0b55758e70ce34caed2b8de7030b8b1e821cc7d2a6a88207b1adf7d24ec7a"
       },
       {
         "check": "present",
@@ -136,7 +136,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.9.0",
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
