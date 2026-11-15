@@ -16,7 +16,7 @@
     },
     "10": {
       "file": "manifests/sky130-sram-compiler.item10.attest.json",
-      "content_hash": "sha256:0c1a8ec49f27e919faa6faf8d0885b6f5531bc8e6a7bd897285a4311d7247355"
+      "content_hash": "sha256:4ec08495fd62dfb2123c5610e60dad0521ab4ec29c06601854a4e62659b978df"
     },
     "2.analog": {
       "file": "design/compiler/evidence/item2.json",
