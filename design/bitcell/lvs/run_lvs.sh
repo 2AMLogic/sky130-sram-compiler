@@ -5,14 +5,25 @@
 # Reference = design/bitcell/netlist/bitcell_6t.spice with the nfet bulk moved from VSS to a
 # separate `vsubs` pin: the cell has no p-substrate tap (the array supplies it), so the layout's
 # nfet bulk is the extracted substrate, not VSS. klt reports this as device.body_unverified.
-# Negative control: the same compare with MAL's W changed 0.42 -> 0.52 must NOT match.
+# Negative control: the same compare with MAL's drawn width (ax.w in design/bitcell/sizing.json)
+# increased by 0.1 um must NOT match. The width is read from sizing.json, never hardcoded, and the
+# script exits non-zero if the XMAL line does not carry it — a resize that leaves the committed
+# netlist stale cannot silently turn the control into a compare of a correct netlist.
+# Exit: 0 ref `match` and ref_bad `mismatch`; 3 ref is not `match` (or wrote no report);
+#       5 ref_bad is not `mismatch` (or wrote no report). 4 is unused: power_connectivity /
+#       body_verification have no bitcell gating analogue (device.body_unverified is expected),
+#       and the number is kept free so the three LVS runners share one convention
+#       (design/macro/lvs/run_lvs.sh, design/control/lvs/run_lvs.sh).
 set -euo pipefail
-G=$(realpath "${1:?layout.gds}"); O=${2:?outdir}; mkdir -p "$O"
+G=$(realpath "${1:?layout.gds}"); O=${2:?outdir}
+command -v klt >/dev/null || { echo "run_lvs.sh: TOOL_MISSING: klt not on PATH" >&2; exit 1; }
+mkdir -p "$O"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 -I - "$here/../netlist/bitcell_6t.spice" "$O" <<'PY'
-import re, sys
-src, out = sys.argv[1], sys.argv[2]
-good, bad = [], []
+python3 -I - "$here/../sizing.json" "$here/../netlist/bitcell_6t.spice" "$O" <<'PY'
+import json, re, sys
+sizing, src, out = sys.argv[1], sys.argv[2], sys.argv[3]
+ax_w = json.load(open(sizing))["ax"]["w"]
+good, bad, done = [], [], False
 for ln in open(src).read().splitlines():
     if ln.startswith(".subckt"):
         ln += " vsubs"
@@ -20,8 +31,12 @@ for ln in open(src).read().splitlines():
     if m:
         ln = f"{m.group(1)} {m.group(2)} {m.group(3)} {m.group(4)} vsubs {m.group(6)}{m.group(7)}"
     good.append(ln)
-    bad.append(ln.replace("XMAL BL WL Q vsubs sky130_fd_pr__nfet_01v8 L=0.15 W=0.42",
-                          "XMAL BL WL Q vsubs sky130_fd_pr__nfet_01v8 L=0.15 W=0.52") if ln.startswith("XMAL") else ln)
+    if ln.startswith("XMAL "):
+        ln, n = re.subn(rf"\bW={ax_w:g}\b", f"W={ax_w + 0.1:g}", ln)
+        done = done or bool(n)
+    bad.append(ln)
+if not done:
+    sys.exit(f"run_lvs.sh: negative-control anchor (XMAL W={ax_w:g}) not found in the rewritten reference")
 open(f"{out}/ref.spice", "w").write("\n".join(good) + "\n")
 open(f"{out}/ref_bad.spice", "w").write("\n".join(bad) + "\n")
 PY
@@ -36,10 +51,23 @@ JSON
 done
 python3 -I - "$O" <<'PY'
 import json, sys
+o = sys.argv[1]
+res = {}
 for k, want in (("ref", "match"), ("ref_bad", "mismatch")):
-    d = json.load(open(f"{sys.argv[1]}/{k}.lvs.json"))
+    try:
+        d = json.load(open(f"{o}/{k}.lvs.json"))
+    except Exception as e:  # klt wrote no report: show why
+        print(f"{k:8s} NO REPORT ({e}); see {o}/{k}.err")
+        res[k] = None
+        continue
     c = d.get("counts", {})
     print(f"{k:8s} status={d.get('status')} (expected {want})",
           {n: (c[n]["layout"], c[n]["reference"], c[n]["matched"]) for n in c},
           dict(d.get("category_counts", {})))
+    res[k] = d
+ref, bad = res.get("ref"), res.get("ref_bad")
+if ref is None or ref.get("status") != "match":
+    sys.exit(3)
+if bad is None or bad.get("status") != "mismatch":
+    sys.exit(5)
 PY
