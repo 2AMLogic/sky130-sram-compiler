@@ -19,6 +19,7 @@
     {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]},
     {"name": "bitcell-ladder-seam", "argv": ["python3", "-I", "sim/bitcell/lib/test_record_common.py"]},
     {"name": "compiler-erc-spec", "argv": ["python3", "-I", "design/compiler/test_erc_spec.py"]},
-    {"name": "compiler-layout", "argv": ["python3", "-I", "design/compiler/test_layout.py"]}
+    {"name": "compiler-layout", "argv": ["python3", "-I", "design/compiler/test_layout.py"]},
+    {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]}
   ]
 }

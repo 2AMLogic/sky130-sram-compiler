@@ -43,7 +43,6 @@ def _ly(name):
 
 def _stackup():
     """poly (the gate role), li, met1..met4 and their vias, from the layout generator's layer table."""
-    import gen_layout as gl  # noqa: F401  (imported by _ly)
     st = [{"name": "poly", "layer": _ly("poly"), "role": "gate"},
           {"name": "li", "layer": _ly("li"), "label_layer": _ly("li_lbl")}]
     for n in (1, 2, 3, 4):

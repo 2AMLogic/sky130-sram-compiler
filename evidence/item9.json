@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 48/48 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 76/76 attestation checks passed (klt signoff --attest)",
   "source": "sim/testbench-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 48,
-    "passed_count": 48,
+    "check_count": 76,
+    "passed_count": 76,
     "checks": [
       {
         "check": "present",
@@ -64,9 +64,205 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "sim/bitcell/README.md",
+        "passed": true,
+        "content_hash": "sha256:7a150f730618e36756d51d210bab2cb231c4c1f630483b04d3c4368e26d307cc"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "sim/bitcell/lib/fetch_pinned.sh",
         "passed": true,
         "content_hash": "sha256:18a78204754d2872e28bf10daf47e2ca1b436e5c29f257de942f19ae4678994c"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/make_controls_record.py",
+        "passed": true,
+        "content_hash": "sha256:8cd5826413a72b0c2e159858dc0ea30d01d02740307d117f34dc0844afb750c0"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/make_record.py",
+        "passed": true,
+        "content_hash": "sha256:5dc7653dd2225506c956547328c3d3d56e5976ea713af66cf9048814c7f4e47e"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/make_tb.py",
+        "passed": true,
+        "content_hash": "sha256:d33a4822fa747fdba5fda1134ea839b755160be1c3a12691999ba8a1a40b1935"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/make_write_mc_record.py",
+        "passed": true,
+        "content_hash": "sha256:17cd8cfc30d6a0bbfcbc8597a2f2c6b4df3ee36abde29911431366a28f48f90a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/record_common.py",
+        "passed": true,
+        "content_hash": "sha256:7e8bfce2ff0e6ca0b00e02bb1294c72537d31becb7090b1172b43ca38652f448"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/snm_from_artifacts.py",
+        "passed": true,
+        "content_hash": "sha256:992d4a396b927f5562452aec06560083f2379cd3b0b58ddeee5a19d6ff5f6c70"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/lib/tb_common.py",
+        "passed": true,
+        "content_hash": "sha256:d09491c3e9566e5298267967fcae6241049701021b055098a8ebfb8201963364"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/hold_snm_corners.request.json",
+        "passed": true,
+        "content_hash": "sha256:8bb6d3d6123fbebb668d77b74281a4d76ade24af16193078836ac57df7252870"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_hold_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:03ba014b20d50367a221ccc147574966da90434b95442eeed1c1f769b99c14cc"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_hold_snm_neg.request.json",
+        "passed": true,
+        "content_hash": "sha256:353b9b022f17d9c691d98dbb4daa79f64ea168c893cb68b14b590b5e33e4e5f6"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_read_snm.request.json",
+        "passed": true,
+        "content_hash": "sha256:ca87dc0fcbfdd12e8a96bc64a67b04f8ac1d8ea5f1bebeb34361295e344aba70"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_read_snm_neg.request.json",
+        "passed": true,
+        "content_hash": "sha256:2ba83d082c8bf24fb41143fa5b2f6d8c41fb2cb0e1da34c52c8e4707ff7842ae"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_write_trip.request.json",
+        "passed": true,
+        "content_hash": "sha256:fdf080efaf042389518baaba4fbff65931d4c325005dfee42465cdf749b78a0a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_write_trip_det.request.json",
+        "passed": true,
+        "content_hash": "sha256:d2dcdfd05e0bf03cccd3abaa0b89f23faf0c0ebbbc5ac98a033f1d9dcfdca1ba"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/mc_write_trip_neg.request.json",
+        "passed": true,
+        "content_hash": "sha256:a71d190c0202f615d9db328c6b586a1fd3def1ce7ad96db84ab25d23da8359e9"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/read_snm_corners.request.json",
+        "passed": true,
+        "content_hash": "sha256:c8198f6debd19989d1979aff9238d472b081cbfb3b4cb7d041225fd2cb4000b8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/requests/write_trip_corners.request.json",
+        "passed": true,
+        "content_hash": "sha256:4f44188b938c18a5b0d41353035366b62ef150460f1dae1d47a27703f7a118af"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/hold_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:0d81aa1dc2062133b6dd8cdb40e60a9f7d282ce5f5abce54f29d1bfbb991db2d"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_hold_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:dac2e5545f92fc61d11f6795377cb07839de0c50e176f90037ba13378e020178"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_hold_snm_neg.sp",
+        "passed": true,
+        "content_hash": "sha256:649cba148376d9ec602e55a4e523814331b6df445daa3156a159d146b0824a37"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_read_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:c90f581eb2a8b9fc037966e24eb6a21284ee3f04ad6d1e5d5ec9e1258b3f371c"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_read_snm_neg.sp",
+        "passed": true,
+        "content_hash": "sha256:ee72a1b839b3ee1483e6f61c343ae4176145b29b650f1345aeb58504e3d5ab6a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_write_trip.sp",
+        "passed": true,
+        "content_hash": "sha256:81c6f8e9439521856db8319abdc22bc45bf574bea90a1e8efd0102d23a89f32a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_write_trip_det.sp",
+        "passed": true,
+        "content_hash": "sha256:9290568b91c2d0ce8347c1bc21dedc482775f7cbdd64afb2e9a8145aaec9add3"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/mc_write_trip_neg.sp",
+        "passed": true,
+        "content_hash": "sha256:e15eff5d3ec76165767939e11043a8a884ad3feba06814081babe3cb06fe31d6"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/read_snm.sp",
+        "passed": true,
+        "content_hash": "sha256:bdfa706f80c3086cce120f4a16d32e5a7339fc8d040df770c6b66f3c4c442d63"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/bitcell/tb/write_trip.sp",
+        "passed": true,
+        "content_hash": "sha256:81c6f8e9439521856db8319abdc22bc45bf574bea90a1e8efd0102d23a89f32a"
       },
       {
         "check": "present",
@@ -94,7 +290,7 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_tb.py",
         "passed": true,
-        "content_hash": "sha256:ae354b9ff63b0c181f7cc7c3d473b6d96ef41c165cfa4d3c76ca842de65684a6"
+        "content_hash": "sha256:fc7b65ee9c4bf63193bbd7798290b2316f6b46f54b5cfef417878b65f84b16a0"
       },
       {
         "check": "present",
@@ -373,7 +569,7 @@
         "path": "sim/testbench-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:2d7495887e9599bc96c6a38919a5fedf6d9cc6f1a7ec77df5c5f9879de19e91b"
+      "content_hash": "sha256:3597be500a51834828e77514ebf45d873deb14fed248e5149735b2dda313c7e9"
     }
   }
 }

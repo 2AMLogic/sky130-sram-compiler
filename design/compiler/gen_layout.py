@@ -26,7 +26,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # desig
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
-from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
+from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC,  # noqa: E402
                         POLY_DIFF, POLY_END, VIA)
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -40,7 +40,7 @@ BITCELL = "sky130_sram_bitcell_6t"
 LBL = {"li": "li_lbl", "m1": "m1_lbl", "m2": "m2_lbl", "m3": "m3_lbl", "m4": "m4_lbl"}
 
 # ---- drawing constants (um), all multiples of the 0.005 grid ----------------------
-# LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL, NPC_ENC and NW_P are shared PDK
+# LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL and NPC_ENC are shared PDK
 # rules, imported above from design/sky130_pdk.py; only compiler-local dimensions
 # are defined here.
 LI_W = 0.17          # li bar width
