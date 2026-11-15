@@ -133,7 +133,7 @@ def main():
          f"- sizing (drawn W/L, um): PD {sizing['pd']['w']}/{sizing['pd']['l']} {sizing['pd']['model']}, "
          f"AX {sizing['ax']['w']}/{sizing['ax']['l']} {sizing['ax']['model']}, "
          f"PU {sizing['pu']['w']}/{sizing['pu']['l']} {sizing['pu']['model']} (design/bitcell/sizing.json)",
-         f"- request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` "
+         "- request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` "
          "(full 6T cell, schematic subckt `bitcell_6t`, per-instance mismatch via the `_mm` library sections)",
          f"- Monte Carlo: n={mc.get('n')} samples per point, seed={mc.get('seed')}, vary={mc.get('vary')}, k_sigma={mc.get('k_sigma')}",
          f"- backend: batch fleet; batch job ids in the input reports {inputs} "
