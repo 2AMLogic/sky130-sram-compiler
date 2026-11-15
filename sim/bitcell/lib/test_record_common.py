@@ -7,11 +7,14 @@ asserting the cell never flips) rather than as the tooling error it is. These te
 the fix: the length is declared once (issue #76), and a length that is not LADDER is loud.
 """
 import json
+import os
 import pathlib
 import re
 import sys
+import tempfile
 import types
 import unittest
+from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[2]
@@ -143,6 +146,78 @@ class DeterminismReference(unittest.TestCase):
     def test_wrong_length_is_named(self):
         with self.assertRaises(rc.LadderLengthError):
             ref_kstar({"corners": [corner(flips_at(rc.LADDER + 1, 10), "ss/1.620V/125C")]})
+
+
+class ProvenanceLookupsRefuse(unittest.TestCase):
+    """git_short_sha / klt_version_local refuse instead of degrading (issue #103).
+
+    A failed lookup returned "" (git) or a stderr diagnostic recorded as a "version" (klt), and both
+    landed in append-only records that cannot be corrected in place. Every failure mode -- non-zero
+    rc, rc 0 with empty stdout, binary missing from PATH -- must raise the one named ProvenanceError
+    carrying the command, never a bare Exception or a blank field.
+    """
+
+    def stub_path(self, *scripts):
+        """A temp dir on PATH holding stub executables: each script is a (name, body) pair."""
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        for name, body in scripts:
+            p = pathlib.Path(d.name) / name
+            p.write_text(body)
+            p.chmod(0o755)
+        return d.name
+
+    def assert_refuses(self, fn, *args):
+        """The helper raises the named error (not a bare Exception) for the failure under test."""
+        with self.assertRaises(rc.ProvenanceError):
+            fn(*args)
+
+    def test_git_nonzero_rc_raises_named_error(self):
+        """A real failing git: GIT_DIR pointing nowhere gives rc 128, empty stdout, a diagnostic on stderr."""
+        with mock.patch.dict(os.environ, {"GIT_DIR": "/nonexistent"}):
+            self.assert_refuses(rc.git_short_sha, REPO)
+
+    def test_klt_nonzero_rc_raises_named_error(self):
+        """The '- klt: ;' shape: a klt that runs and exits non-zero with its diagnostic on stderr."""
+        path = self.stub_path(("klt", "#!/bin/sh\necho 'stub: broken klt' >&2\nexit 129\n"))
+        with mock.patch.dict(os.environ, {"PATH": path}):
+            self.assert_refuses(rc.klt_version_local)
+
+    def test_rc0_empty_stdout_raises_for_both(self):
+        """An exit-0 lookup with nothing on stdout is half the defect; it must refuse too."""
+        path = self.stub_path(("git", "#!/bin/sh\nexit 0\n"), ("klt", "#!/bin/sh\nexit 0\n"))
+        with mock.patch.dict(os.environ, {"PATH": path}):
+            for fn, args in ((rc.git_short_sha, (REPO,)), (rc.klt_version_local, ())):
+                with self.subTest(helper=fn.__name__):
+                    self.assert_refuses(fn, *args)
+
+    def test_missing_binary_raises_for_both(self):
+        """An absent binary must be the one named error, not a FileNotFoundError traceback by accident."""
+        empty = tempfile.TemporaryDirectory()
+        self.addCleanup(empty.cleanup)
+        with mock.patch.dict(os.environ, {"PATH": empty.name}):
+            for fn, args in ((rc.git_short_sha, (REPO,)), (rc.klt_version_local, ())):
+                with self.subTest(helper=fn.__name__):
+                    self.assert_refuses(fn, *args)
+
+    def test_error_carries_command_and_stderr_tail(self):
+        path = self.stub_path(("klt", "#!/bin/sh\necho 'stub: diagnostic tail' >&2\nexit 3\n"))
+        with mock.patch.dict(os.environ, {"PATH": path}):
+            with self.assertRaises(rc.ProvenanceError) as cm:
+                rc.klt_version_local()
+        msg = str(cm.exception)
+        self.assertIn("klt --version", msg)
+        self.assertIn("stub: diagnostic tail", msg)
+        self.assertIn("rc 3", msg)
+
+    def test_success_paths_still_return_values(self):
+        """The guard changes failures only: a working lookup returns what it always returned."""
+        path = self.stub_path(("klt", "#!/bin/sh\necho 'klt 1.2.3'\n"))
+        with mock.patch.dict(os.environ, {"PATH": path}):
+            self.assertEqual(rc.klt_version_local(), "klt 1.2.3")
+        sha = rc.git_short_sha(REPO)
+        self.assertTrue(re.fullmatch(r"[0-9a-f]{7,}", sha),
+                        f"the real repo sha should resolve, got {sha!r}")
 
 
 unittest.main()

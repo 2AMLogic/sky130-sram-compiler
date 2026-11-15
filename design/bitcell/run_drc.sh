@@ -8,14 +8,14 @@
 #             with no marker drawn it applies the strict (logic) rules everywhere.
 # klt reports `coverage_unknown` (exit 4) on zero-finding klayout-engine runs:
 # "0" means no violation reported, not proven clean -- run with a known-bad layout as control.
-set -u
+set -eu
 G=${1:?layout.gds}; O=${2:?outdir}; mkdir -p "$O"
-PDK=${SKY130_VARIANT_DIR:-$HOME/.ciel/sky130A}
-MR=$PDK/libs.tech/klayout/drc/sky130A_mr.drc
-klt drc "$G" --deck sky130 --format json > "$O/curated.json" 2>"$O/curated.err"
-klt drc "$G" --engine klayout --pdk sky130A --format json > "$O/lydrc.json" 2>"$O/lydrc.err"
-klt drc "$G" --engine klayout --deck-file "$MR" --deck-var feol=true --deck-var beol=true \
-  --deck-var thr=1 --format json > "$O/mr.json" 2>"$O/mr.err"
+# The three invocations live in three_deck_drc.sh (shared with
+# verification/marker/run_checks.sh, one source for the mr deck-var trio);
+# per-deck stderr is kept as <deck>.err, and a deck/klt failure (any exit other
+# than 0/3/4) aborts this script with that exit code.
+HERE=$(cd "$(dirname "$0")" && pwd)
+"$HERE/three_deck_drc.sh" "$G" "$O"
 python3 -I - "$O" <<'PY'
 import collections, json, sys
 for eng in ("curated", "lydrc", "mr"):

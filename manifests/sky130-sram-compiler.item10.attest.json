@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 13/13 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 14/14 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 13,
-    "passed_count": 13,
+    "check_count": 14,
+    "passed_count": 14,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:10fd38785740b0df161edcdc0dcb916608fd18eb1ab7e9b279058580dfe2fd8b"
+        "content_hash": "sha256:2ab331467ed0e3465244ba78be687d7bcea40ffaed8c1e88bec4ba21c613d8ba"
       },
       {
         "check": "present",
@@ -81,6 +81,20 @@
           "python3",
           "-I",
           "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "bitcell-schematic",
+        "argv": [
+          "python3",
+          "-I",
+          "design/bitcell/gen_schematic.py",
           "--check"
         ],
         "cwd": ".",
@@ -170,7 +184,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:6b8bc3a6b58ae48dbe59bf13653dd84a84832a1b37f6d494045e8b0ab874c324"
+      "content_hash": "sha256:66eb3b68ad387157485c34474a6e5213e78d7e1372e1bff4161540c37accd38f"
     }
   }
 }

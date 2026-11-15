@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # Re-run every marker case. Usage: run_checks.sh <outdir>   (scratch dir, outside the repo)
 # Needs: klt (with its klayout engine / standalone `klayout`), a sky130A PDK under ~/.ciel (override with PDK=).
-set -u
+set -eu
 OUT=${1:?outdir}; mkdir -p "$OUT"
+command -v klt >/dev/null || { echo "klt not on PATH" >&2; exit 1; }
 KLT_PY=${KLT_PY:-$(head -1 "$(command -v klt)" | sed 's/^#!//')}
-PDK=${PDK:-$(ls -d "$HOME"/.ciel/ciel/sky130/versions/*/sky130A | head -1)}
+PDK=${PDK:-${SKY130_VARIANT_DIR:-$HOME/.ciel/sky130A}}
 HERE=$(cd "$(dirname "$0")" && pwd)
 "$KLT_PY" -I "$HERE/build_cases.py" "$PDK" "$OUT"
-MR=$PDK/libs.tech/klayout/drc/sky130A_mr.drc
+# The three-deck invocations are design/bitcell/three_deck_drc.sh (shared with
+# design/bitcell/run_drc.sh, one source for the mr deck-var trio); stderr is
+# kept as <case>.<deck>.err. summarize.py prints the counts and asserts the
+# stripped-marker mr control; any deck/klt failure aborts here via set -e.
 for g in "$OUT"/*.gds; do
   f=$(basename "$g" .gds)
-  klt drc "$g" --deck sky130 --format json > "$OUT/$f.curated.json" 2>/dev/null
-  klt drc "$g" --engine klayout --pdk sky130A --format json > "$OUT/$f.lydrc.json" 2>/dev/null
-  klt drc "$g" --engine klayout --deck-file "$MR" --deck-var feol=true --deck-var beol=true \
-    --deck-var thr=1 --format json > "$OUT/$f.mr.json" 2>/dev/null
+  "$HERE/../../design/bitcell/three_deck_drc.sh" "$g" "$OUT" "$f."
 done
 "$KLT_PY" -I "$HERE/summarize.py" "$OUT"
