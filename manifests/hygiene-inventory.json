@@ -14,6 +14,7 @@
     {"name": "formats", "argv": ["python3", "-I", "verification/hygiene/check_formats.py"]},
     {"name": "compiler-tests", "argv": ["python3", "-I", "design/compiler/test_compiler.py"]},
     {"name": "compiler-schematics", "argv": ["python3", "-I", "design/compiler/gen_schematic.py", "--check"]},
+    {"name": "bitcell-schematic", "argv": ["python3", "-I", "design/bitcell/gen_schematic.py", "--check"]},
     {"name": "macro-256x32-m4", "argv": ["python3", "-I", "design/compiler/sram_compile.py", "256", "32", "4", "--check", "design/compiler/macro/sram_256x32_m4.spice"]},
     {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]},
     {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]}

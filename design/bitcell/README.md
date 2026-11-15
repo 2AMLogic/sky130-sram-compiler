@@ -10,6 +10,7 @@ Issue #7 (part of #2).
 | `netlist/bitcell_6t.spice` | `klt netlist --block` output of the schematic (first-line `sch_path` rewritten to a repo-relative path). |
 | `gen_bitcell.py` -> `bitcell_6t.gds` | Layout generator (klayout python) and its committed output; regenerate with `uv run --no-project --with klayout python -I design/bitcell/gen_bitcell.py design/bitcell/bitcell_6t.gds` (deterministic: same bytes on a re-run). |
 | `run_drc.sh` | The three DRC paths (curated deck, `sky130A.lydrc`, `sky130A_mr.drc`). |
+| `three_deck_drc.sh` | The three deck invocations themselves; `run_drc.sh` and `verification/marker/run_checks.sh` both call it so the mr `--deck-var` trio has one source. |
 | `lvs/` | `klt lvs` request and reference netlist. |
 | `records/` | Dated, append-only DRC / LVS / area records. |
 
