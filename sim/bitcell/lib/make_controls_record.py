@@ -33,7 +33,7 @@ here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import make_record as mr  # noqa: E402
 from make_tb import DET_N, NEG_N, NEG_SCALE, NEG_SEED  # noqa: E402
-from make_write_mc_record import merge, point_key, stats  # noqa: E402
+from make_write_mc_record import merge, stats  # noqa: E402
 from record_common import LADDER, git_short_sha, klt_version_of, load, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
