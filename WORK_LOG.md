@@ -5,6 +5,20 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-15
 
+- **PR #120**: docs: name layout/records/ as a historical dev-checks record in the Reproduce preamble
+- **PR #117**: refactor(sim): remove dead corner-grid imports and unused column-TB symbols
+- **PR #113**: fix: refuse record writes on a failed provenance lookup (git sha, klt version)
+- **PR #112**: ci(hygiene): run the column drift gate and sweep check_formats coverage to the tracked tree
+- **PR #111**: fix: remove five unused names the pyflakes pass finds (POLY_DIFF, NW_P, dead gl import, allw, empty f-string)
+- **PR #102**: feat(hygiene): gate the bitcell schematic on its generator with a --check mode
+- **PR #101**: refactor(verification): one shared three-deck klt drc helper, assert the stripped-marker control
+- **PR #90**: chore: drop unused point_key import from make_controls_record.py
+- **Issue #93** (closed): Remove five more unused names the pyflakes pass finds: POLY_DIFF, NW_P, gen_erc_spec's gl, allw, an empty f-string
+- **Issue #89** (closed): Remove the unused PROCESS/TEMPS/VDDS imports in both testbench generators, and the stale noqa: F401 hiding them
+- **Issue #84** (closed): README Reproduce table: layout/records/ has no reproduce row
+- **Issue #82** (closed): Remove two unused imports: point_key in make_controls_record.py (free) and math in sram_compiler.py (needs an item 1+2 re-attestation)
+- **Issue #80** (closed): make_column_tb.py --check is not run by CI, so column bench/request drift is unguarded
+- **Issue #75** (closed): design/bitcell/gen_schematic.py has no --check mode, so the generated bitcell_6t.sch has no regeneration gate
 - **PR #96**: fix(lvs): gate bitcell LVS on its expected-status table, derive the control width from sizing.json
 - **PR #92**: refactor(compiler): name build()'s geometry return instead of locals()
 - **Issue #107** (closed): CI never runs sim/bitcell/lib/test_record_common.py: add it to hygiene.yml and the item-10 inventory
