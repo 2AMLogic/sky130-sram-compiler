@@ -215,7 +215,6 @@ def main():
                       f"full output in `{ev.name}/{keep_yield.name}`:\n\n```json\n{json.dumps(yout, indent=1)[:6000]}\n```")
 
     klt = klt_version_of(det_rep)
-    allw = all(ndet.values())
     L = [f"# Bitcell Monte Carlo controls record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#19 (follows #14, #7). Append-only: add a new dated record, never edit this one. "
          "`2026-10-18-write-mc-complete.md` and `20261018-040941-91ba071.md` are not edited; this record supplies the controls "

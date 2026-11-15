@@ -25,7 +25,7 @@ import klayout.db as db
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
 from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
-                        POLY_DIFF, POLY_END, VIA)
+                        POLY_END, VIA)
 
 # ---- sizing (drawn W/L, um): read from sizing.json, the single source of truth ----
 _SZ = json.loads((pathlib.Path(__file__).resolve().parent / "sizing.json").read_text())
@@ -45,7 +45,7 @@ L_DRAWN = ("nwell", "diff", "tap", "poly", "licon", "li", "mcon", "m1", "via", "
            "poly_lbl", "li_lbl", "m1_lbl", "m2_lbl")
 L = {k: LAYERS[k] for k in L_DRAWN}
 
-# rules used as drawing constants. LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL,
+# rules used as drawing constants. LIC, VIA, DIFF_END, POLY_END, IMPL,
 # NPC_ENC and NW_P are the shared PDK rules, imported above; only cell-local
 # constants are defined here.
 LIC_GATE = 0.055     # licon to poly gate
