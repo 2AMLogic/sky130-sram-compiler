@@ -15,6 +15,9 @@
     {"name": "compiler-tests", "argv": ["python3", "-I", "design/compiler/test_compiler.py"]},
     {"name": "compiler-schematics", "argv": ["python3", "-I", "design/compiler/gen_schematic.py", "--check"]},
     {"name": "macro-256x32-m4", "argv": ["python3", "-I", "design/compiler/sram_compile.py", "256", "32", "4", "--check", "design/compiler/macro/sram_256x32_m4.spice"]},
-    {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]}
+    {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]},
+    {"name": "bitcell-ladder-seam", "argv": ["python3", "-I", "sim/bitcell/lib/test_record_common.py"]},
+    {"name": "compiler-erc-spec", "argv": ["python3", "-I", "design/compiler/test_erc_spec.py"]},
+    {"name": "compiler-layout", "argv": ["python3", "-I", "design/compiler/test_layout.py"]}
   ]
 }

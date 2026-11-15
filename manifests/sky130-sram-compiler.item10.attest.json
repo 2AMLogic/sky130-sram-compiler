@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 10/10 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 13/13 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 10,
-    "passed_count": 10,
+    "check_count": 13,
+    "passed_count": 13,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:ebd3983fe798330d4f1c5acd321d194d3c65b7313332fc65103662e3864656e6"
+        "content_hash": "sha256:10fd38785740b0df161edcdc0dcb916608fd18eb1ab7e9b279058580dfe2fd8b"
       },
       {
         "check": "present",
@@ -118,6 +118,45 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "bitcell-ladder-seam",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/bitcell/lib/test_record_common.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "compiler-erc-spec",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/test_erc_spec.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "compiler-layout",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/test_layout.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -131,7 +170,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:aa932e942f1312ac0d57612f7e90868a3850081baa680976ee9b39d4deadd555"
+      "content_hash": "sha256:6b8bc3a6b58ae48dbe59bf13653dd84a84832a1b37f6d494045e8b0ab874c324"
     }
   }
 }
