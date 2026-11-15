@@ -18,13 +18,31 @@ here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
 out = pathlib.Path(sys.argv[1])
 J = lambda p: json.loads((out / p).read_text())
-run = lambda *c: subprocess.run(c, capture_output=True, text=True, cwd=repo).stdout.strip()
 
-sha = run("git", "rev-parse", "--short", "HEAD")
+
+def run(*c):
+    """stdout of `c`, stripped, for the provenance lookups (git sha, klt version) named in the record.
+
+    Refuses rather than degrading: a non-zero return code, an empty stdout, or a binary missing from
+    PATH exits with the command and the stderr tail -- before any evidence file is copied or any
+    record written -- so no record names a sha or klt build the lookup did not actually produce
+    (`- klt: ;` used to be written verbatim into the append-only record).
+    """
+    try:
+        r = subprocess.run(c, capture_output=True, text=True, cwd=repo)
+    except FileNotFoundError as e:
+        sys.exit(f"make_record.py: `{c[0]}` not found on PATH: provenance lookup `{' '.join(c)}` cannot run ({e})")
+    s = r.stdout.strip()
+    if r.returncode != 0 or not s:
+        tail = (r.stderr or "").strip().splitlines()
+        sys.exit(f"make_record.py: `{' '.join(c)}` failed (rc {r.returncode}): {tail[-1] if tail else 'no stderr, empty stdout'}")
+    return s
+
+
 day = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+sha = run("git", "rev-parse", "--short", "HEAD")
+klt = run("klt", "--version")
 rec = here / "records" / f"{day}-{sha}.md"
-if not sha:
-    sys.exit("make_record.py: `git rev-parse --short HEAD` failed; refusing to write a record named without a sha")
 if rec.exists():
     sys.exit(f"make_record.py: append-only record {rec} already exists; refusing to re-run at the same HEAD on the same day, which would also overwrite the committed evidence files it describes")
 
@@ -38,7 +56,7 @@ seam_w = [v["bbox"] for v in seam["violations"] if v["rule"] == "met1.width.1"]
 
 L = [f"# T1 item 3 (DRC clean) record {day} ({sha})", "",
      "Issue: 2AMLogic/sky130-sram-compiler#32. Append-only: add a new dated record, never edit this one.", "",
-     f"- klt: {run('klt', '--version')}; command and wall time of each run below (`verification/drc/run_drc.sh`, one run at a time, local)",
+     f"- klt: {klt}; command and wall time of each run below (`verification/drc/run_drc.sh`, one run at a time, local)",
      "- streams (guarded by sha256 before the run): `layout/sram_256x32_m4.gds` ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c; "
      "`layout/control/control.gds` 8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
      "- each partition is graded on its own stream. The P&R control block is **not composed** into the macro GDS on `main`; no composed macro+control DRC exists or is claimed.", "",
