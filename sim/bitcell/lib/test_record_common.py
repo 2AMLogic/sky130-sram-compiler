@@ -11,6 +11,7 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 import types
@@ -29,7 +30,11 @@ import tb_common  # noqa: E402
 # is not available in a PDK-free checkout. An attribute-less stub keeps this suite PDK-free and still fails
 # loudly if anything under test ever actually reaches for the extractor.
 sys.modules.setdefault("snm_from_artifacts", types.ModuleType("snm_from_artifacts"))
-from make_controls_record import ref_kstar  # noqa: E402
+import make_controls_record  # noqa: E402
+import make_record  # noqa: E402
+import make_write_mc_record  # noqa: E402
+
+ref_kstar = make_controls_record.ref_kstar
 
 
 def corner(values, corner_id="tt/1.800V/25C", vdd=1.8):
@@ -41,6 +46,19 @@ def corner(values, corner_id="tt/1.800V/25C", vdd=1.8):
 def flips_at(n, kstar, vdd=1.8):
     """Ladder values for a cell that flips at levels 0..kstar and holds above (monotone)."""
     return [0.0 if k <= kstar else vdd for k in range(n)]
+
+
+def mc_sample(n, proc, vdd, temp, kstar, i):
+    """One Monte Carlo sample of a (process, VDD, T) point: a corner with a unique corner_id."""
+    c = corner(flips_at(n, kstar, vdd), f"{proc}/{vdd:.3f}V/{temp}C#{i}", vdd)
+    c["process"] = proc
+    c["temperature_c"] = temp
+    return c
+
+
+def mc_report(corners):
+    """A minimal write-trip report carrying the fields the record generators read."""
+    return {"corners": corners, "environment": {"monte_carlo": {"n": len(corners)}}}
 
 
 class DeclaredOnce(unittest.TestCase):
@@ -147,6 +165,153 @@ class DeterminismReference(unittest.TestCase):
     def test_wrong_length_is_named(self):
         with self.assertRaises(rc.LadderLengthError):
             ref_kstar({"corners": [corner(flips_at(rc.LADDER + 1, 10), "ss/1.620V/125C")]})
+
+
+class RecordProseTracksLadder(unittest.TestCase):
+    """Issue #91: a record's stated ladder methodology must track tb_common.LADDER, not a hardcoded 33.
+
+    The stub-and-regenerate shape is the manipulation that found the defect: stub LADDER to a length
+    with no digit overlap against the old literals (41 -> step /40), regenerate each record from a
+    small fixture, and assert both directions -- the derived step appears, the old spellings do not.
+    """
+
+    STUB = 41
+
+    def setUp(self):
+        # LADDER is imported by value, so the stub must land on every module that reads it:
+        # write_ladder validates through record_common's binding, the prose through the generators'.
+        # create=True: pre-fix, make_record does not import LADDER at all -- part of the defect.
+        for m in (tb_common, rc, make_write_mc_record, make_record, make_controls_record):
+            p = mock.patch.object(m, "LADDER", self.STUB, create=True)
+            p.start()
+            self.addCleanup(p.stop)
+
+    def step_mv(self, vdd):
+        return f"{vdd / (self.STUB - 1) * 1000:.0f}"
+
+    def regenerate_write_mc_record(self, n):
+        corners = [mc_sample(n, "fs_mm", 1.62, -40, k, i) for i, k in enumerate((10, 12, 14))]
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            rep = tmp / "mc_write_trip.report.json"
+            rep.write_text(json.dumps(mc_report(corners)))
+            out = tmp / "record.md"
+            argv = ["make_write_mc_record.py", "--id", "prose-pin", "--out", str(out),
+                    "--evidence", str(tmp / "ev"), "--report", str(rep)]
+            with mock.patch.object(sys, "argv", argv):
+                make_write_mc_record.main()
+            return out.read_text()
+
+    def test_write_mc_record_prose_reports_the_stubbed_step(self):
+        text = self.regenerate_write_mc_record(self.STUB)
+        self.assertIn(f"step VDD/{self.STUB - 1} = {self.step_mv(1.62)} mV at 1.62 V, "
+                      f"{self.step_mv(1.98)} mV at 1.98 V", text)
+        self.assertIn(f"[VDD*k*/{self.STUB - 1}, VDD*(k*+1)/{self.STUB - 1})", text)
+        for old in ("/32", "33-level", "51 mV", "62 mV", "56 mV"):
+            with self.subTest(literal=old):
+                self.assertNotIn(old, text)
+
+    def test_digit_overlap_stub_is_distinguished_from_the_old_literals(self):
+        """Issue edge case: stub 34 makes the derived denominator 33, digits overlapping the old
+        literals. The pin is the specific old spellings, not bare digits, so the derived /33 is
+        asserted present while '33-level' and '/32' are still asserted absent."""
+        for m in (tb_common, rc, make_write_mc_record, make_record, make_controls_record):
+            p = mock.patch.object(m, "LADDER", 34, create=True)
+            p.start()
+            self.addCleanup(p.stop)
+        text = self.regenerate_write_mc_record(34)
+        self.assertIn("[VDD*k*/33, VDD*(k*+1)/33)", text)
+        for old in ("/32", "33-level", "51 mV", "62 mV", "56 mV"):
+            with self.subTest(literal=old):
+                self.assertNotIn(old, text)
+
+    def regenerate_margin_record(self):
+        def snm_for(path, pair):
+            return ((0.1, 0.2), (0.3, 0.4))
+
+        p = mock.patch.object(sys.modules["snm_from_artifacts"], "snm_for", snm_for, create=True)
+        p.start()
+        self.addCleanup(p.stop)
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            files = {}
+            for nm in ("read", "hold"):
+                files[nm] = tmp / f"{nm}.json"
+                files[nm].write_text(json.dumps({"corners": [{"corner_id": "tt/1.800V/25C"}],
+                                                 "environment": {}}))
+            files["write"] = tmp / "write.json"
+            files["write"].write_text(json.dumps(mc_report([corner(flips_at(self.STUB, 10))])))
+            out = tmp / "record.md"
+            argv = ["make_record.py", "--id", "prose-pin", "--out", str(out),
+                    "--evidence", str(tmp / "ev"),
+                    "--read", str(files["read"]), str(tmp / "art-read"),
+                    "--hold", str(files["hold"]), str(tmp / "art-hold"),
+                    "--write", str(files["write"])]
+            with mock.patch.object(sys, "argv", argv):
+                make_record.main()
+            return out.read_text()
+
+    def test_margin_record_prose_reports_the_stubbed_step(self):
+        text = self.regenerate_margin_record()
+        self.assertIn(f"ladder step VDD/{self.STUB - 1}, so the true trip lies in the next "
+                      f"{self.step_mv(1.8)} mV-class step above", text)
+        self.assertIn(f"(resolution VDD/{self.STUB - 1})", text)
+        for old in ("/32", "33-level", "51 mV", "62 mV", "56 mV"):
+            with self.subTest(literal=old):
+                self.assertNotIn(old, text)
+
+    def regenerate_controls_record(self):
+        # The `klt yield` step is stubbed into its error branch: the note quoting the failure is the
+        # one place this generator names the no-flip ladder step. Issue #103's provenance lookups at
+        # the top of main() go through the same stub as successes, so the suite stays hermetic (no
+        # real klt on PATH, no real git needed) and still runs from a git-archive scratch checkout.
+        fake = subprocess.CompletedProcess([], 1, stdout="", stderr="klt yield: stub failure")
+
+        def run_stub(cmd, *args, **kwargs):
+            if cmd[:2] == ["klt", "yield"]:
+                return fake
+            return subprocess.CompletedProcess([], 0, stdout="stub", stderr="")
+
+        with mock.patch.object(subprocess, "run", side_effect=run_stub):
+            with tempfile.TemporaryDirectory() as tmp:
+                tmp = pathlib.Path(tmp)
+                base = mc_report([mc_sample(self.STUB, "fs_mm", 1.62, -40, k, i)
+                                  for i, k in enumerate((10, 12, 14))])
+                det_ref = mc_report([corner(flips_at(self.STUB, 10), "fs/1.620V/-40C")])
+                det = mc_report([mc_sample(self.STUB, "fs_mm", 1.62, -40, 10, i) for i in range(3)])
+                neg = mc_report([mc_sample(self.STUB, "fs_mm", 1.62, -40, 5, i) for i in range(3)])
+                files = {}
+                for nm, rep in (("base", base), ("detref", det_ref), ("det", det), ("neg", neg)):
+                    files[nm] = tmp / f"{nm}.json"
+                    files[nm].write_text(json.dumps(rep))
+                files["basemd"] = tmp / "base.md"
+                files["basemd"].write_text("## stub\n")
+                out = tmp / "record.md"
+                argv = ["make_controls_record.py", "--id", "prose-pin", "--out", str(out),
+                        "--evidence", str(tmp / "ev"), "--base-record", str(files["basemd"]),
+                        "--base-reports", str(files["base"]), "--det-ref", str(files["detref"]),
+                        "--det", str(files["det"]), "--neg", str(files["neg"])]
+                with mock.patch.object(sys, "argv", argv):
+                    make_controls_record.main()
+                return out.read_text()
+
+    def test_controls_record_prose_reports_the_stubbed_step(self):
+        text = self.regenerate_controls_record()
+        self.assertIn(f"a no-flip sample would enter as -VDD/{self.STUB - 1}", text)
+        for old in ("/32", "33-level", "51 mV", "62 mV", "56 mV"):
+            with self.subTest(literal=old):
+                self.assertNotIn(old, text)
+
+    def test_generator_sources_carry_no_ladder_literal(self):
+        """The docstrings describe the bench, so they must name the declaration like make_tb.py's do;
+        stub-and-regenerate covers the emitted prose, this covers the text beside it."""
+        literals = ("/32", "33-level", "33-trial", "51 mV", "62 mV")
+        for name in ("make_record.py", "make_write_mc_record.py", "make_controls_record.py",
+                     "../README.md"):
+            src = (HERE / name).resolve().read_text()
+            for lit in literals:
+                with self.subTest(module=name, literal=lit):
+                    self.assertNotIn(lit, src)
 
 
 class ProvenanceLookupsRefuse(unittest.TestCase):

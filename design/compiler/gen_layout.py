@@ -27,7 +27,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
 from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC,  # noqa: E402
-                        POLY_DIFF, POLY_END, VIA)
+                        POLY_DIFF, POLY_END, VIA,
+                        write_gds as _shared_write_gds)
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -1024,11 +1025,7 @@ PIN_METAL_LAYER = {"m3": (70, 20), "m4": (71, 20)}
 
 
 def write_gds(ly, path):
-    opt = db.SaveLayoutOptions()
-    opt.format = "GDS2"
-    opt.gds2_write_timestamps = False
-    opt.gds2_libname = "sky130_sram_compiler"
-    ly.write(str(path), opt)
+    _shared_write_gds(ly, path)
 
 
 def socket_descriptor(T, name):

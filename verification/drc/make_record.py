@@ -11,37 +11,22 @@ import datetime
 import json
 import pathlib
 import shutil
-import subprocess
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
+sys.path.insert(0, str(repo / "sim/bitcell/lib"))
+from record_common import ProvenanceError, git_short_sha, klt_version_local  # noqa: E402
+
 out = pathlib.Path(sys.argv[1])
 J = lambda p: json.loads((out / p).read_text())
 
-
-def run(*c):
-    """stdout of `c`, stripped, for the provenance lookups (git sha, klt version) named in the record.
-
-    Refuses rather than degrading: a non-zero return code, an empty stdout, or a binary missing from
-    PATH exits with the command and the stderr tail -- before any evidence file is copied or any
-    record written -- so no record names a sha or klt build the lookup did not actually produce
-    (`- klt: ;` used to be written verbatim into the append-only record).
-    """
-    try:
-        r = subprocess.run(c, capture_output=True, text=True, cwd=repo)
-    except FileNotFoundError as e:
-        sys.exit(f"make_record.py: `{c[0]}` not found on PATH: provenance lookup `{' '.join(c)}` cannot run ({e})")
-    s = r.stdout.strip()
-    if r.returncode != 0 or not s:
-        tail = (r.stderr or "").strip().splitlines()
-        sys.exit(f"make_record.py: `{' '.join(c)}` failed (rc {r.returncode}): {tail[-1] if tail else 'no stderr, empty stdout'}")
-    return s
-
-
 day = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
-sha = run("git", "rev-parse", "--short", "HEAD")
-klt = run("klt", "--version")
+try:
+    sha = git_short_sha(repo)
+    klt = klt_version_local()
+except ProvenanceError as e:
+    sys.exit(f"make_record.py: {e}")
 rec = here / "records" / f"{day}-{sha}.md"
 if rec.exists():
     sys.exit(f"make_record.py: append-only record {rec} already exists; refusing to re-run at the same HEAD on the same day, which would also overwrite the committed evidence files it describes")

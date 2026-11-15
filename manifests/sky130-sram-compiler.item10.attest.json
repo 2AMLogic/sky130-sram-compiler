@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 12/12 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 13/13 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 12,
-    "passed_count": 12,
+    "check_count": 13,
+    "passed_count": 13,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:b80b9bc91913b03e491bd2979abc7ba3f94a581b9a6b6acdab81038322006337"
+        "content_hash": "sha256:df92b6e83a6b9a7bf6b349963c2b545bf3b9a4b1d94002b5688f71d3bdef1b58"
       },
       {
         "check": "present",
@@ -136,6 +136,21 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "bitcell-layout",
+        "argv": [
+          "python3",
+          "-I",
+          "design/bitcell/gen_bitcell.py",
+          "--check",
+          "design/bitcell/bitcell_6t.gds"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "column-sim-requests",
         "argv": [
           "python3",
@@ -150,7 +165,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -159,7 +174,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:4ec08495fd62dfb2123c5610e60dad0521ab4ec29c06601854a4e62659b978df"
+      "content_hash": "sha256:265f144f087edac2eef43d5b9dc6edaa125f4291ce5ff2cc9fa2314439339e6b"
     }
   }
 }

@@ -2,9 +2,12 @@
 
 Imported by design/bitcell/gen_bitcell.py, design/bitcell/gen_schematic.py,
 design/compiler/gen_layout.py and design/compiler/gen_schematic.py. Everything
-here is a foundry fact rather than a design choice: the GDS layer numbers, the
+here is a foundry fact rather than a design choice -- the GDS layer numbers, the
 rules used as drawing enclosures, and the ad/as/pd/ps/nrd/nrs formula the PDK
-symbols would otherwise derive with expr(). Holding them once is what keeps
+symbols would otherwise derive with expr() -- with one exception: write_gds()
+is a repo write convention (deterministic, byte-reproducible GDS output), not a
+foundry fact; it lives here so every GDS writer in the tree shares it. Holding
+the facts once is what keeps
 layout and netlist from drifting apart silently -- the same reason
 design/compiler/gen_erc_spec.py takes its stackup from the layout generator's
 table (gen_erc_spec.py:10-12) instead of restating it.
@@ -54,3 +57,23 @@ def device_geometry(w):
     w = float(w)
     return (f"ad={w * 0.29:.4g} as={w * 0.29:.4g} pd={2 * (w + 0.29):.4g} ps={2 * (w + 0.29):.4g} "
             f"nrd={0.29 / w:.4g} nrs={0.29 / w:.4g} sa=0 sb=0 sd=0")
+
+
+# ---- GDS write convention ---------------------------------------------------------
+def write_gds(ly, path):
+    """Write `ly` to `path` with the repo's deterministic GDS options.
+
+    Zeroes the BGNLIB/BGNSTR header timestamps and pins the library name so a
+    regeneration is byte-identical to the committed artifact. This is a write
+    convention, not a foundry fact (see the module docstring).
+
+    The klayout import is function-local on purpose: the two schematic
+    generators import this module without klayout installed and run under bare
+    `python3 -I`, and a module-scope import would couple them to klayout.
+    """
+    import klayout.db as db
+    opt = db.SaveLayoutOptions()
+    opt.format = "GDS2"
+    opt.gds2_write_timestamps = False
+    opt.gds2_libname = "sky130_sram_compiler"
+    ly.write(str(path), opt)

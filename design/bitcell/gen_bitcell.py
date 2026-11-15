@@ -2,6 +2,9 @@
 
 Usage:  uv run --no-project --with klayout python -I gen_bitcell.py <out.gds>
         (any python with klayout.db works; the repo does not pin the runner)
+        gen_bitcell.py --check <committed.gds>
+        regenerate to a temp file and byte-compare against <committed.gds>;
+        on drift print to stderr and exit 3 (mirrors gen_layout.py --check)
 
 The cell is drawn to the ordinary (periphery) sky130 rules and carries NO
 areaid.ce (81/2) marker, so every rule checked is the strict outside-marker one
@@ -20,12 +23,13 @@ All coordinates are um; the sizing block below is the only design input.
 import json
 import pathlib
 import sys
+import tempfile
 
 import klayout.db as db
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
 from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
-                        POLY_END, VIA)
+                        POLY_END, VIA, write_gds)
 
 # ---- sizing (drawn W/L, um): read from sizing.json, the single source of truth ----
 _SZ = json.loads((pathlib.Path(__file__).resolve().parent / "sizing.json").read_text())
@@ -259,7 +263,28 @@ def build():
 
 
 if __name__ == "__main__":
-    out = sys.argv[1]
+    args = sys.argv[1:]
+    check = None
+    if "--check" in args:
+        i = args.index("--check")
+        if i + 1 >= len(args):
+            print("gen_bitcell: --check needs a path argument", file=sys.stderr)
+            sys.exit(2)
+        check = args[i + 1]
+        del args[i:i + 2]
+    if (check is not None and args) or (check is None and len(args) != 1):
+        print(__doc__, file=sys.stderr)
+        sys.exit(2)
     layout, info = build()
-    layout.write(out)
-    print(json.dumps(info))
+    if check is not None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fresh = pathlib.Path(tmp) / "fresh.gds"
+            write_gds(layout, fresh)
+            data = fresh.read_bytes()
+        p = pathlib.Path(check)
+        if not p.exists() or p.read_bytes() != data:
+            print(f"gen_bitcell: {check} drifted from the generator", file=sys.stderr)
+            sys.exit(3)
+    else:
+        write_gds(layout, args[0])
+        print(json.dumps(info))
