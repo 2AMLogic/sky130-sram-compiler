@@ -42,6 +42,9 @@ jobs:
       - name: Bitcell testbenches and klt sim requests match their generator
         run: python3 -I sim/bitcell/lib/make_tb.py --check
 
+      - name: Bitcell layout matches its generator (byte-identical GDS)
+        run: python3 -I design/bitcell/gen_bitcell.py --check design/bitcell/bitcell_6t.gds
+
       - name: Item 10 attestation still reproduces
         run: |
           klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
