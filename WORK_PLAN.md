@@ -27,33 +27,33 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#75**: design/bitcell/gen_schematic.py has no --check mode, so the generated bitcell_6t.sch has no regeneration gate
-- **#80**: make_column_tb.py --check is not run by CI, so column bench/request drift is unguarded
+- **#99**: Bitcell LVS negative-control anchor corrupts the control netlist for integer-valued ax.w (regex built from an unescaped :g-formatted float)
+- **#104**: Fold the repeated gzip-JSON write and sha256 helpers into record_common
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#73**: README: bring the status line, Reproduce table and repo layout up to the tree
-- **#74**: Narrow gen_layout.build()'s locals() return to the two fields callers actually use
-- **#76**: Declare the write-trip LADDER length once: make_tb.py and record_common.py each define LADDER = 33
-- **#78**: design/bitcell/lvs/run_lvs.sh computes an expected-status table it never checks: a desynced negative control reports match and exits 0
-- **#82**: Remove two unused imports: point_key in make_controls_record.py (free) and math in sram_compile.py (needs an item 1+2 re-attestation)
+- **#67**: bitcell GDS is not byte-reproducible: gen_bitcell.py writes klayout timestamps into the GDS header
+- **#88**: Wire the PDK-free test suites into the hygiene CI inventory (needs an item-10 re-attestation)
+- **#91**: Write-MC record prose hardcodes the ladder step (/32) while the data now derives from tb_common.LADDER
+- **#105**: No test asserts any generator's --check actually exits non-zero on drift
+- **#108**: Marker study: counts have drifted from the 2026-10-17 record on the current klt pin — new dated record needed
+- **#116**: Consolidate the duplicated provenance guard in verification/drc and guard design/bitcell make_record
+- **#119**: T1 item 9 grades analog 'met' while sim/testbench-inventory.json omits every bitcell testbench but one
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#90**: chore: drop unused point_key import from make_controls_record.py
-- **#96**: fix(lvs): gate bitcell LVS on its expected-status table, derive the control width from sizing.json
+- **#110**: fix: derive the write-trip ladder prose in the record generators from tb_common.LADDER
+- **#123**: docs(marker): add 2026-11-15 re-run record with per-deck drift attribution
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#77**: docs: add the nine missing Reproduce rows and resync the status line and repo layout
-- **#87**: refactor(sim): declare the write-trip ladder length once and reject a wrong-length ladder loudly
-- **#92**: refactor(compiler): name build()'s geometry return instead of locals()
+- **#121**: refactor: consolidate record provenance lookups onto record_common
 
 ## Proposed
 
@@ -62,15 +62,19 @@ Issues carrying `loom:curated`.
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)*
 - **#67**: bitcell GDS is not byte-reproducible: gen_bitcell.py writes klayout timestamps into the GDS header *(curated)*
-- **#73**: README: bring the status line, Reproduce table and repo layout up to the tree *(curated)*
-- **#74**: Narrow gen_layout.build()'s locals() return to the two fields callers actually use *(curated)*
-- **#80**: make_column_tb.py --check is not run by CI, so column bench/request drift is unguarded *(curated)*
+- **#88**: Wire the PDK-free test suites into the hygiene CI inventory (needs an item-10 re-attestation) *(curated)*
+- **#91**: Write-MC record prose hardcodes the ladder step (/32) while the data now derives from tb_common.LADDER *(curated)*
+- **#95**: make_record.py bakes a failed DRC/LVS compare into an append-only record: check the runners' returncodes *(curated)*
+- **#99**: Bitcell LVS negative-control anchor corrupts the control netlist for integer-valued ax.w (regex built from an unescaped :g-formatted float) *(curated)*
+- **#104**: Fold the repeated gzip-JSON write and sha256 helpers into record_common *(curated)*
+- **#105**: No test asserts any generator's --check actually exits non-zero on drift *(curated)*
+- **#108**: Marker study: counts have drifted from the 2026-10-17 record on the current klt pin — new dated record needed *(curated)*
+- **#114**: make_column_record.py writes evidence before resolving the sha, so a provenance failure leaves orphaned gzips (needs item-9 re-attestation) *(curated)*
+- **#119**: T1 item 9 grades analog 'met' while sim/testbench-inventory.json omits every bitcell testbench but one *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#89**: Remove the unused PROCESS/TEMPS/VDDS imports in both testbench generators, and the stale noqa: F401 hiding them *(hermit)*
-- **#93**: Remove five more unused names the pyflakes pass finds: POLY_DIFF, NW_P, gen_erc_spec's gl, allw, an empty f-string *(hermit)*
-- **#94**: Marker run_checks.sh: three-deck loop duplicates run_drc.sh, klt stderr discarded, and the README's control is never asserted *(hermit)*
+_None._
 
 ## Epics
 
@@ -84,10 +88,10 @@ _None._
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 5 |
+| In Progress (`loom:building`) | 7 |
 | PRs awaiting review | 2 |
-| Approved PRs awaiting merge | 3 |
-| Curated | 6 |
-| Architect / Hermit proposals | 3 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 12 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
