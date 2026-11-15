@@ -21,8 +21,8 @@ source; per-deck stderr is kept as `<case>.<deck>.err` and any deck/klt failure
 aborts the run (klt exit-code contract: 0 clean, 3 violations, 4 `coverage_unknown`
 are normal outcomes).
 
-The `sky130A_mr.drc` run without those `--deck-var`s silently checks nothing
-(`coverage_unknown`, 0 violations); the stripped-marker foundry case is the
-control that proves it ran. `summarize.py` enforces this: it prints
-`CONTROL ok/FAILED` and exits nonzero unless that case's mr deck fired >0
-violations.
+The `sky130A_mr.drc` run without the `--deck-var` trio that helper passes
+silently checks nothing (`coverage_unknown`, 0 violations); the stripped-marker
+foundry case is the control that proves it ran. `summarize.py` enforces this:
+it prints `CONTROL ok/FAILED` and exits nonzero unless that case's mr deck
+fired >0 violations.
