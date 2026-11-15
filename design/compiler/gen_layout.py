@@ -560,6 +560,19 @@ class ArrayGeom:
         return i * STRAP_H + self.B[i] * PITCH_Y
 
 
+class BuildGeom:
+    """build()'s geometry result: the two values callers read back.
+
+    Attributes:
+        ag:  the ArrayGeom (rows, cols, strap rows B, height/width in um).
+        hcm: column-mux cell height (um), the periphery row below the array.
+    """
+
+    def __init__(self, ag, hcm):
+        self.ag = ag
+        self.hcm = hcm
+
+
 def build_array(T, bc, ag):
     """Tile the committed bitcell (translation only, +ROW_DY vertical pitch), add the
     shapes the cell leaves to the array: implant/poly bridges, continuous well, bit-line,
@@ -652,6 +665,12 @@ def _choose_slots(G, w_sa, w_wd, sa_x, wd_x, pitch=0.7):
 
 
 def build(words, bits, mux):
+    """Place the macro layout for (words, bits, mux).
+
+    Returns (ly, T, BuildGeom(ag=..., hcm=...)): the layout, its top-cell Pen,
+    and the named geometry record — `ag`, the ArrayGeom (rows, cols, strap rows,
+    height/width), and `hcm`, the column-mux cell height in um.
+    """
     g = sc.geometry(words, bits, mux)
     rows, cols = g["rows"], g["cols"]
     name = sc.top_name(words, bits, mux)
@@ -996,7 +1015,7 @@ def build(words, bits, mux):
     bb_all = T.cell.dbbox()
     T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
     T.size = (bb_all.width(), bb_all.height())
-    return ly, T, locals()
+    return ly, T, BuildGeom(ag=ag, hcm=hcm)
 
 
 # ---- outputs -------------------------------------------------------------------------
@@ -1108,7 +1127,7 @@ def main(argv):
         return 2
     try:
         words, bits, mux = (int(a) for a in args)
-        ly, T, env = build(words, bits, mux)
+        ly, T, geom = build(words, bits, mux)
     except (sc.RangeError, GenError, ValueError) as e:
         print(f"gen_layout: error: {e}", file=sys.stderr)
         return 1
@@ -1146,7 +1165,7 @@ def main(argv):
         print(json.dumps({"top": sc.top_name(words, bits, mux), "sha256": hashlib.sha256(data).hexdigest(),
                           "width_um": round(bb.width(), 3), "height_um": round(bb.height(), 3),
                           "area_um2": round(bb.width() * bb.height(), 1),
-                          "array_um": [round(env["ag"].width, 3), round(env["ag"].height, 3)],
+                          "array_um": [round(geom.ag.width, 3), round(geom.ag.height, 3)],
                           "bitcell_pitch_um": [BC_W, PITCH_Y]}))
     return 0
 
