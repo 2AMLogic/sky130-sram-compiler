@@ -11,20 +11,23 @@ import datetime
 import json
 import pathlib
 import shutil
-import subprocess
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
+sys.path.insert(0, str(repo / "sim/bitcell/lib"))
+from record_common import ProvenanceError, git_short_sha, klt_version_local  # noqa: E402
+
 out = pathlib.Path(sys.argv[1])
 J = lambda p: json.loads((out / p).read_text())
-run = lambda *c: subprocess.run(c, capture_output=True, text=True, cwd=repo).stdout.strip()
 
-sha = run("git", "rev-parse", "--short", "HEAD")
 day = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+try:
+    sha = git_short_sha(repo)
+    klt = klt_version_local()
+except ProvenanceError as e:
+    sys.exit(f"make_record.py: {e}")
 rec = here / "records" / f"{day}-{sha}.md"
-if not sha:
-    sys.exit("make_record.py: `git rev-parse --short HEAD` failed; refusing to write a record named without a sha")
 if rec.exists():
     sys.exit(f"make_record.py: append-only record {rec} already exists; refusing to re-run at the same HEAD on the same day, which would also overwrite the committed evidence files it describes")
 
@@ -38,7 +41,7 @@ seam_w = [v["bbox"] for v in seam["violations"] if v["rule"] == "met1.width.1"]
 
 L = [f"# T1 item 3 (DRC clean) record {day} ({sha})", "",
      "Issue: 2AMLogic/sky130-sram-compiler#32. Append-only: add a new dated record, never edit this one.", "",
-     f"- klt: {run('klt', '--version')}; command and wall time of each run below (`verification/drc/run_drc.sh`, one run at a time, local)",
+     f"- klt: {klt}; command and wall time of each run below (`verification/drc/run_drc.sh`, one run at a time, local)",
      "- streams (guarded by sha256 before the run): `layout/sram_256x32_m4.gds` ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c; "
      "`layout/control/control.gds` 8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6",
      "- each partition is graded on its own stream. The P&R control block is **not composed** into the macro GDS on `main`; no composed macro+control DRC exists or is claimed.", "",

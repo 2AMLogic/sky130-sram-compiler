@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 11/11 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 13/13 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 11,
-    "passed_count": 11,
+    "check_count": 13,
+    "passed_count": 13,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:19fea1df3fa16384cbf2c8a467263af4b45cce5f50dbf8517e9f353e3ae53a08"
+        "content_hash": "sha256:df92b6e83a6b9a7bf6b349963c2b545bf3b9a4b1d94002b5688f71d3bdef1b58"
       },
       {
         "check": "present",
@@ -38,14 +38,14 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:d73906e56d4fce109d744247cfbbce29c04afb4674dd0e168a53ddbbb9b096df"
+        "content_hash": "sha256:f8c0b55758e70ce34caed2b8de7030b8b1e821cc7d2a6a88207b1adf7d24ec7a"
       },
       {
         "check": "present",
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:da97ce4371e7b23e23557c9a82a5ed3d982e7e8f62eaa07c46397843d5f7658a"
+        "content_hash": "sha256:c2344c0b988898ae1ba82a76a459ce15ac7d8b58c91bcf3fa538dadd41566f9f"
       },
       {
         "check": "command",
@@ -81,6 +81,20 @@
           "python3",
           "-I",
           "design/compiler/gen_schematic.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "bitcell-schematic",
+        "argv": [
+          "python3",
+          "-I",
+          "design/bitcell/gen_schematic.py",
           "--check"
         ],
         "cwd": ".",
@@ -133,6 +147,20 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "column-sim-requests",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/column/lib/make_column_tb.py",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -146,7 +174,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:347a1dc2f5571b3f69b4422c6bc9af5b36df5be4bc600bf659eb3572f4a37135"
+      "content_hash": "sha256:265f144f087edac2eef43d5b9dc6edaa125f4291ce5ff2cc9fa2314439339e6b"
     }
   }
 }

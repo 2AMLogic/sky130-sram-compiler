@@ -24,7 +24,7 @@
         "role": "source",
         "path": "design/bitcell/gen_schematic.py",
         "passed": true,
-        "content_hash": "sha256:8f69267ff7c39b2987b4def9273f17e22aaba114d8699c17f7a8fb2f6bf9965b"
+        "content_hash": "sha256:7302678c55501b1ca423a084c625a470b3f4d52df34619508434317e56026d19"
       },
       {
         "check": "present",
@@ -571,7 +571,7 @@
             "path": "design/bitcell/gen_schematic.py",
             "scope": "repo"
           },
-          "content_hash": "sha256:8f69267ff7c39b2987b4def9273f17e22aaba114d8699c17f7a8fb2f6bf9965b"
+          "content_hash": "sha256:7302678c55501b1ca423a084c625a470b3f4d52df34619508434317e56026d19"
         },
         {
           "path": {
@@ -791,7 +791,7 @@
           "content_hash": "sha256:7737246f0f397c1e247980a3508cc6af347a4c09efa011e1274953b5368ad86d"
         }
       ],
-      "content_hash": "sha256:79334c53d301254306250061a03ba3821b1893bad0c1f86db134da99e294bb9c"
+      "content_hash": "sha256:2bec89574daf78a26039fdb359c3fe52727550ab3d723ab7f5243cabda377a49"
     }
   }
 }

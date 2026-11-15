@@ -69,6 +69,9 @@ def main():
 
     reps = [load(r) for r in a.report]
     rep = reps[-1]
+    # Provenance resolves before anything is written: a failed lookup must refuse before any
+    # artifact lands, not after the evidence .json.gz files are on disk.
+    git = git_short_sha(repo)
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
     for i, r in enumerate(reps[1:], 1):  # the base report is already committed; only the new ones are stored
@@ -123,7 +126,6 @@ def main():
 
     mc = rep["environment"].get("monte_carlo", {})
     remote = rep["environment"].get("remote", {})
-    git = git_short_sha(repo)
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
     L = [f"# Bitcell write-trip Monte Carlo record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#14 (follows #7). Append-only: add a new dated record, never edit this one. "
@@ -133,7 +135,7 @@ def main():
          f"- sizing (drawn W/L, um): PD {sizing['pd']['w']}/{sizing['pd']['l']} {sizing['pd']['model']}, "
          f"AX {sizing['ax']['w']}/{sizing['ax']['l']} {sizing['ax']['model']}, "
          f"PU {sizing['pu']['w']}/{sizing['pu']['l']} {sizing['pu']['model']} (design/bitcell/sizing.json)",
-         f"- request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` "
+         "- request `sim/bitcell/requests/mc_write_trip.request.json`; testbench `sim/bitcell/tb/mc_write_trip.sp` "
          "(full 6T cell, schematic subckt `bitcell_6t`, per-instance mismatch via the `_mm` library sections)",
          f"- Monte Carlo: n={mc.get('n')} samples per point, seed={mc.get('seed')}, vary={mc.get('vary')}, k_sigma={mc.get('k_sigma')}",
          f"- backend: batch fleet; batch job ids in the input reports {inputs} "

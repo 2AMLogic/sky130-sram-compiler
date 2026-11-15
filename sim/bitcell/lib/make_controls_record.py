@@ -33,8 +33,8 @@ here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import make_record as mr  # noqa: E402
 from make_tb import DET_N, NEG_N, NEG_SCALE, NEG_SEED  # noqa: E402
-from make_write_mc_record import merge, point_key, stats  # noqa: E402
-from record_common import LADDER, git_short_sha, klt_version_of, load, scrub, write_ladder  # noqa: E402
+from make_write_mc_record import merge, stats  # noqa: E402
+from record_common import LADDER, git_short_sha, klt_version_local, klt_version_of, load, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 SIGMA_RATIO_MIN = 2.0
@@ -70,14 +70,6 @@ def parse_base_snm(record):
     return out
 
 
-def local_klt_version():
-    """Version of the klt on THIS host. Only for the `klt yield` note: that step runs locally (not on the batch
-    fleet), so this is the build that produced the yield output. Everything else uses record_common.klt_version_of,
-    the build recorded in the sim report."""
-    r = subprocess.run(["klt", "--version"], capture_output=True, text=True)
-    return (r.stdout or r.stderr).strip()
-
-
 def ref_kstar(det_ref):
     """kstar of every corner of the deterministic write reference the determinism control is compared against.
 
@@ -109,6 +101,12 @@ def main():
     ap.add_argument("--neg-read", nargs=2)
     ap.add_argument("--neg-hold", nargs=2)
     a = ap.parse_args()
+
+    # Provenance resolves before anything is written: a failed lookup must refuse before any
+    # artifact lands, not after the evidence .json.gz files are on disk. klt_version_local covers
+    # the `klt yield` step below, which runs on this host (not on the batch fleet).
+    git = git_short_sha(repo)
+    klt_local = klt_version_local()
 
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
@@ -202,7 +200,7 @@ def main():
         except ValueError:
             pass
     if "error" in yout:
-        yield_note = (f"`klt yield` did not run: `{yout['error']['message']}` (klt `{local_klt_version()}`). No yield, interval or Cpk is "
+        yield_note = (f"`klt yield` did not run: `{yout['error']['message']}` (klt `{klt_local}`). No yield, interval or Cpk is "
                       "reported here and none is hand-computed in its place. Known gap: 2AMLogic/klayout-tools#2900 (the documented "
                       "`klayout-tools[yield]` install path does not resolve; `klt-yield-native` is not on the package index). "
                       f"The input is committed (`{ev.name}/{ypath.name}`: the {len(ydoc['measurements'])} points x "
@@ -213,12 +211,10 @@ def main():
     else:
         keep_yield = ev / "write_trip_baseline.yield.json"
         keep_yield.write_text(json.dumps(yout, indent=1) + "\n")
-        yield_note = (f"`klt yield` (klt `{local_klt_version()}`) ran on `{ev.name}/{ypath.name}` (n=60 per point, seed 20261018, limit min 0 V); "
+        yield_note = (f"`klt yield` (klt `{klt_local}`) ran on `{ev.name}/{ypath.name}` (n=60 per point, seed 20261018, limit min 0 V); "
                       f"full output in `{ev.name}/{keep_yield.name}`:\n\n```json\n{json.dumps(yout, indent=1)[:6000]}\n```")
 
-    git = git_short_sha(repo)
     klt = klt_version_of(det_rep)
-    allw = all(ndet.values())
     L = [f"# Bitcell Monte Carlo controls record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#19 (follows #14, #7). Append-only: add a new dated record, never edit this one. "
          "`2026-10-18-write-mc-complete.md` and `20261018-040941-91ba071.md` are not edited; this record supplies the controls "

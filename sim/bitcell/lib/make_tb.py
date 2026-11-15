@@ -18,7 +18,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import tb_common  # noqa: E402
-from tb_common import LADDER, PROCESS, TEMPS, VDDS, mm_scale_params, with_params  # noqa: E402,F401
+from tb_common import LADDER, mm_scale_params, with_params  # noqa: E402
 
 root = pathlib.Path(__file__).resolve().parents[3]
 sz = json.loads((root / "design/bitcell/sizing.json").read_text())

@@ -26,7 +26,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # desig
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
-from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC, NW_P,  # noqa: E402
+from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC,  # noqa: E402
                         POLY_DIFF, POLY_END, VIA,
                         write_gds as _shared_write_gds)
 
@@ -41,7 +41,7 @@ BITCELL = "sky130_sram_bitcell_6t"
 LBL = {"li": "li_lbl", "m1": "m1_lbl", "m2": "m2_lbl", "m3": "m3_lbl", "m4": "m4_lbl"}
 
 # ---- drawing constants (um), all multiples of the 0.005 grid ----------------------
-# LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL, NPC_ENC and NW_P are shared PDK
+# LIC, VIA, DIFF_END, POLY_END, POLY_DIFF, IMPL and NPC_ENC are shared PDK
 # rules, imported above from design/sky130_pdk.py; only compiler-local dimensions
 # are defined here.
 LI_W = 0.17          # li bar width
@@ -561,6 +561,19 @@ class ArrayGeom:
         return i * STRAP_H + self.B[i] * PITCH_Y
 
 
+class BuildGeom:
+    """build()'s geometry result: the two values callers read back.
+
+    Attributes:
+        ag:  the ArrayGeom (rows, cols, strap rows B, height/width in um).
+        hcm: column-mux cell height (um), the periphery row below the array.
+    """
+
+    def __init__(self, ag, hcm):
+        self.ag = ag
+        self.hcm = hcm
+
+
 def build_array(T, bc, ag):
     """Tile the committed bitcell (translation only, +ROW_DY vertical pitch), add the
     shapes the cell leaves to the array: implant/poly bridges, continuous well, bit-line,
@@ -653,6 +666,12 @@ def _choose_slots(G, w_sa, w_wd, sa_x, wd_x, pitch=0.7):
 
 
 def build(words, bits, mux):
+    """Place the macro layout for (words, bits, mux).
+
+    Returns (ly, T, BuildGeom(ag=..., hcm=...)): the layout, its top-cell Pen,
+    and the named geometry record — `ag`, the ArrayGeom (rows, cols, strap rows,
+    height/width), and `hcm`, the column-mux cell height in um.
+    """
     g = sc.geometry(words, bits, mux)
     rows, cols = g["rows"], g["cols"]
     name = sc.top_name(words, bits, mux)
@@ -997,7 +1016,7 @@ def build(words, bits, mux):
     bb_all = T.cell.dbbox()
     T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
     T.size = (bb_all.width(), bb_all.height())
-    return ly, T, locals()
+    return ly, T, BuildGeom(ag=ag, hcm=hcm)
 
 
 # ---- outputs -------------------------------------------------------------------------
@@ -1105,7 +1124,7 @@ def main(argv):
         return 2
     try:
         words, bits, mux = (int(a) for a in args)
-        ly, T, env = build(words, bits, mux)
+        ly, T, geom = build(words, bits, mux)
     except (sc.RangeError, GenError, ValueError) as e:
         print(f"gen_layout: error: {e}", file=sys.stderr)
         return 1
@@ -1143,7 +1162,7 @@ def main(argv):
         print(json.dumps({"top": sc.top_name(words, bits, mux), "sha256": hashlib.sha256(data).hexdigest(),
                           "width_um": round(bb.width(), 3), "height_um": round(bb.height(), 3),
                           "area_um2": round(bb.width() * bb.height(), 1),
-                          "array_um": [round(env["ag"].width, 3), round(env["ag"].height, 3)],
+                          "array_um": [round(geom.ag.width, 3), round(geom.ag.height, 3)],
                           "bitcell_pitch_um": [BC_W, PITCH_Y]}))
     return 0
 
