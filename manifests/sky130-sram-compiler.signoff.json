@@ -872,6 +872,11 @@
               "path": "sim/bitcell/lib/make_write_mc_record.py",
               "content_hash": "sha256:17cd8cfc30d6a0bbfcbc8597a2f2c6b4df3ee36abde29911431366a28f48f90a",
               "status": "stale"
+            },
+            {
+              "path": "sim/bitcell/lib/record_common.py",
+              "content_hash": "sha256:7e8bfce2ff0e6ca0b00e02bb1294c72537d31becb7090b1172b43ca38652f448",
+              "status": "stale"
             }
           ]
         }
@@ -910,6 +915,11 @@
             {
               "path": "sim/bitcell/lib/make_write_mc_record.py",
               "content_hash": "sha256:17cd8cfc30d6a0bbfcbc8597a2f2c6b4df3ee36abde29911431366a28f48f90a",
+              "status": "stale"
+            },
+            {
+              "path": "sim/bitcell/lib/record_common.py",
+              "content_hash": "sha256:7e8bfce2ff0e6ca0b00e02bb1294c72537d31becb7090b1172b43ca38652f448",
               "status": "stale"
             }
           ]
