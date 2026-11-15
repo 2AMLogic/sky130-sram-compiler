@@ -5,6 +5,20 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-15
 
+- **PR #127**: fix(evidence): resolve git provenance before any evidence write in make_column_record.py
+- **PR #125**: chore(evidence): back-fill the bitcell harness into the item-9 inventory
+- **PR #121**: refactor: consolidate record provenance lookups onto record_common
+- **PR #110**: fix: derive the write-trip ladder prose in the record generators from tb_common.LADDER
+- **PR #106**: fix: make the bitcell GDS writer deterministic and gate it with --check
+- **Issue #134** (closed): main: klt signoff red since #110 — re-attest item 9 (sim/bitcell record generators changed under a stale envelope)
+- **Issue #128** (closed): The bitcell record_common test file is never run by CI (25 tests, including the new gzip byte-reproducibility gate)
+- **Issue #119** (closed): T1 item 9 grades analog 'met' while sim/testbench-inventory.json omits every bitcell testbench but one
+- **Issue #116** (closed): Consolidate the duplicated provenance guard in verification/drc and guard design/bitcell make_record
+- **Issue #114** (closed): make_column_record.py writes evidence before resolving the sha, so a provenance failure leaves orphaned gzips (needs item-9 re-attestation)
+- **Issue #103** (closed): Guard the remaining discarded-return-code provenance lookups in record writers (sha, klt version)
+- **Issue #94** (closed): Marker run_checks.sh: three-deck loop duplicates run_drc.sh, klt stderr discarded, and the README's control is never asserted
+- **Issue #91** (closed): Write-MC record prose hardcodes the ladder step (/32) while the data now derives from tb_common.LADDER
+- **Issue #67** (closed): bitcell GDS is not byte-reproducible: gen_bitcell.py writes klayout timestamps into the GDS header
 - **PR #120**: docs: name layout/records/ as a historical dev-checks record in the Reproduce preamble
 - **PR #117**: refactor(sim): remove dead corner-grid imports and unused column-TB symbols
 - **PR #113**: fix: refuse record writes on a failed provenance lookup (git sha, klt version)
