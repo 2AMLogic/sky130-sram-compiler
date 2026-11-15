@@ -94,7 +94,7 @@
         "role": "source",
         "path": "design/sky130_pdk.py",
         "passed": true,
-        "content_hash": "sha256:07ed727fbfc564c0cdabead590da911fcb4a3dea71f4bdafb72ee95dc7b7f2d9"
+        "content_hash": "sha256:7737246f0f397c1e247980a3508cc6af347a4c09efa011e1274953b5368ad86d"
       },
       {
         "check": "present",
@@ -788,10 +788,10 @@
             "path": "design/sky130_pdk.py",
             "scope": "repo"
           },
-          "content_hash": "sha256:07ed727fbfc564c0cdabead590da911fcb4a3dea71f4bdafb72ee95dc7b7f2d9"
+          "content_hash": "sha256:7737246f0f397c1e247980a3508cc6af347a4c09efa011e1274953b5368ad86d"
         }
       ],
-      "content_hash": "sha256:ac18ddc1d5019a9f7e5d5a6b875b28d4a872c59204c7422e3545e4e80672cd30"
+      "content_hash": "sha256:2bec89574daf78a26039fdb359c3fe52727550ab3d723ab7f5243cabda377a49"
     }
   }
 }

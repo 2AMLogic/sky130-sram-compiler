@@ -17,7 +17,8 @@ asserted). Nothing inside the repository is written, so there is no restore
 logic to skip and no evidence input-set binding can go stale.
 
 The one thing the inventory cannot say is which committed artifact each gate
-guards: only macro-256x32-m4 names its artifact in argv, the other gates
+guards: only macro-256x32-m4 and bitcell-layout name their artifacts in argv,
+the other gates
 derive their output paths internally from __file__. Those are mapped in
 ARTIFACTS below; a selected gate without an entry fails the suite loudly
 rather than skipping, so adding an inventory --check gate without drift
@@ -39,6 +40,7 @@ ARTIFACTS = {
     "bitcell-schematic": "design/bitcell/bitcell_6t.sch",
     "macro-256x32-m4": "design/compiler/macro/sram_256x32_m4.spice",
     "bitcell-sim-requests": "sim/bitcell/requests/mc_hold_snm.request.json",
+    "bitcell-layout": "design/bitcell/bitcell_6t.gds",
     "column-sim-requests": "sim/column/requests/col_mc_read_snm.request.json",
 }
 
