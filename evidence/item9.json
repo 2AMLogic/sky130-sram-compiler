@@ -94,7 +94,7 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_tb.py",
         "passed": true,
-        "content_hash": "sha256:ae354b9ff63b0c181f7cc7c3d473b6d96ef41c165cfa4d3c76ca842de65684a6"
+        "content_hash": "sha256:fc7b65ee9c4bf63193bbd7798290b2316f6b46f54b5cfef417878b65f84b16a0"
       },
       {
         "check": "present",
