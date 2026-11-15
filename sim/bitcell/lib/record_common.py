@@ -24,6 +24,16 @@ class LadderLengthError(ValueError):
     """
 
 
+class ProvenanceError(RuntimeError):
+    """A provenance lookup (git sha, local klt version) failed, so the record cannot name what produced it.
+
+    Raised rather than degraded to an empty string or a marker: unlike klt_version_of()'s
+    "unknown (not in report)" -- a legitimate, documented absence in a local run's report -- a failed
+    lookup means the value exists and we could not read it, and an append-only record published with a
+    blank sha or version cannot be corrected in place. Fix the host fault and re-run.
+    """
+
+
 def dirname(corner_id):
     """Artifact directory name `klt sim` gives a corner_id."""
     return corner_id.replace("/", "_").replace(".", "p").replace("-", "n")
@@ -46,9 +56,37 @@ def scrub(o):
     return o
 
 
+def _checked_output(argv):
+    """stdout of `argv`, stripped, for the provenance lookups stamped into an append-only record.
+
+    Refuses rather than degrades: a non-zero return code, an empty stdout, or a binary missing from
+    PATH raises ProvenanceError carrying the command and the stderr tail, so no record is written
+    naming a sha or version the lookup did not actually produce (an empty `git` sha used to land in
+    record titles; a `klt` diagnostic used to be recorded as a "version").
+    """
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True)
+    except FileNotFoundError as e:
+        raise ProvenanceError(f"`{argv[0]}` not found on PATH: provenance lookup `{' '.join(argv)}` cannot run ({e})") from e
+    out = r.stdout.strip()
+    if r.returncode != 0 or not out:
+        tail = (r.stderr or "").strip().splitlines()
+        raise ProvenanceError(f"`{' '.join(argv)}` failed (rc {r.returncode}): {tail[-1] if tail else 'no stderr, empty stdout'}")
+    return out
+
+
 def git_short_sha(repo):
-    """Short SHA of HEAD in `repo`, as stamped into a record's title."""
-    return subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    """Short SHA of HEAD in `repo`, as stamped into a record's title. Raises ProvenanceError on a failed lookup."""
+    return _checked_output(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"])
+
+
+def klt_version_local():
+    """Version of the klt on THIS host (`klt --version`), for the steps that run locally rather than on the
+    batch fleet (e.g. the `klt yield` step of the controls record); everything run remotely keeps using
+    klt_version_of, the build recorded in the sim report. Raises ProvenanceError on a failed lookup, so a
+    stderr diagnostic is never recorded as a version.
+    """
+    return _checked_output(["klt", "--version"])
 
 
 def klt_version_of(report):
