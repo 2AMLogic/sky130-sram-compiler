@@ -36,7 +36,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "bitcell/lib"))
 import tb_common  # noqa: E402
-from tb_common import PROCESS, TEMPS, VDDS, mm_scale_params, with_params  # noqa: E402,F401
+from tb_common import mm_scale_params, with_params  # noqa: E402
 
 root = pathlib.Path(__file__).resolve().parents[3]
 MACRO = "design/compiler/macro/sram_256x32_m4.spice"
@@ -136,7 +136,7 @@ def drive(node, ctrl, invert=False):
 
 
 # ------------------------------------------------------------------ slice netlist
-def slice_netlist(cells_hs=()):
+def slice_netlist():
     """Bit slice body. Returns lines. Cell (r, c) is instance xc{r}_{c}; row 0 word line is `wl0`
     (real sram_wldrv driven from `wlin0`, plus the gate load of the other 124 columns), rows 1.. share `wlo`."""
     L = [f".include '{INC}'", "VVDD vdd 0 dc 1.8"]
@@ -151,17 +151,6 @@ def slice_netlist(cells_hs=()):
               f"XCM{c} bl{c} blb{c} sbl sblb cs{c} 0 sram_colmux"]
     L += ["XSAINV sae saeb vdd 0 sram_inv", "XSA sbl sblb sae saeb dout vdd 0 sram_senseamp",
           "XWD sbl sblb din wen vdd 0 sram_wdrv"]
-    return L
-
-
-def init_drivers(data_by_col, ctl_intervals):
-    """Switches that force bl{c}/blb{c} to `data_by_col[c]` (0/1) while `ctl{c}` is high."""
-    L = [".model swinit sw(vt=0.5 vh=0.05 ron=20 roff=1e12)"]
-    for c in range(COLS):
-        d = data_by_col[c]
-        L += [f"BDB{c} drvb{c} 0 V='{d}*v(vdd)'", f"BDN{c} drvn{c} 0 V='{1 - d}*v(vdd)'",
-              f"SB{c} bl{c} drvb{c} ctl{c} 0 swinit", f"SN{c} blb{c} drvn{c} ctl{c} 0 swinit",
-              pwl(f"ctl{c}", ctl_intervals[c])]
     return L
 
 
@@ -289,7 +278,7 @@ def snm_tb(mode, pair):
     wl = "vdd" if mode == "read" else "0"
     L = [f"* In-situ {mode.upper()} SNM: decoupled half cell(s) {'(two independently mismatched)' if pair else ''}",
          "* whose bit line is the real column bl0 of the 64 x 4 bit slice: sram_precharge ON (PCHB = 0) and 63 further",
-         f"* bitcell_6t on the column (WL = 0, background data stored by .nodeset, Q = 0 = worst-case DC load on BL).",
+         "* bitcell_6t on the column (WL = 0, background data stored by .nodeset, Q = 0 = worst-case DC load on BL).",
          f"* Half-cell devices read from the macro's bitcell_6t (pu {pm} {pw}/{pl}, pd {nm} {nw}/{nl}, ax {am} {aw}/{al}).",
          f"* {'read: WL = VDD' if mode == 'read' else 'hold: WL = 0'}; sweep source is normalised and scaled by VDD."]
     L += [f".include '{INC}'", "VVDD vdd 0 dc 1.8", "VNRM nrm 0 dc 0", "BIN in 0 V='v(nrm)*v(vdd)'", "VPCHB pchb 0 dc 0"]
