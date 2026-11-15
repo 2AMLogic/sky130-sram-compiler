@@ -3,8 +3,22 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-15
+
+- **PR #96**: fix(lvs): gate bitcell LVS on its expected-status table, derive the control width from sizing.json
+- **PR #92**: refactor(compiler): name build()'s geometry return instead of locals()
+- **Issue #107** (closed): CI never runs sim/bitcell/lib/test_record_common.py: add it to hygiene.yml and the item-10 inventory
+- **Issue #78** (closed): design/bitcell/lvs/run_lvs.sh computes an expected-status table it never checks: a desynced negative control reports match and exits 0
+- **Issue #74** (closed): Narrow gen_layout.build()'s locals() return to the two fields callers actually use
+
 ### 2026-11-14
 
+- **PR #100**: fix: guard the append-only DRC record before copying evidence over committed files
+- **PR #87**: refactor(sim): declare the write-trip ladder length once and reject a wrong-length ladder loudly
+- **PR #77**: docs: add the nine missing Reproduce rows and resync the status line and repo layout
+- **Issue #98** (closed): verification/drc/make_record.py overwrites the committed item-3 evidence before its append-only guard
+- **Issue #76** (closed): Declare the write-trip LADDER length once: make_tb.py and record_common.py each define LADDER = 33
+- **Issue #73** (closed): README: bring the status line, Reproduce table and repo layout up to the tree
 - **PR #86**: feat(evidence): attest both T1 item 2 envelopes with klt signoff --attest 2
 - **PR #81**: fix: derive sim/column batch unit caps from timeout_s and bound shard concurrency
 - **Issue #85** (closed): check_formats.py's JSON globs miss the item-2 inventories and evidence/item2-digital.json
