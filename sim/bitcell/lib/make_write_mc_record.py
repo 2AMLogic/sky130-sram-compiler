@@ -8,9 +8,10 @@ later report only fills indices that have no valid ladder yet. The same request 
 draw for the same index, so a unit re-run in a later report is the same sample, never a new one; none is counted
 twice. With more than one report the record also compares each point with the base report alone.
 
-Each Monte Carlo unit is the 33-level write-trip ladder (tb/mc_write_trip.sp): BL = VDD*k/32 for
-k = 0..32, one 2 ns WL pulse each. A sample's highest flipping level k* gives the trip voltage as an
-INTERVAL, VDD*k*/32 <= trip < VDD*(k*+1)/32 (interval-censored; the ladder is not refined). Per point
+Each Monte Carlo unit is the tb_common.LADDER-level write-trip ladder (tb/mc_write_trip.sp):
+BL = VDD*k/(LADDER - 1) for k = 0..LADDER - 1, one 2 ns WL pulse each. A sample's highest flipping
+level k* gives the trip voltage as an INTERVAL, VDD*k*/(LADDER - 1) <= trip < VDD*(k*+1)/(LADDER - 1)
+(interval-censored; the ladder is not refined). Per point
 the record reports the trip estimated three ways -- lower bound, midpoint, and midpoint with the
 ladder's quantisation variance removed (Sheppard, step^2/12) -- and sigmas-to-failure against the
 gf180-sram limit (write margin must be strictly positive: trip > 0, i.e. the cell must flip with BL
@@ -151,8 +152,9 @@ def main():
          "(ladder level k = 0); a sample that does not flip at k = 0 is a write failure.", "",
          "## Interval censoring of the ladder (stated choice)", "",
          "The ladder is **not refined**. Each sample's trip voltage is only known to lie in "
-         "[VDD*k*/32, VDD*(k*+1)/32), k* the highest flipping level (step VDD/32 = 51 mV at 1.62 V, 62 mV at 1.98 V). Three estimates are "
-         "reported: the *lower bound* (VDD*k*/32, the conservative value, equal to the quantity recorded in the 45-corner table), the "
+         f"[VDD*k*/{LADDER - 1}, VDD*(k*+1)/{LADDER - 1}), k* the highest flipping level (step VDD/{LADDER - 1} = "
+         f"{1.62 / (LADDER - 1) * 1000:.0f} mV at 1.62 V, {1.98 / (LADDER - 1) * 1000:.0f} mV at 1.98 V). Three estimates are "
+         f"reported: the *lower bound* (VDD*k*/{LADDER - 1}, the conservative value, equal to the quantity recorded in the 45-corner table), the "
          "*midpoint* (k*+0.5 steps), and sigma of the midpoint with the quantisation variance step^2/12 removed (Sheppard correction; "
          "valid only when the true spread is not small against the step). `sigmas-to-failure` is mean/sigma against 0 V computed from "
          "(a) the lower-bound samples and (b) the Sheppard-corrected midpoint estimate. A sample with no flip at any level has trip < 0 and is "
