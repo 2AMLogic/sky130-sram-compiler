@@ -43,6 +43,9 @@ jobs:
       - name: Bitcell testbenches and klt sim requests match their generator
         run: python3 -I sim/bitcell/lib/make_tb.py --check
 
+      - name: Bitcell layout matches its generator (byte-identical GDS)
+        run: python3 -I design/bitcell/gen_bitcell.py --check design/bitcell/bitcell_6t.gds
+
       - name: Column testbenches and klt sim requests match their generator
         run: python3 -I sim/column/lib/make_column_tb.py --check
 
