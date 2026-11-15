@@ -20,6 +20,7 @@
     {"name": "bitcell-ladder-seam", "argv": ["python3", "-I", "sim/bitcell/lib/test_record_common.py"]},
     {"name": "compiler-erc-spec", "argv": ["python3", "-I", "design/compiler/test_erc_spec.py"]},
     {"name": "compiler-layout", "argv": ["python3", "-I", "design/compiler/test_layout.py"]},
+    {"name": "bitcell-layout", "argv": ["python3", "-I", "design/bitcell/gen_bitcell.py", "--check", "design/bitcell/bitcell_6t.gds"]},
     {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]}
   ]
 }
