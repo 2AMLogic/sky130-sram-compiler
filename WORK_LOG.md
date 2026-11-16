@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-16
 
+- **Issue #153** (closed): Dedupe xschem device-stub emitter duplicated in the two gen_schematic.py generators
+- **PR #163**: refactor: share xschem device-stub emitter via sky130_pdk.SchematicWriter
 - **Issue #122** (closed): No check that every committed records/ directory is covered by the README Reproduce section
 - **PR #158**: feat(hygiene): gate Reproduce-table coverage of committed records/ dirs
 - **PR #150**: fix: remove dangling worktree:return npm script (target retired upstream)
