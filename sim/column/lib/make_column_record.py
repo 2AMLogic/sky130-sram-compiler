@@ -9,7 +9,6 @@ Reports are copied gzip-compressed (host paths scrubbed) into <evidence>; the re
 Margin extraction reuses sim/bitcell/lib (pinned gf180-sram extractor + inscribed-square eyes()).
 """
 import argparse
-import gzip
 import hashlib
 import json
 import pathlib
@@ -22,7 +21,7 @@ sys.path.insert(0, str(here))
 import make_column_tb as gen  # noqa: E402
 import snm_from_artifacts as sa  # noqa: E402
 from record_common import (dirname, fmt_mc, git_short_sha, klt_version_of, load, mc_stats,  # noqa: E402
-                           runner_version_of, scrub)  # noqa: E402
+                           runner_version_of, save_gz_json)  # noqa: E402
 
 
 def load_bench(scratch, bench):
@@ -148,9 +147,7 @@ def main():
     reps = {b: load_bench(scratch, b) for b in benches}
     ev.mkdir(parents=True, exist_ok=True)
     for b in benches:
-        data = json.dumps(scrub(reps[b]), indent=1, sort_keys=True).encode()
-        with gzip.GzipFile(ev / f"{b}.report.json.gz", "wb", mtime=0) as g:
-            g.write(data)
+        save_gz_json(ev / f"{b}.report.json.gz", reps[b])
 
     def sha(p):
         return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
