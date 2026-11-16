@@ -12,7 +12,7 @@
 # Exit: 0 ref `match` and ref_bad `mismatch`; 1 is overloaded, three ways, distinguished by
 #       the stderr message: (a) anchor error — the XMAL line does not carry the sizing width
 #       or the perturbed width is not numeric (lvs/make_ref.py, "make_ref.py: …");
-#       (b) klt not on PATH (TOOL_MISSING guard, line 21, "run_lvs.sh: TOOL_MISSING: …");
+#       (b) klt not on PATH (TOOL_MISSING guard, line 24, "run_lvs.sh: TOOL_MISSING: …");
 #       (c) make_ref.py usage error, wrong argument count ("usage: make_ref.py …");
 #       3 ref is not `match` (or wrote no report);
 #       5 ref_bad is not `mismatch` (or wrote no report). 4 is unused: power_connectivity /
