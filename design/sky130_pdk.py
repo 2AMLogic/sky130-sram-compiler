@@ -4,9 +4,11 @@ Imported by design/bitcell/gen_bitcell.py, design/bitcell/gen_schematic.py,
 design/compiler/gen_layout.py and design/compiler/gen_schematic.py. Everything
 here is a foundry fact rather than a design choice -- the GDS layer numbers, the
 rules used as drawing enclosures, and the ad/as/pd/ps/nrd/nrs formula the PDK
-symbols would otherwise derive with expr() -- with one exception: write_gds()
-is a repo write convention (deterministic, byte-reproducible GDS output), not a
-foundry fact; it lives here so every GDS writer in the tree shares it. Holding
+symbols would otherwise derive with expr() -- except for the repo write
+conventions, which live here so their consumers share them: write_gds()
+(deterministic, byte-reproducible GDS output) for every GDS writer in the
+tree, and SchematicWriter for the transistor-plus-stub block both schematic
+generators emit. Holding
 the facts once is what keeps
 layout and netlist from drifting apart silently -- the same reason
 design/compiler/gen_erc_spec.py takes its stackup from the layout generator's
@@ -57,6 +59,54 @@ def device_geometry(w):
     w = float(w)
     return (f"ad={w * 0.29:.4g} as={w * 0.29:.4g} pd={2 * (w + 0.29):.4g} ps={2 * (w + 0.29):.4g} "
             f"nrd={0.29 / w:.4g} nrs={0.29 / w:.4g} sa=0 sb=0 sd=0")
+
+
+# ---- xschem schematic writing ------------------------------------------------------
+class SchematicWriter:
+    """Accumulates the component and wire lines of one xschem .sch cell.
+
+    A repo write convention, not a foundry fact: both schematic generators
+    (design/bitcell/gen_schematic.py, design/compiler/gen_schematic.py) emit
+    the same transistor-plus-stub block, so it is written once here and the
+    two .sch families stay byte-identical under their --check gates.
+    """
+
+    def __init__(self):
+        self.lines = []
+        self._labels = 0
+
+    def pin(self, x, y, net):
+        self._labels += 1
+        self.lines.append(
+            f"C {{devices/lab_pin.sym}} {x} {y} 0 0 {{name=l{self._labels} lab={net}}}"
+        )
+
+    def wire(self, x0, y0, x1, y1):
+        self.lines.append(f"N {x0} {y0} {x1} {y1} {{}}")
+
+    def device(self, name, model, x, y, d, g, s, b, w, l):
+        """Emit one sky130_fd_pr transistor plus the stubs to its four pins.
+
+        The stub offsets assume the PDK symbol pin placement: drain/source
+        stubs run vertically (pfets drain up, nfets drain down), gate/bulk
+        stubs horizontally. The nf=1 ad/as/pd/ps/nrd/nrs attribute string
+        comes from device_geometry().
+        """
+        geo = device_geometry(w)
+        self.lines.append(
+            f"C {{sky130_fd_pr/{model}.sym}} {x} {y} 0 0 "
+            f"{{name={name} L={l} W={w} nf=1 mult=1 {geo} model={model} spiceprefix=X}}"
+        )
+        dy, sy = (30, -30) if model.startswith("pfet") else (-30, 30)
+        # drain / source stubs (vertical), gate / bulk stubs (horizontal)
+        self.wire(x + 20, y + dy, x + 20, y + dy * 5 // 3)
+        self.pin(x + 20, y + dy * 5 // 3, d)
+        self.wire(x + 20, y + sy, x + 20, y + sy * 5 // 3)
+        self.pin(x + 20, y + sy * 5 // 3, s)
+        self.wire(x - 20, y, x - 40, y)
+        self.pin(x - 40, y, g)
+        self.wire(x + 20, y, x + 40, y)
+        self.pin(x + 40, y, b)
 
 
 # ---- GDS write convention ---------------------------------------------------------
