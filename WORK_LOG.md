@@ -5,6 +5,7 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-16
 
+- **PR #158**: feat(hygiene): gate Reproduce-table coverage of committed records/ dirs
 - **PR #150**: fix: remove dangling worktree:return npm script (target retired upstream)
 - **PR #149**: fix(lvs): read make_ref.py inputs via pathlib.read_text, document exit-1 overloading
 - **PR #148**: test: probe every guarded member of each --check gate via per-gate globs
