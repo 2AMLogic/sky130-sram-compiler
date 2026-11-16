@@ -3,8 +3,37 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-16
+
+- **PR #150**: fix: remove dangling worktree:return npm script (target retired upstream)
+- **PR #149**: fix(lvs): read make_ref.py inputs via pathlib.read_text, document exit-1 overloading
+- **PR #148**: test: probe every guarded member of each --check gate via per-gate globs
+- **PR #144**: docs: pin the item-10 regen command to the klt pin hygiene.yml validates with
+- **PR #143**: docs: drop stale refactor-attribution clauses from manifests/README.md
+- **PR #139**: fix: resolve the deck runners' PDK dir from the variant name, not PDK itself
+- **PR #136**: fix: re-attest item 9 to the dac33fa/284d94b member hashes
+- **PR #132**: fix: refuse to write the bitcell record on a failed DRC/LVS compare
+- **PR #130**: fix(lvs): anchor the bitcell negative control on the literal the netlist carries
+- **PR #126**: refactor(records): consolidate the deterministic gzip-JSON write into record_common.save_gz_json()
+- **PR #115**: ci: wire ladder-seam, erc-spec and layout suites into hygiene CI; re-attest item 10
+- **Issue #147** (closed): package.json: drop dangling worktree:return script (target retired upstream)
+- **Issue #141** (closed): manifests/README.md: name the klt pin that regenerates the item-10 attestation envelope
+- **Issue #140** (closed): manifests/README.md L118: item-9 re-attestation attributed to the wrong change (make_column_tb.py refactor)
+- **Issue #138** (closed): bitcell LVS: make_ref.py is the only design/ Python using json.load(open(...)); emits ResourceWarnings into the test output
+- **Issue #137** (closed): Drift suite probes one artifact per --check gate; gates guarding 9-18 files can stop comparing the rest silently
+- **Issue #133** (closed): main is red: signoff item 9 stale_evidence after dac33fa/284d94b — re-attest item 9 and regenerate the record
+- **Issue #131** (closed): three_deck_drc.sh: PDK override collides with sim/env.sh's PDK (variant name), breaking the mr deck lookup
+- **Issue #104** (closed): Fold the repeated gzip-JSON write and sha256 helpers into record_common
+- **Issue #99** (closed): Bitcell LVS negative-control anchor corrupts the control netlist for integer-valued ax.w
+- **Issue #95** (closed): make_record.py bakes a failed DRC/LVS compare into an append-only record: check the runners' returncodes
+- **Issue #88** (closed): Wire the PDK-free test suites into the hygiene CI inventory (needs an item-10 re-attestation)
+
 ### 2026-11-15
 
+- **PR #123**: docs(marker): add 2026-11-15 re-run record with per-deck drift attribution
+- **PR #118**: test: assert hygiene --check gates exit non-zero on drift
+- **Issue #108** (closed): Marker study: counts have drifted from the 2026-10-17 record on the current klt pin — new dated record needed
+- **Issue #105** (closed): No test asserts any generator's --check actually exits non-zero on drift
 - **PR #127**: fix(evidence): resolve git provenance before any evidence write in make_column_record.py
 - **PR #125**: chore(evidence): back-fill the bitcell harness into the item-9 inventory
 - **PR #121**: refactor: consolidate record provenance lookups onto record_common
