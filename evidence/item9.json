@@ -80,14 +80,14 @@
         "role": "testbench",
         "path": "sim/bitcell/lib/make_controls_record.py",
         "passed": true,
-        "content_hash": "sha256:4c9131432442367c24ac11e57af9b5bd8033c7d8daaa6cdadca5180b671e546e"
+        "content_hash": "sha256:07ed927e942fd19ab37222b38bc8e8451f64e1e376553241ca0541f262083f1f"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/bitcell/lib/make_record.py",
         "passed": true,
-        "content_hash": "sha256:08547a94f5613fb8e7cd14d3da74273440da6cce56a16d34473e97c24ba9469f"
+        "content_hash": "sha256:4c57c36f124cf8a26423165be4fe7c7e97239cf640b279e6f2d74247b22c1b1a"
       },
       {
         "check": "present",
@@ -283,7 +283,7 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_record.py",
         "passed": true,
-        "content_hash": "sha256:df145b820f078047f5b1f24d50aa73c36cc6ce2c1503bdfa90132b3e083eb879"
+        "content_hash": "sha256:ad366e9431da3aee10aa9b9e2e916d726e7b6c0669dbe83298593b9c8444e5af"
       },
       {
         "check": "present",

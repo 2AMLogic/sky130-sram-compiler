@@ -71,22 +71,24 @@ def main():
     # artifact lands, not after the evidence .json.gz files are on disk.
     git = git_short_sha(repo)
 
-    ev = pathlib.Path(a.evidence)
-    ev.mkdir(parents=True, exist_ok=True)
-
-    def keep(src, name):
-        save_gz_json(ev / f"{name}.json.gz", json.load(open(src)))
+    # Every report is loaded before the evidence directory is created (issue #129): a missing or
+    # unparseable one must refuse before any artifact lands, not after earlier benches' .json.gz
+    # files are already on disk. Same shape as make_write_mc_record.py: loads first, mkdir
+    # second, writes third.
+    saved = [(a.read[0], "read_snm_corners.report"), (a.hold[0], "hold_snm_corners.report"),
+             (a.write, "write_trip_corners.report")]
+    saved += [(p, f"mc_read_snm.report{i}") for i, p in enumerate(a.mc_report_read)]
+    saved += [(p, f"mc_hold_snm.report{i}") for i, p in enumerate(a.mc_report_hold)]
+    loaded = [(name, json.load(open(src))) for src, name in saved]
 
     rrep, rread = snm_table(*a.read)
     hrep, rhold = snm_table(*a.hold)
     wrep, rwrite = write_table(a.write)
-    keep(a.read[0], "read_snm_corners.report")
-    keep(a.hold[0], "hold_snm_corners.report")
-    keep(a.write, "write_trip_corners.report")
-    mcr = [(p, f"mc_read_snm.report{i}") for i, p in enumerate(a.mc_report_read)]
-    mch = [(p, f"mc_hold_snm.report{i}") for i, p in enumerate(a.mc_report_hold)]
-    for p, n in mcr + mch:
-        keep(p, n)
+
+    ev = pathlib.Path(a.evidence)
+    ev.mkdir(parents=True, exist_ok=True)
+    for name, rep in loaded:
+        save_gz_json(ev / f"{name}.json.gz", rep)
 
     def remote(rep):
         r = rep["environment"].get("remote", {})

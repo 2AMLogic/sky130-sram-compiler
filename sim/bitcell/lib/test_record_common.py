@@ -30,6 +30,8 @@ import tb_common  # noqa: E402
 # is not available in a PDK-free checkout. An attribute-less stub keeps this suite PDK-free and still fails
 # loudly if anything under test ever actually reaches for the extractor.
 sys.modules.setdefault("snm_from_artifacts", types.ModuleType("snm_from_artifacts"))
+sys.path.insert(0, str(HERE.parents[1] / "column/lib"))  # make_column_record's own directory
+import make_column_record  # noqa: E402
 import make_controls_record  # noqa: E402
 import make_record  # noqa: E402
 import make_write_mc_record  # noqa: E402
@@ -436,6 +438,124 @@ class SaveGzJsonIsByteReproducible(unittest.TestCase):
             first = p.read_bytes()
             rc.save_gz_json(p, {"k": [1, 2, 3]})
             self.assertEqual(p.read_bytes(), first)
+
+
+class RefusesBeforeWritingEvidence(unittest.TestCase):
+    """Issue #129: every report a record needs is read before any evidence artifact is written.
+
+    Three of the four writers used to interleave their report reads with their gzip writes, so a
+    missing or unparseable report for bench N left the gzips for benches 0..N-1 on disk in the
+    evidence directory the published record cites -- indistinguishable from a completed run until
+    someone counts the files. The refusal must land zero .json.gz files; the pre-change
+    interleaved shape leaves N-1 (the distinguishing measurement this class holds).
+    """
+
+    def stub_provenance(self):
+        """Hermetic provenance lookups (same shape as regenerate_controls_record): main()'s
+        git/klt calls answer rc 0 with non-empty stdout so a refusal test fails on the report
+        read it is about, never on a missing binary or a git-archive checkout."""
+        fake = subprocess.CompletedProcess([], 0, stdout="stub", stderr="")
+        p = mock.patch.object(subprocess, "run", return_value=fake)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def assert_refused(self, main_fn, argv, ev, exc):
+        """main() refuses with `exc` and leaves zero .json.gz in the evidence directory."""
+        self.stub_provenance()
+        ev = pathlib.Path(ev)
+        with mock.patch.object(sys, "argv", argv):
+            with self.assertRaises(exc):
+                main_fn()
+        left = sorted(p.name for p in ev.glob("*.json.gz")) if ev.exists() else []
+        self.assertEqual(left, [], f"refusal left evidence behind: {left}")
+
+    @staticmethod
+    def make_record_argv(tmp, mc_body):
+        """Full make_record.py argv with an `--mc-report-read` file holding `mc_body`
+        ('{' = truncated); the read/hold/write reports are minimal but parseable."""
+        tmp = pathlib.Path(tmp)
+        for nm in ("read", "hold"):
+            (tmp / f"{nm}.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "write.json").write_text('{"corners": [], "environment": {}}')
+        if mc_body is not None:
+            (tmp / "mc-read.json").write_text(mc_body)
+        return ["make_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"),
+                "--read", str(tmp / "read.json"), str(tmp / "a-read"),
+                "--hold", str(tmp / "hold.json"), str(tmp / "a-hold"),
+                "--write", str(tmp / "write.json"),
+                "--mc-report-read", str(tmp / "mc-read.json")], tmp / "ev"
+
+    def test_make_record_missing_mc_report_writes_nothing(self):
+        """The orphan window: three primary gzips used to land before the MC reports were read."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, None)
+            self.assert_refused(make_record.main, argv, ev, FileNotFoundError)
+
+    def test_make_record_unparseable_mc_report_writes_nothing(self):
+        """The other reachable shape: the MC report exists but is truncated JSON."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, "{")
+            self.assert_refused(make_record.main, argv, ev, json.JSONDecodeError)
+
+    def controls_argv(self, tmp, base_body):
+        """make_controls_record.py argv whose `--base-reports` file holds `base_body`
+        (None = absent). det/neg/det-ref exist; --neg-read/--neg-hold are omitted."""
+        tmp = pathlib.Path(tmp)
+        for nm in ("det", "neg"):
+            (tmp / f"{nm}.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "detref.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "base.md").write_text("## stub\n")
+        if base_body is not None:
+            (tmp / "base.json").write_text(base_body)
+        return ["make_controls_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--base-record", str(tmp / "base.md"),
+                "--base-reports", str(tmp / "base.json"),
+                "--det-ref", str(tmp / "detref.json"),
+                "--det", str(tmp / "det.json"), "--neg", str(tmp / "neg.json")], tmp / "ev"
+
+    def test_controls_missing_base_report_writes_nothing(self):
+        """--base-reports is read after every keep() pre-change: the det/neg gzips orphan."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, None)
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_unparseable_det_ref_writes_nothing(self):
+        """A truncated --det-ref (read last pre-change) must refuse with all gzips unwritten."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            (pathlib.Path(td) / "detref.json").write_text("{")
+            self.assert_refused(make_controls_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def column_argv(tmp, missing_or_body):
+        """make_column_record.py argv over a scratch holding all 11 benches except that
+        `col_write0.json` (bench 3 of 11) holds `missing_or_body` (None = absent, str = content)."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = missing_or_body if b == "col_write0" else '{"corners": [], "environment": {}}'
+            if body is not None:
+                (scratch / f"{b}.json").write_text(body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_missing_bench_writes_nothing(self):
+        """The README's manual invocation against a scratch missing bench 3: pre-change leaves
+        col_read0/col_read1 gzips behind."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, None)
+            self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
+
+    def test_column_unparseable_bench_writes_nothing(self):
+        """A truncated bench report (present but malformed) refuses the same way."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
 
 
 unittest.main()
