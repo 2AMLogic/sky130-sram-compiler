@@ -1,4 +1,4 @@
-"""Helpers shared by the bitcell margin-record generators (make_record.py, make_write_mc_record.py, make_controls_record.py)."""
+"""Helpers shared by the bitcell margin-record generators (make_record.py, make_write_mc_record.py, make_controls_record.py): the read half (load, scrub) and the write half (save_gz_json, the deterministic gzip-JSON form every committed record artifact is stored in)."""
 
 import gzip
 import json
@@ -54,6 +54,18 @@ def scrub(o):
     if isinstance(o, str) and o.startswith("/") and ("/home/" in o or "/tmp/" in o):
         return "<artifact>/" + "/".join(o.rstrip("/").split("/")[-2:])
     return o
+
+
+def save_gz_json(path, obj):
+    """Scrubbed `obj` as deterministic gzip-JSON: the byte-reproducible form every committed record
+    artifact is stored in. `mtime=0` plus sort_keys/indent is what makes a stored report reproducible
+    from its input; it is spelled out here once so a change to the format cannot land in some
+    generators and not others. GzipFile's default compression level is part of the format -- the
+    committed artifacts replay byte-identically only under it -- so no compresslevel argument exists.
+    """
+    data = json.dumps(scrub(obj), indent=1, sort_keys=True).encode()
+    with gzip.GzipFile(path, "wb", mtime=0) as g:
+        g.write(data)
 
 
 def _checked_output(argv):
