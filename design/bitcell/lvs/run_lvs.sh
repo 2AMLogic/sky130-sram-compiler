@@ -9,8 +9,11 @@
 # increased by 0.1 um must NOT match. The width is read from sizing.json, never hardcoded, and the
 # script exits non-zero if the XMAL line does not carry it — a resize that leaves the committed
 # netlist stale cannot silently turn the control into a compare of a correct netlist.
-# Exit: 0 ref `match` and ref_bad `mismatch`; 1 anchor error — the XMAL line does not carry
-#       the sizing width or the perturbed width is not numeric (lvs/make_ref.py);
+# Exit: 0 ref `match` and ref_bad `mismatch`; 1 is overloaded, three ways, distinguished by
+#       the stderr message: (a) anchor error — the XMAL line does not carry the sizing width
+#       or the perturbed width is not numeric (lvs/make_ref.py, "make_ref.py: …");
+#       (b) klt not on PATH (TOOL_MISSING guard, line 24, "run_lvs.sh: TOOL_MISSING: …");
+#       (c) make_ref.py usage error, wrong argument count ("usage: make_ref.py …");
 #       3 ref is not `match` (or wrote no report);
 #       5 ref_bad is not `mismatch` (or wrote no report). 4 is unused: power_connectivity /
 #       body_verification have no bitcell gating analogue (device.body_unverified is expected),

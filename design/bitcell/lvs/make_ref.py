@@ -65,9 +65,9 @@ def main(argv):
     if len(argv) != 4:
         sys.exit(f"usage: {pathlib.Path(argv[0]).name} <sizing.json> <bitcell_6t.spice> <outdir>")
     sizing, src, out = argv[1], argv[2], argv[3]
-    ax_w = json.load(open(sizing))["ax"]["w"]
+    ax_w = json.loads(pathlib.Path(sizing).read_text())["ax"]["w"]
     try:
-        good, bad = rewrite(ax_w, open(src).read())
+        good, bad = rewrite(ax_w, pathlib.Path(src).read_text())
     except AnchorError as e:
         sys.exit(str(e))
     pathlib.Path(out).mkdir(parents=True, exist_ok=True)
