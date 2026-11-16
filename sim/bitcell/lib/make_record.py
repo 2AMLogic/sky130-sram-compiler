@@ -9,7 +9,7 @@ Usage: make_record.py --id <record-id> --out <record.md> --evidence <dir>
 
 Reports are copied gzip-compressed into <evidence>; the record carries tables only. Read/hold
 margins are `eye_snm` (largest inscribed square); `pinned_snm` is the gf180-sram extractor's
-number, shown beside it. Write margin is the write trip voltage from the 33-level ladder.
+number, shown beside it. Write margin is the write trip voltage from the tb_common.LADDER-level ladder.
 """
 import argparse
 import gzip
@@ -21,7 +21,7 @@ import sys
 here = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(here))
 import snm_from_artifacts as sa  # noqa: E402
-from record_common import dirname, fmt_mc, git_short_sha, klt_version_of, mc_stats, scrub, write_ladder  # noqa: E402
+from record_common import LADDER, dirname, fmt_mc, git_short_sha, klt_version_of, mc_stats, scrub, write_ladder  # noqa: E402
 
 repo = here.parents[2]
 
@@ -115,7 +115,8 @@ def main():
                  f"report `{ev.name}/{req}.report.json.gz` (host paths scrubbed)")
     L += ["", "## Deterministic corners (45)", "",
           "`eye_snm` = largest inscribed square (graded). `pinned` = gf180-sram extractor output (vertical gap), shown for comparison. "
-          "Write trip = highest BL level (V) that still flipped the cell within the 2 ns pulse (ladder step VDD/32, so the true trip lies in the next 56 mV-class step above); "
+          f"Write trip = highest BL level (V) that still flipped the cell within the 2 ns pulse (ladder step VDD/{LADDER - 1}, "
+          f"so the true trip lies in the next {1.8 / (LADDER - 1) * 1000:.0f} mV-class step above); "
           "`k` is the ladder index of that level.", "",
           "| corner | read eye SNM | read pinned | hold eye SNM | hold pinned | write trip V (k) |", "|---|---:|---:|---:|---:|---:|"]
     order = list(rread)
@@ -154,7 +155,7 @@ def main():
     L += ["## Limits of this record", "",
           "- Graded margin is `eye_snm`. The pinned extractor over-reads (filed as 2AMLogic/gf180-sram#213); at tt / 1.98 V / 25 C read, "
           "`eye_snm` 0.4419 V matches an independent series-noise-source SPICE probe (0.4410 V, single local ngspice run) while the pinned script says 0.572 V.",
-          "- Write margin is the 2 ns write-trip ladder (resolution VDD/32), not gf180-sram's bisection (`klt sim` owns the `.control` block). "
+          f"- Write margin is the 2 ns write-trip ladder (resolution VDD/{LADDER - 1}), not gf180-sram's bisection (`klt sim` owns the `.control` block). "
           "The worst corner is the thinnest margin in the set; **no Monte Carlo was run on write margin**, so a mismatch-driven write failure is not excluded.",
           "- Monte Carlo covers read and hold SNM only: 60 samples at 6 points (tt, sf, fs `_mm` sections x 1.62 / 1.98 V x 125 C, the hot corner where both margins are lowest in the deterministic table), "
           "not the full 45. The \"deterministic corner\" column is the matching non-mismatch corner, a consistency check, not gf180-sram's exact mismatch-off rerun. "

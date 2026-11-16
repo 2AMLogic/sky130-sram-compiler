@@ -205,7 +205,7 @@ def main():
                       "`klayout-tools[yield]` install path does not resolve; `klt-yield-native` is not on the package index). "
                       f"The input is committed (`{ev.name}/{ypath.name}`: the {len(ydoc['measurements'])} points x "
                       f"{len(ydoc['measurements'][0]['samples'])} lower-bound trip voltages of the n=60 baseline, seed 20261018, limit min 0 V; "
-                      "a no-flip sample would enter as -VDD/32; there are none) so the report can be produced where the extension is installed: "
+                      f"a no-flip sample would enter as -VDD/{LADDER - 1}; there are none) so the report can be produced where the extension is installed: "
                       f"`klt yield {ev.name}/{ypath.name} --format json`. Known related: klayout-tools#2909 (quantised sample sets, "
                       "relevant here because the ladder values take few distinct levels).")
     else:

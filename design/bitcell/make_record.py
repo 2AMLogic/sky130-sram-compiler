@@ -4,11 +4,16 @@
 Usage: design/bitcell/make_record.py <scratch-dir>      (scratch: outside the repo)
 Writes design/bitcell/records/<UTC timestamp>-<git sha>.md and never overwrites one.
 Needs: uv (klayout python), klt, a sky130A install at the pin (source sim/env.sh first).
+Refuses to write a record on any failed step: a runner exiting non-zero (the layout
+generator, the DRC harness, or lvs/run_lvs.sh -- exit 1 tool missing, 3 the positive
+compare is not `match`, 5 the negative control is not `mismatch`), or any of the
+three DRC decks reporting violations, aborts before the record file is created.
 """
 import datetime
 import json
 import os
 import pathlib
+import shlex
 import subprocess
 import sys
 
@@ -28,13 +33,29 @@ scratch.mkdir(parents=True, exist_ok=True)
 gds = scratch / "bitcell_6t.gds"
 
 
-def run(cmd, **kw):
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=repo, **kw)
+def run(cmd, check=True):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, cwd=repo)
+    except FileNotFoundError as e:
+        sys.exit(f"make_record.py: refusing to write a record: {e}: {shlex.join(cmd)}")
+    if check and r.returncode != 0:
+        sys.exit(f"make_record.py: refusing to write a record: exited {r.returncode}: {shlex.join(cmd)}\n"
+                 f"--- stdout ---\n{r.stdout}--- stderr ---\n{r.stderr}")
+    return r
 
 
 info = json.loads(run(["uv", "run", "--no-project", "--with", "klayout", "python", "-I",
                        str(here / "gen_bitcell.py"), str(gds)]).stdout)
-drc = run([str(here / "run_drc.sh"), str(gds), str(scratch / "drc")]).stdout.strip().splitlines()
+drc_dir = scratch / "drc"
+drc = run([str(here / "run_drc.sh"), str(gds), str(drc_dir)]).stdout.strip().splitlines()
+try:
+    drc_totals = {eng: len(json.loads((drc_dir / f"{eng}.json").read_text())["violations"])
+                  for eng in ("curated", "lydrc", "mr")}
+except (OSError, ValueError, KeyError) as e:
+    sys.exit(f"make_record.py: refusing to write a record: cannot read the DRC reports in {drc_dir}: {e}")
+if any(drc_totals.values()):
+    sys.exit("make_record.py: refusing to write a record: DRC violations present: "
+             + ", ".join(f"{eng}={n}" for eng, n in drc_totals.items() if n))
 lvs = run([str(here / "lvs/run_lvs.sh"), str(gds), str(scratch / "lvs")]).stdout.strip().splitlines()
 foundry = pathlib.Path(os.environ["SKY130_VARIANT_DIR"]) / "libs.ref/sky130_sram_macros/gds/sram_1rw1r_32_256_8_sky130.gds"
 fcell = "sky130_fd_bd_sram__openram_dp_cell"
@@ -49,6 +70,7 @@ mine = bbox(gds, "sky130_sram_bitcell_6t")
 theirs = bbox(foundry, fcell)
 a_m, a_f = mine["width"] * mine["height"], theirs["width"] * theirs["height"]
 sz = json.loads((here / "sizing.json").read_text())
+ax_w = sz["ax"]["w"]
 ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 rec = here / "records" / f"{ts}-{sha}.md"
 rec.parent.mkdir(exist_ok=True)
@@ -68,7 +90,7 @@ L = [f"# Bitcell layout record {ts} ({sha})", "",
      "## LVS (`design/bitcell/lvs/run_lvs.sh`)", "", "```"] + lvs + ["```", "",
      "Reference is the schematic netlist with the nfet bulk on a separate `vsubs` pin: the cell has no p-substrate tap (the array supplies it), "
      "so `device.body_unverified` is expected and means the bulk was compared against the extracted substrate, not a drawn tie. "
-     f"The second line is a negative control (MAL drawn width {sz['ax']['w']} um, perturbed in the reference) and must not match.", "",
+     f"The second line is a negative control (MAL drawn width {ax_w} um, perturbed in the reference) and must not match.", "",
      "## Area (`klt stats --top <cell> --format json`, bbox width x height, same command for both cells)", "",
      "| cell | bbox (um) | area (um^2) |", "|---|---|---:|",
      f"| this 6T logic-rule cell | {mine['width']:.3f} x {mine['height']:.3f} | {a_m:.3f} |",
