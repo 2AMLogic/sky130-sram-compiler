@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 14/14 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 17/17 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 14,
-    "passed_count": 14,
+    "check_count": 17,
+    "passed_count": 17,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:bb57a3911d921830ab87cc5f68e3008966693adefd5d824d02855e3fb42820b3"
+        "content_hash": "sha256:dc86064c5293f9ec870c56fb97e86cc698bad68161d3348da29a8e03a25b6307"
       },
       {
         "check": "present",
@@ -136,6 +136,45 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "bitcell-ladder-seam",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/bitcell/lib/test_record_common.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "compiler-erc-spec",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/test_erc_spec.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "compiler-layout",
+        "argv": [
+          "python3",
+          "-I",
+          "design/compiler/test_layout.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "bitcell-layout",
         "argv": [
           "python3",
@@ -178,7 +217,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.9.0",
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -187,7 +226,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:96e1ad52d38f54ad8f40205610ff22e4c4718389af9ef8893a36d9f9c2c8842e"
+      "content_hash": "sha256:ca403a495e9dd09f0fbebfe9ab612776f0a4468c5894ebf37523ca533a129046"
     }
   }
 }
