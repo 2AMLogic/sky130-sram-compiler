@@ -31,6 +31,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 - **#129**: Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips
 - **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
 - **#153**: Dedupe xschem device-stub emitter duplicated in the two gen_schematic.py generators
+- **#155**: Use save_gz_json in make_column_record.py instead of an inline gzip writer
 
 ## In Progress
 
@@ -76,7 +77,7 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 4 |
+| Ready (`loom:issue`) | 5 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
