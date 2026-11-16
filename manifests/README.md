@@ -57,8 +57,14 @@ item 10).
 - **`hygiene-inventory.json`** / **`sky130-sram-compiler.item10.attest.json`** — the item 10
   (repo hygiene) inventory and its `klt signoff --attest 10` envelope; CI
   (`hygiene.yml`) re-checks it with `--check`. Regenerate with
-  `klt signoff --attest 10 --inventory manifests/hygiene-inventory.json -o manifests/sky130-sram-compiler.item10.attest.json`,
+  `uvx --from klayout-tools==0.8.0 klt signoff --attest 10 --inventory manifests/hygiene-inventory.json -o manifests/sky130-sram-compiler.item10.attest.json`,
   then update the `content_hash` cited in the manifest (the inventory's hash).
+  The pin is `0.8.0` because that is what `hygiene.yml` installs to `--check`
+  this envelope, so the recorded `provenance.klt_version` names the tool that
+  validates it (mixed pins across evidence files are by design: `hygiene.yml`
+  pins `klayout-tools==0.8.0` for this envelope while `signoff.yml` pins
+  `klayout-tools==0.9.0` for the record — not a mandate to renormalise other
+  envelopes).
 - **`sky130-sram-compiler.signoff.json`** — **the verdict of record**:
   committed output of the command below. Never hand-edit it.
 
