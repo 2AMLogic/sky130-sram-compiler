@@ -8,7 +8,9 @@ Cold-start checks for how klt's sky130 decks treat the SRAM core-area marker
 ./run_checks.sh /tmp/marker-out     # scratch dir OUTSIDE the repo
 ```
 
-Needs `klt` on PATH, a sky130A PDK under `~/.ciel` (override with `PDK=<.../sky130A>`)
+Needs `klt` on PATH, a sky130A PDK under `~/.ciel` (override with
+`SKY130_VARIANT_DIR=<.../sky130A>`; `PDK` is the variant *name* -- e.g. `sky130A`,
+what `sim/env.sh` exports -- never a directory)
 and the standalone `klayout` for `--engine klayout`. It builds the cases
 (`build_cases.py`: foundry bitcell with / without / half marker; `nand2_1` and a
 synthetic li probe at inside / outside / edge), runs each through three decks
