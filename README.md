@@ -99,6 +99,7 @@ Needs only `python3` and `git`; the last line also needs `pip install klayout-to
 
 ```bash
 python3 -I verification/hygiene/check_formats.py          # JSON parses, Python compiles
+python3 -I verification/hygiene/check_reproduce_coverage.py  # Reproduce table covers every committed records/ directory
 python3 -I design/compiler/test_compiler.py               # compiler generator tests
 python3 -I design/compiler/gen_schematic.py --check       # periphery schematics vs generator
 python3 -I design/compiler/sram_compile.py 256 32 4 --check design/compiler/macro/sram_256x32_m4.spice
