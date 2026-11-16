@@ -18,6 +18,7 @@
     {"name": "macro-256x32-m4", "argv": ["python3", "-I", "design/compiler/sram_compile.py", "256", "32", "4", "--check", "design/compiler/macro/sram_256x32_m4.spice"]},
     {"name": "bitcell-sim-requests", "argv": ["python3", "-I", "sim/bitcell/lib/make_tb.py", "--check"]},
     {"name": "bitcell-layout", "argv": ["python3", "-I", "design/bitcell/gen_bitcell.py", "--check", "design/bitcell/bitcell_6t.gds"]},
-    {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]}
+    {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]},
+    {"name": "check-gates", "argv": ["python3", "-I", "verification/hygiene/test_check_gates.py"]}
   ]
 }
