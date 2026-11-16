@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 16/16 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 17/17 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 16,
-    "passed_count": 16,
+    "check_count": 17,
+    "passed_count": 17,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:726ec96578932bbf1d309b15052e713b9724ee6b331e2e407c02f3081b39eb2a"
+        "content_hash": "sha256:dc86064c5293f9ec870c56fb97e86cc698bad68161d3348da29a8e03a25b6307"
       },
       {
         "check": "present",
@@ -200,6 +200,19 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "check-gates",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_check_gates.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -213,7 +226,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:5bf2641ff655ee6d81c7cf65aef8c0d56346664459c9f6247196b6bc39fcb13d"
+      "content_hash": "sha256:ca403a495e9dd09f0fbebfe9ab612776f0a4468c5894ebf37523ca533a129046"
     }
   }
 }
