@@ -16,6 +16,7 @@ Maintained by the Loom Guide role; entries are appended automatically.
 - **PR #130**: fix(lvs): anchor the bitcell negative control on the literal the netlist carries
 - **PR #126**: refactor(records): consolidate the deterministic gzip-JSON write into record_common.save_gz_json()
 - **PR #115**: ci: wire ladder-seam, erc-spec and layout suites into hygiene CI; re-attest item 10
+- **Issue #142** (closed): Ruleset strict required-checks policy blocks every BEHIND PR from merging
 - **Issue #147** (closed): package.json: drop dangling worktree:return script (target retired upstream)
 - **Issue #141** (closed): manifests/README.md: name the klt pin that regenerates the item-10 attestation envelope
 - **Issue #140** (closed): manifests/README.md L118: item-9 re-attestation attributed to the wrong change (make_column_tb.py refactor)
