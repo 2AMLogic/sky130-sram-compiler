@@ -90,7 +90,7 @@ L = [f"# Bitcell layout record {ts} ({sha})", "",
      "## LVS (`design/bitcell/lvs/run_lvs.sh`)", "", "```"] + lvs + ["```", "",
      "Reference is the schematic netlist with the nfet bulk on a separate `vsubs` pin: the cell has no p-substrate tap (the array supplies it), "
      "so `device.body_unverified` is expected and means the bulk was compared against the extracted substrate, not a drawn tie. "
-     f"The second line is a negative control (MAL width {ax_w:g} -> {ax_w + 0.1:g} in the reference) and must not match.", "",
+     f"The second line is a negative control (MAL drawn width {ax_w} um, perturbed in the reference) and must not match.", "",
      "## Area (`klt stats --top <cell> --format json`, bbox width x height, same command for both cells)", "",
      "| cell | bbox (um) | area (um^2) |", "|---|---|---:|",
      f"| this 6T logic-rule cell | {mine['width']:.3f} x {mine['height']:.3f} | {a_m:.3f} |",

@@ -9,7 +9,9 @@
 # increased by 0.1 um must NOT match. The width is read from sizing.json, never hardcoded, and the
 # script exits non-zero if the XMAL line does not carry it — a resize that leaves the committed
 # netlist stale cannot silently turn the control into a compare of a correct netlist.
-# Exit: 0 ref `match` and ref_bad `mismatch`; 3 ref is not `match` (or wrote no report);
+# Exit: 0 ref `match` and ref_bad `mismatch`; 1 anchor error — the XMAL line does not carry
+#       the sizing width or the perturbed width is not numeric (lvs/make_ref.py);
+#       3 ref is not `match` (or wrote no report);
 #       5 ref_bad is not `mismatch` (or wrote no report). 4 is unused: power_connectivity /
 #       body_verification have no bitcell gating analogue (device.body_unverified is expected),
 #       and the number is kept free so the three LVS runners share one convention
@@ -19,27 +21,7 @@ G=$(realpath "${1:?layout.gds}"); O=${2:?outdir}
 command -v klt >/dev/null || { echo "run_lvs.sh: TOOL_MISSING: klt not on PATH" >&2; exit 1; }
 mkdir -p "$O"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 -I - "$here/../sizing.json" "$here/../netlist/bitcell_6t.spice" "$O" <<'PY'
-import json, re, sys
-sizing, src, out = sys.argv[1], sys.argv[2], sys.argv[3]
-ax_w = json.load(open(sizing))["ax"]["w"]
-good, bad, done = [], [], False
-for ln in open(src).read().splitlines():
-    if ln.startswith(".subckt"):
-        ln += " vsubs"
-    m = re.match(r"^(X\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(sky130_fd_pr__nfet_01v8)(.*)$", ln)
-    if m:
-        ln = f"{m.group(1)} {m.group(2)} {m.group(3)} {m.group(4)} vsubs {m.group(6)}{m.group(7)}"
-    good.append(ln)
-    if ln.startswith("XMAL "):
-        ln, n = re.subn(rf"\bW={ax_w:g}\b", f"W={ax_w + 0.1:g}", ln)
-        done = done or bool(n)
-    bad.append(ln)
-if not done:
-    sys.exit(f"run_lvs.sh: negative-control anchor (XMAL W={ax_w:g}) not found in the rewritten reference")
-open(f"{out}/ref.spice", "w").write("\n".join(good) + "\n")
-open(f"{out}/ref_bad.spice", "w").write("\n".join(bad) + "\n")
-PY
+python3 -I "$here/make_ref.py" "$here/../sizing.json" "$here/../netlist/bitcell_6t.spice" "$O"
 for k in ref ref_bad; do
   cat > "$O/$k.request.json" <<JSON
 {
