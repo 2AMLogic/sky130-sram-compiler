@@ -140,12 +140,14 @@ def main():
     # artifact lands, not after the evidence .json.gz files are on disk.
     git = git_short_sha(repo)
     scratch, ev = pathlib.Path(a.scratch), pathlib.Path(a.evidence)
-    ev.mkdir(parents=True, exist_ok=True)
     benches = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
                "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
-    reps = {}
+    # Every bench report is loaded before the evidence directory is created (issue #129): a
+    # missing or unparseable one must refuse before any artifact lands, not after earlier
+    # benches' .json.gz files are already on disk. Loads first, mkdir second, writes third.
+    reps = {b: load_bench(scratch, b) for b in benches}
+    ev.mkdir(parents=True, exist_ok=True)
     for b in benches:
-        reps[b] = load_bench(scratch, b)
         data = json.dumps(scrub(reps[b]), indent=1, sort_keys=True).encode()
         with gzip.GzipFile(ev / f"{b}.report.json.gz", "wb", mtime=0) as g:
             g.write(data)

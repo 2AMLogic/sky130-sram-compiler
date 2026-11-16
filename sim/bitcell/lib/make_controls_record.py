@@ -107,25 +107,26 @@ def main():
     git = git_short_sha(repo)
     klt_local = klt_version_local()
 
+    # Every input is loaded before the evidence directory is created (issue #129): a missing or
+    # unparseable one must refuse before any artifact lands, not after earlier inputs' .json.gz
+    # files are already on disk (--base-reports and --det-ref used to be read after every write).
+    # Same shape as make_write_mc_record.py: loads first, mkdir second, writes third.
+    det_rep, neg_rep = load(a.det), load(a.neg)
+    extra = [("read", a.neg_read), ("hold", a.neg_hold)]
+    neg_loaded = [(f"mc_{nm}_snm_neg.report", load(x[1])) for nm, x in extra if x]
+    base_reps = [load(r) for r in a.base_reports]
+    ref = ref_kstar(load(a.det_ref))
+
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
+    save_gz_json(ev / "mc_write_trip_det.report.json.gz", det_rep)
+    save_gz_json(ev / "mc_write_trip_neg.report.json.gz", neg_rep)
+    for name, rep in neg_loaded:
+        save_gz_json(ev / f"{name}.json.gz", rep)
 
-    def keep(src, name):
-        save_gz_json(ev / f"{name}.json.gz", load(src))
-
-    keep(a.det, "mc_write_trip_det.report")
-    keep(a.neg, "mc_write_trip_neg.report")
-    extra = [("read", a.neg_read), ("hold", a.neg_hold)]
-    for nm, x in extra:
-        if x:
-            keep(x[1], f"mc_{nm}_snm_neg.report")
-
-    base_reps = [load(r) for r in a.base_reports]
     bpts, _, _ = stats(merge(base_reps))
-    det_rep, neg_rep = load(a.det), load(a.neg)
     dpts, dfail, _ = stats(det_rep["corners"])
     npts, nfail, _ = stats(neg_rep["corners"])
-    ref = ref_kstar(load(a.det_ref))
 
     # --- determinism
     drows, dok = [], True
