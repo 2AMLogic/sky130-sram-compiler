@@ -18,8 +18,9 @@ item 10).
     pinned klt 0.9.0 `--attest 1` binds the *whole input set* — every source, every `derived` file and the inventory —
     through `provenance.input.paths`, and the hash to cite here is that set's combined digest
     (`provenance.input.content_hash`, 33 members for the analog partition), which is what makes editing any member
-    grade the row stale. The analog envelope was re-attested under klt 0.9.0 after the `sky130_pdk.py` refactor
-    (52/52 checks); `evidence/item1-digital.json` is untouched by that change. Items 9 and 10 bind their inventory
+    grade the row stale. The analog envelope is `design/compiler/evidence/item1.json` (52/52 checks under
+    klt 0.9.0), and it binds the shared PDK module; `evidence/item1-digital.json` does not bind it, so a
+    change to it cannot grade the digital row stale. Items 9 and 10 bind their inventory
     alone, so for those the cited hash *is* the inventory's sha256. Item 2 pins an inventory too (below) but is
     anchored to its `--input` stream, so its cited hash is that stream's — never the inventory's or the envelope's.
   - **2.analog / 2.digital** — `design/compiler/evidence/item2.json` (the committed 256 x 32 GDS bound by hash, written by
@@ -121,5 +122,5 @@ A manifest change without a regenerated record fails the build.
 Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, item 9, Testbenches shipped, item 10, Repo hygiene, and item 11, Power delivery (`layout/erc/`, #34), each for
 the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33). Item 4 grades the
 `status: match` reports with `power_connectivity: match` (`design/macro/records/`, `design/control/records/`,
-klt 0.9.0 for the digital one). Item 9 was re-attested under klt 0.9.0 after the `make_column_tb.py` refactor (`evidence/item9.json`, 76/76 checks, local cold start). The `klt` pin is
+klt 0.9.0 for the digital one). Item 9's envelope is `evidence/item9.json` (76/76 checks under klt 0.9.0, local cold start); `git log -- evidence/item9.json` is its re-attestation history. The `klt` pin is
 0.9.0, which contains the klayout-tools#4366 fix for the pwell `VNB` power-connectivity artifact. Each unmet row's `reason` is in the record.
