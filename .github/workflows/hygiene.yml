@@ -1,9 +1,15 @@
 name: hygiene
 
-# PDK-free checks only: no PDK, ngspice, xschem or `klt sim` here. These are
-# the same commands manifests/hygiene-inventory.json declares for T1 item 10,
-# so the committed attestation (manifests/sky130-sram-compiler.item10.attest.json)
-# is re-run on every PR and cannot go stale.
+# PDK-free checks only: no PDK, ngspice, xschem or `klt sim` here. The
+# check/test steps below are the same commands manifests/hygiene-inventory.json
+# declares for T1 item 10, so the committed attestation
+# (manifests/sky130-sram-compiler.item10.attest.json) is re-run on every PR and
+# cannot go stale. The one exception is the pyflakes step: it is a lint kept
+# deliberately OUTSIDE the inventory (it pins a tool the attestation's
+# "needs only python3 and git" reproduce story does not provide), so a change
+# to it does not change the attested check set — but this workflow file itself
+# is hash-pinned by the inventory's `hygiene` role, so any edit here still
+# requires re-attesting item 10.
 
 on:
   push:
@@ -27,6 +33,13 @@ jobs:
 
       - name: Install pinned klt
         run: pip install klayout-tools==0.8.0
+
+      # Lint, NOT an inventory check: keeps the unused-name class (#82, #93/#111,
+      # #194) from reopening without a re-attestation cascade on every cleanup.
+      - name: No unused names (pyflakes)
+        run: |
+          pip install pyflakes==3.4.0
+          python3 -m pyflakes $(git ls-files 'design/*.py' 'sim/*.py' 'verification/*.py' 'layout/*.py')
 
       - name: JSON formats parse, Python sources compile
         run: python3 -I verification/hygiene/check_formats.py
