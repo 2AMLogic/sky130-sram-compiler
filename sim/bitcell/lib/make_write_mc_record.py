@@ -69,9 +69,11 @@ def main():
 
     reps = [load(r) for r in a.report]
     rep = reps[-1]
-    # Provenance resolves before anything is written: a failed lookup must refuse before any
-    # artifact lands, not after the evidence .json.gz files are on disk.
+    # Every input -- report and repo-tracked constant alike -- is read before the evidence
+    # directory is created (issues #129 and #172): a missing or unparseable one must refuse
+    # before any artifact lands, not after earlier .json.gz files are already on disk.
     git = git_short_sha(repo)
+    sizing = json.load(open(repo / "design/bitcell/sizing.json"))
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
     for i, r in enumerate(reps[1:], 1):  # the base report is already committed; only the new ones are stored
@@ -125,7 +127,6 @@ def main():
 
     mc = rep["environment"].get("monte_carlo", {})
     remote = rep["environment"].get("remote", {})
-    sizing = json.load(open(repo / "design/bitcell/sizing.json"))
     L = [f"# Bitcell write-trip Monte Carlo record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#14 (follows #7). Append-only: add a new dated record, never edit this one. "
          "The 45-corner deterministic record `20261018-040941-91ba071.md` is not edited; this record adds the mismatch "

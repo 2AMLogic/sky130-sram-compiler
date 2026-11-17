@@ -448,6 +448,10 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
     evidence directory the published record cites -- indistinguishable from a completed run until
     someone counts the files. The refusal must land zero .json.gz files; the pre-change
     interleaved shape leaves N-1 (the distinguishing measurement this class holds).
+
+    Issue #172 extends the same refusal to the inputs that are not argv paths: the repo-tracked
+    constants each writer still read after its gzip writes (design/bitcell/sizing.json in the two
+    bitcell writers, the sim/column/requests/<bench>.request.json shas in the column writer).
     """
 
     def stub_provenance(self):
@@ -582,6 +586,72 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             argv, ev = self.column_argv(td, "{")
             self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def sizing_repo(tmp, body):
+        """A stub repo whose tracked `design/bitcell/sizing.json` holds `body` ('{' = truncated):
+        the constant all three other writers read for the provenance lines."""
+        repo = pathlib.Path(tmp) / "stub-repo"
+        (repo / "design" / "bitcell").mkdir(parents=True)
+        (repo / "design" / "bitcell" / "sizing.json").write_text(body)
+        return repo
+
+    def test_make_record_unparseable_sizing_writes_nothing(self):
+        """The repo-tracked sizing constant is still read after the mkdir pre-#172: the four
+        report gzips orphan even with every report input present and parseable."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, '{"corners": [], "environment": {}}')
+            with mock.patch.object(make_record, "repo", self.sizing_repo(td, "{")):
+                self.assert_refused(make_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_make_record_missing_request_writes_nothing(self):
+        """The three sim/bitcell/requests/<bench>.request.json sha lookups ran after the gzip
+        writes too (pre-#172, missed by the issue's sizing-only enumeration): one missing
+        request file orphans all four report gzips."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, '{"corners": [], "environment": {}}')
+            repo = self.sizing_repo(td, (REPO / "design" / "bitcell" / "sizing.json").read_text())
+            requests = repo / "sim" / "bitcell" / "requests"
+            requests.mkdir(parents=True)
+            for req in ("read_snm_corners", "hold_snm_corners"):  # write_trip_corners missing
+                (requests / f"{req}.request.json").write_text("{}")
+            with mock.patch.object(make_record, "repo", repo):
+                self.assert_refused(make_record.main, argv, ev, FileNotFoundError)
+
+    @staticmethod
+    def write_mc_argv(tmp):
+        """make_write_mc_record.py argv with two parseable reports: the base plus one new one
+        (a single report writes no gzip at all, so the orphan would go unnoticed)."""
+        tmp = pathlib.Path(tmp)
+        body = '{"corners": [], "environment": {}}'
+        (tmp / "base.json").write_text(body)
+        (tmp / "new.json").write_text(body)
+        return ["make_write_mc_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"),
+                "--report", str(tmp / "base.json"), str(tmp / "new.json")], tmp / "ev"
+
+    def test_write_mc_unparseable_sizing_writes_nothing(self):
+        """Same shape one writer later: the sizing constant is read after the new report's gzip
+        landed pre-#172, so that gzip orphans."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.write_mc_argv(td)
+            with mock.patch.object(make_write_mc_record, "repo", self.sizing_repo(td, "{")):
+                self.assert_refused(make_write_mc_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_column_missing_request_writes_nothing(self):
+        """One `sim/column/requests/<bench>.request.json` missing among eleven: its sha256
+        lookup ran after all eleven bench gzips landed pre-#172 (the issue's edge case)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, '{"corners": [], "environment": {}}')
+            repo = self.sizing_repo(td, "{}")
+            requests = repo / "sim" / "column" / "requests"
+            requests.mkdir(parents=True)
+            for b in ["col_read0", "col_read1", "col_write1", "col_write0_nowen", "col_read_snm",
+                      "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg",
+                      "col_mc_hold_snm_neg"]:  # col_write0's request file is the missing one
+                (requests / f"{b}.request.json").write_text("{}")
+            with mock.patch.object(make_column_record, "repo", repo):
+                self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
 
 
 unittest.main()
