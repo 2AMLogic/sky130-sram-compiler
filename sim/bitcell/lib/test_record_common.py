@@ -466,6 +466,9 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
 
     Issue #174 extends it once more to the per-corner waveform.raw.json artifacts the column
     writer reads through snm_rows after its eleven report gzips have landed.
+
+    Issue #176 extends it to the read benches' waveform.raw.json (read_rows): present but
+    unparseable refuses; absent stays a supported input (tsa=None), the wf.exists() guard.
     """
 
     def stub_provenance(self):
@@ -637,6 +640,63 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             argv, ev = self.column_snm_argv(td, "{")
             self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def column_read1_argv(tmp, wf_body):
+        """make_column_record.py argv over a complete scratch (all 11 bench reports present)
+        whose `col_read1` report carries one corner with a full passing read-1 measurement set
+        over `gen.READ_D` (so `ladder_min(ok)` is 0 and `read_rows` reaches the corner's
+        `waveform.raw.json` artifact, holding `wf_body`: None = absent, str = content). Every
+        other bench is an empty-corner report, so the only reachable refusal on the read benches
+        is this waveform read (`col_read0` cannot reach it: the `want == 1` guard)."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        vdd, n = 1.8, len(make_column_record.gen.READ_D)
+        ms = [{"name": f"dout{k:02d}", "value": 1.0} for k in range(n)]
+        ms += [{"name": f"q{k:02d}", "value": 1.0} for k in range(n)]
+        ms += [{"name": f"dv{k:02d}", "value": 0.1} for k in range(n)]
+        ms += [{"name": nm, "value": v} for nm, v in (("bump", 0.0), ("hs1", vdd), ("hs2", vdd))]
+        corner = ('{"corner_id": "tt/1.800V/25C", "process": "tt", "supply_v": {"vvdd": 1.8},'
+                  f' "temperature_c": 25, "measurements": {json.dumps(ms)}}}')
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = f'{{"corners": [{corner}], "environment": {{}}}}' if b == "col_read1" \
+                else '{"corners": [], "environment": {}}'
+            (scratch / f"{b}.json").write_text(body)
+        d = scratch / "col_read1" / rc.dirname("tt/1.800V/25C")
+        d.mkdir(parents=True)
+        if wf_body is not None:
+            (d / "waveform.raw.json").write_text(wf_body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_unparseable_read1_waveform_writes_nothing(self):
+        """A truncated read-1 waveform artifact (present but malformed) is an input too (#176):
+        the read_rows hoist makes it refuse before any of the eleven report gzips land."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_read1_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_column_read1_absent_waveform_yields_tsa_none(self):
+        """The positive counterpart the wf.exists() guard exists for (#176): a read-1 corner
+        with NO waveform artifact is a supported input, not a refusal -- the row lands with
+        tsa=None and the rest of the measurement set intact."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, _ = self.column_read1_argv(td, None)
+            scratch = pathlib.Path(argv[argv.index("--scratch") + 1])
+            rep, rows = make_column_record.read_rows(scratch, "col_read1")
+            (cid, x), = rows
+            self.assertEqual(cid, "tt/1.800V/25C")
+            self.assertEqual(x["dmin"], make_column_record.gen.READ_D[0])
+            self.assertIsNone(x["tsa"])
+            self.assertFalse(x["low_fail"])
+            self.assertTrue(x["all_state_ok"])
+            self.assertEqual(x["dv"], 0.1)
+            self.assertEqual(x["bump"], 0.0)
+            self.assertEqual(x["hs"], (1.8, 1.8))
+            self.assertEqual(x["vdd"], 1.8)
 
     @staticmethod
     def sizing_repo(tmp, body):
