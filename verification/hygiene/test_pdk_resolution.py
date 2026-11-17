@@ -20,7 +20,6 @@ override and a non-absolute dir now fail loudly naming SKY130_VARIANT_DIR.
 import os
 import pathlib
 import subprocess
-import sys
 import tempfile
 import unittest
 

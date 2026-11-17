@@ -14,7 +14,6 @@ decode = grouped predecode (groups of <=3 bits, WLEN gating group 0) -> NAND of
 the group lines -> wordline driver. Column mux = NMOS pass pairs onto per-bit
 sense bitlines, with a per-bit sense amp and write driver. See README.md.
 """
-import math
 import pathlib
 import sys
 

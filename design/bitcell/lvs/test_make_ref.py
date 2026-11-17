@@ -2,7 +2,6 @@
 python3 -I design/bitcell/lvs/test_make_ref.py"""
 import json
 import pathlib
-import re
 import sys
 import tempfile
 import unittest
