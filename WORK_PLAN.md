@@ -9,7 +9,7 @@ do not edit it by hand.
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#146**: chore(loom): resync installed Loom to v0.19.1302
 
 ## Very Important
 
@@ -27,33 +27,28 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#99**: Bitcell LVS negative-control anchor corrupts the control netlist for integer-valued ax.w (regex built from an unescaped :g-formatted float)
-- **#104**: Fold the repeated gzip-JSON write and sha256 helpers into record_common
+- **#129**: Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips
+- **#155**: Use save_gz_json in make_column_record.py instead of an inline gzip writer
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#67**: bitcell GDS is not byte-reproducible: gen_bitcell.py writes klayout timestamps into the GDS header
-- **#88**: Wire the PDK-free test suites into the hygiene CI inventory (needs an item-10 re-attestation)
-- **#91**: Write-MC record prose hardcodes the ladder step (/32) while the data now derives from tb_common.LADDER
-- **#105**: No test asserts any generator's --check actually exits non-zero on drift
-- **#108**: Marker study: counts have drifted from the 2026-10-17 record on the current klt pin — new dated record needed
-- **#116**: Consolidate the duplicated provenance guard in verification/drc and guard design/bitcell make_record
-- **#119**: T1 item 9 grades analog 'met' while sim/testbench-inventory.json omits every bitcell testbench but one
+- **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
+- **#151**: A record can be stamped with a commit that cannot reproduce it: git_short_sha never checks the tree is clean
+- **#159**: check_reproduce_coverage.py: git ls-files enumeration mangles paths containing whitespace
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#110**: fix: derive the write-trip ladder prose in the record generators from tb_common.LADDER
-- **#123**: docs(marker): add 2026-11-15 re-run record with per-deck drift attribution
+- **#164**: test: wire the PDK-resolution suite into hygiene CI and re-attest item 10
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#121**: refactor: consolidate record provenance lookups onto record_common
+- **#146**: chore(loom): resync installed Loom to v0.19.1302
 
 ## Proposed
 
@@ -61,16 +56,10 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)*
-- **#67**: bitcell GDS is not byte-reproducible: gen_bitcell.py writes klayout timestamps into the GDS header *(curated)*
-- **#88**: Wire the PDK-free test suites into the hygiene CI inventory (needs an item-10 re-attestation) *(curated)*
-- **#91**: Write-MC record prose hardcodes the ladder step (/32) while the data now derives from tb_common.LADDER *(curated)*
-- **#95**: make_record.py bakes a failed DRC/LVS compare into an append-only record: check the runners' returncodes *(curated)*
-- **#99**: Bitcell LVS negative-control anchor corrupts the control netlist for integer-valued ax.w (regex built from an unescaped :g-formatted float) *(curated)*
-- **#104**: Fold the repeated gzip-JSON write and sha256 helpers into record_common *(curated)*
-- **#105**: No test asserts any generator's --check actually exits non-zero on drift *(curated)*
-- **#108**: Marker study: counts have drifted from the 2026-10-17 record on the current klt pin — new dated record needed *(curated)*
-- **#114**: make_column_record.py writes evidence before resolving the sha, so a provenance failure leaves orphaned gzips (needs item-9 re-attestation) *(curated)*
-- **#119**: T1 item 9 grades analog 'met' while sim/testbench-inventory.json omits every bitcell testbench but one *(curated)*
+- **#129**: Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips *(curated)*
+- **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent) *(curated)*
+- **#151**: A record can be stamped with a commit that cannot reproduce it: git_short_sha never checks the tree is clean *(curated)*
+- **#159**: check_reproduce_coverage.py: git ls-files enumeration mangles paths containing whitespace *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -84,14 +73,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 7 |
-| PRs awaiting review | 2 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 12 |
+| Curated | 6 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

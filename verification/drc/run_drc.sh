@@ -15,12 +15,27 @@ echo "ca10c045b447a8ce3bdb55f8922e2dfb954826dd8a9583ca0d39629d5b9e555c  $AG" | s
 (cd layout/control && sha256sum -c control.gds.sha256)
 : > "$O/times.txt"
 t() { local s=$SECONDS; "$@"; echo "$* : $((SECONDS - s)) s" >> "$O/times.txt"; }
+# Timed, gated `klt drc`: tk <report.json> <stderr.err> <klt drc args...>. The
+# three_deck_drc.sh exit-code contract applies here too: 0 clean, 3 violations and
+# 4 coverage_unknown are normal outcomes, so the run continues and the times line is
+# logged; any other exit is a deck/klt failure and aborts the run with that code --
+# never `|| true`, which would leave an empty or partial report for make_record.py
+# to copy over the committed evidence before failing to parse it (#183).
+tk() {
+  local json=$1 err=$2; shift 2
+  local s=$SECONDS rc=0
+  klt drc "$@" > "$json" 2> "$err" || rc=$?
+  case $rc in
+    0|3|4) echo "klt drc $* : $((SECONDS - s)) s" >> "$O/times.txt";;
+    *) echo "run_drc: klt drc FAILED (exit $rc) on $* -- see $err" >&2; exit "$rc";;
+  esac
+}
 mkdir -p "$O/analog" "$O/digital" "$O/seam"
 # graded reports: curated deck, with the known-bad fixture as in-report negative control
 CUR=(--deck sky130 --negative-control "$NEG" --negative-control-categories met1.width.1 --format json)
 t design/bitcell/run_drc.sh "$AG" "$O/analog" > "$O/analog/summary.txt"
-t klt drc "$AG" "${CUR[@]}" > "$O/analog/curated-graded.json" 2> "$O/analog/curated-graded.err" || true
-t klt drc "$DG" "${CUR[@]}" > "$O/digital/curated.json" 2> "$O/digital/curated.err" || true
+tk "$O/analog/curated-graded.json" "$O/analog/curated-graded.err" "$AG" "${CUR[@]}"
+tk "$O/digital/curated.json" "$O/digital/curated.err" "$DG" "${CUR[@]}"
 # areaid.ce scan, with a positive control proving the scan can see a marker
 $KLT_PY -I verification/drc/probe.py scan "$AG" > "$O/scan-macro.json"
 $KLT_PY -I verification/drc/probe.py scan "$DG" > "$O/scan-control.json"
@@ -28,5 +43,5 @@ $KLT_PY -I verification/drc/probe.py marker-probe "$O/marker_probe.gds"
 $KLT_PY -I verification/drc/probe.py scan "$O/marker_probe.gds" > "$O/scan-positive-control.json"
 # seam control: slivers straddling the array/periphery seams must be flagged by the same deck
 $KLT_PY -I verification/drc/probe.py seam-probe "$AG" "$O/seam/macro_seam_probe.gds"
-t klt drc "$O/seam/macro_seam_probe.gds" --deck sky130 --format json > "$O/seam/curated.json" 2> "$O/seam/curated.err" || true
+tk "$O/seam/curated.json" "$O/seam/curated.err" "$O/seam/macro_seam_probe.gds" --deck sky130 --format json
 cat "$O/analog/summary.txt"; cat "$O/times.txt"

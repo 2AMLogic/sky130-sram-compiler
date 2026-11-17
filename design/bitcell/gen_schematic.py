@@ -38,50 +38,21 @@ E {}
 
 
 def render():
-    out = [HDR]
-    counter = [0]
-
-    def pin(x, y, net):
-        counter[0] += 1
-        out.append(f"C {{devices/lab_pin.sym}} {x} {y} 0 0 {{name=l{counter[0]} lab={net}}}")
-
-    def wire(x0, y0, x1, y1):
-        out.append(f"N {x0} {y0} {x1} {y1} {{}}")
-
-    def dev(name, kind, x, y, d, g, s, b, w, l):
-        model = sz[kind]["model"]
-        # The nf=1 ad/as/pd/ps/nrd/nrs values the PDK symbols would derive with expr();
-        # the formula is shared with design/compiler via design/sky130_pdk.py.
-        geo = pdk.device_geometry(w)
-        out.append(
-            f"C {{sky130_fd_pr/{model}.sym}} {x} {y} 0 0 "
-            f"{{name={name} L={l} W={w} nf=1 mult=1 {geo} model={model} spiceprefix=X}}"
-        )
-        pm = kind == "pu"
-        dy, sy = (30, -30) if pm else (-30, 30)
-        # drain / source stubs (vertical), gate / bulk stubs (horizontal)
-        wire(x + 20, y + dy, x + 20, y + dy * 5 // 3)
-        pin(x + 20, y + dy * 5 // 3, d)
-        wire(x + 20, y + sy, x + 20, y + sy * 5 // 3)
-        pin(x + 20, y + sy * 5 // 3, s)
-        wire(x - 20, y, x - 40, y)
-        pin(x - 40, y, g)
-        wire(x + 20, y, x + 40, y)
-        pin(x + 40, y, b)
+    sch = pdk.SchematicWriter()
+    sch.lines.append(HDR)
 
     pd, ax, pu = sz["pd"], sz["ax"], sz["pu"]
     # left half (x = 0), right half (x = 400)
-    dev("MPL", "pu", 0, 0, "Q", "QB", "VDD", "VDD", pu["w"], pu["l"])
-    dev("MPR", "pu", 400, 0, "QB", "Q", "VDD", "VDD", pu["w"], pu["l"])
-    dev("MNL", "pd", 0, 200, "Q", "QB", "VSS", "VSS", pd["w"], pd["l"])
-    dev("MNR", "pd", 400, 200, "QB", "Q", "VSS", "VSS", pd["w"], pd["l"])
-    dev("MAL", "ax", 0, 400, "BL", "WL", "Q", "VSS", ax["w"], ax["l"])
-    dev("MAR", "ax", 400, 400, "BLB", "WL", "QB", "VSS", ax["w"], ax["l"])
+    sch.device("MPL", pu["model"], 0, 0, "Q", "QB", "VDD", "VDD", pu["w"], pu["l"])
+    sch.device("MPR", pu["model"], 400, 0, "QB", "Q", "VDD", "VDD", pu["w"], pu["l"])
+    sch.device("MNL", pd["model"], 0, 200, "Q", "QB", "VSS", "VSS", pd["w"], pd["l"])
+    sch.device("MNR", pd["model"], 400, 200, "QB", "Q", "VSS", "VSS", pd["w"], pd["l"])
+    sch.device("MAL", ax["model"], 0, 400, "BL", "WL", "Q", "VSS", ax["w"], ax["l"])
+    sch.device("MAR", ax["model"], 400, 400, "BLB", "WL", "QB", "VSS", ax["w"], ax["l"])
     for k, (net, x, y) in enumerate([("BL", -150, 400), ("BLB", 550, 400), ("WL", -150, 450),
                                       ("VDD", -150, 0), ("VSS", -150, 200)]):
-        counter[0] += 1
-        out.append(f"C {{devices/iopin.sym}} {x} {y} 0 0 {{name=p{k} lab={net}}}")
-    return "\n".join(out) + "\n"
+        sch.lines.append(f"C {{devices/iopin.sym}} {x} {y} 0 0 {{name=p{k} lab={net}}}")
+    return "\n".join(sch.lines) + "\n"
 
 
 def main():

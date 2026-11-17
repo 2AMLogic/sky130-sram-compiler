@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 17/17 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 23/23 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 17,
-    "passed_count": 17,
+    "check_count": 23,
+    "passed_count": 23,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:dc86064c5293f9ec870c56fb97e86cc698bad68161d3348da29a8e03a25b6307"
+        "content_hash": "sha256:d1d904d92fd6b112b62b44db20f1b38fddaaaa9069c590e9301d825fbeff27b7"
       },
       {
         "check": "present",
@@ -38,14 +38,21 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:f8c0b55758e70ce34caed2b8de7030b8b1e821cc7d2a6a88207b1adf7d24ec7a"
+        "content_hash": "sha256:044d450a8cd716500f9d939236d1d7bb27a1c271f7b621de66ec905cd846a1b6"
       },
       {
         "check": "present",
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:c2344c0b988898ae1ba82a76a459ce15ac7d8b58c91bcf3fa538dadd41566f9f"
+        "content_hash": "sha256:ebf298d0a7ef85d7a9535118487e414b4d37253fa7f705198e70f4171e2b2f00"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "verification/hygiene/check_reproduce_coverage.py",
+        "passed": true,
+        "content_hash": "sha256:c0808f6fa2486469c0fe718b285991248f6953abfd9d22ddf85d5899167a2732"
       },
       {
         "check": "command",
@@ -55,6 +62,19 @@
           "python3",
           "-I",
           "verification/hygiene/check_formats.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "reproduce-coverage",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/check_reproduce_coverage.py"
         ],
         "cwd": ".",
         "exit_status": 0,
@@ -213,6 +233,58 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "reproduce-coverage-bites",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_reproduce_coverage.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "format-gate-bites",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_check_formats.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "pdk-resolution",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_pdk_resolution.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "drc-exit-gate",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_drc_exit_gate.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -226,7 +298,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:ca403a495e9dd09f0fbebfe9ab612776f0a4468c5894ebf37523ca533a129046"
+      "content_hash": "sha256:77783e7af4250ce1b4e334ed8ba993db93d97793ccd30e67319b97c40f66d06a"
     }
   }
 }
