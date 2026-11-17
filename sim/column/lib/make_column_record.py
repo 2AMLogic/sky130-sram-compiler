@@ -9,7 +9,6 @@ Reports are copied gzip-compressed (host paths scrubbed) into <evidence>; the re
 Margin extraction reuses sim/bitcell/lib (pinned gf180-sram extractor + inscribed-square eyes()).
 """
 import argparse
-import gzip
 import hashlib
 import json
 import pathlib
@@ -22,7 +21,7 @@ sys.path.insert(0, str(here))
 import make_column_tb as gen  # noqa: E402
 import snm_from_artifacts as sa  # noqa: E402
 from record_common import (dirname, fmt_mc, git_short_sha, klt_version_of, load, mc_stats,  # noqa: E402
-                           runner_version_of, scrub)  # noqa: E402
+                           runner_version_of, save_gz_json)  # noqa: E402
 
 
 def load_bench(scratch, bench):
@@ -140,18 +139,25 @@ def main():
     # artifact lands, not after the evidence .json.gz files are on disk.
     git = git_short_sha(repo)
     scratch, ev = pathlib.Path(a.scratch), pathlib.Path(a.evidence)
-    ev.mkdir(parents=True, exist_ok=True)
     benches = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
                "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
-    reps = {}
-    for b in benches:
-        reps[b] = load_bench(scratch, b)
-        data = json.dumps(scrub(reps[b]), indent=1, sort_keys=True).encode()
-        with gzip.GzipFile(ev / f"{b}.report.json.gz", "wb", mtime=0) as g:
-            g.write(data)
-
+    # Every input -- report, repo-tracked constant, and per-corner waveform.raw.json artifact
+    # alike (the SNM benches' via snm_rows, the read benches' via read_rows) -- is read before
+    # the evidence directory is created (issues #129, #172 and #174): a missing or unparseable
+    # one must refuse before any artifact lands, not after earlier benches' .json.gz files are
+    # already on disk. Loads first, mkdir second, writes third.
     def sha(p):
         return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
+
+    reps = {b: load_bench(scratch, b) for b in benches}
+    request_sha = {b: sha(repo / f"sim/column/requests/{b}.request.json") for b in benches}
+    r0rep, r0 = read_rows(scratch, "col_read0")
+    r1rep, r1 = read_rows(scratch, "col_read1")
+    rrep, rs = snm_rows(scratch, "col_read_snm")
+    hrep, hs = snm_rows(scratch, "col_hold_snm")
+    ev.mkdir(parents=True, exist_ok=True)
+    for b in benches:
+        save_gz_json(ev / f"{b}.report.json.gz", reps[b])
 
     L = [f"# Column bench record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#29 (T1 item 9, analog partition). Append-only: add a new dated record, never edit this one.", "",
@@ -165,7 +171,7 @@ def main():
          "- margin extractor for the SNM benches: gf180-sram `snm_extract.py` @ `74ba8a621c9e` plus the inscribed-square `eyes()` of `sim/bitcell/lib/snm_from_artifacts.py`"]
     for b in benches:
         r = reps[b]["environment"].get("remote", {})
-        L.append(f"- {b}: job `{r.get('job_id')}`, {r.get('instance_type')}, request sha256 `{sha(repo / f'sim/column/requests/{b}.request.json')}`; report `{ev.name}/{b}.report.json.gz`")
+        L.append(f"- {b}: job `{r.get('job_id')}`, {r.get('instance_type')}, request sha256 `{request_sha[b]}`; report `{ev.name}/{b}.report.json.gz`")
     L.append("")
 
     # ---- read access
@@ -176,8 +182,6 @@ def main():
           "`bump` = max voltage of the node that is 0 (Q for read 0, QB for read 1) over the run; half-select columns: hs1/hs2 are the min/max of the "
           "row-0 cells of columns 1 and 2 over the run (a left rail is a retained cell). `fail@0` = the d = 0 trial read wrongly "
           "(read 1: the ladder has a failing end).", ""]
-    r0rep, r0 = read_rows(scratch, "col_read0")
-    r1rep, r1 = read_rows(scratch, "col_read1")
     L += ["| corner | read0 d_min | read0 dv | read0 bump | read1 d_min | read1 t_sa | read1 t_access | read1 dv | read1 bump | read1 fail@0 | state kept | hs1/hs2 (read1) |",
           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|"]
     worst = (None, -1.0)
@@ -223,8 +227,6 @@ def main():
           f"corners with no value: {[c for c, x in nw if x is None] or 'none'}.", ""]
 
     # ---- SNM
-    rrep, rs = snm_rows(scratch, "col_read_snm")
-    hrep, hs = snm_rows(scratch, "col_hold_snm")
     L += ["## In-situ SNM, deterministic corners (bit line = real column: precharge on, 63 further cells)", "",
           "| corner | read eye SNM | read pinned | hold eye SNM | hold pinned |", "|---|---:|---:|---:|---:|"]
     for cid in rs:

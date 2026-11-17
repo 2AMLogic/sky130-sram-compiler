@@ -28,8 +28,21 @@ import tb_common  # noqa: E402
 # make_controls_record -> make_record -> snm_from_artifacts loads the pinned gf180-sram SNM extractor
 # (sim/build/pinned/, fetched by fetch_pinned.sh), which has nothing to do with the write-trip ladder and
 # is not available in a PDK-free checkout. An attribute-less stub keeps this suite PDK-free and still fails
-# loudly if anything under test ever actually reaches for the extractor.
-sys.modules.setdefault("snm_from_artifacts", types.ModuleType("snm_from_artifacts"))
+# loudly if anything under test ever actually reaches for the extractor -- except for the file access
+# itself: snm_for keeps the real function's open/json.load so a missing or unparseable waveform.raw.json
+# raises exactly what the real writer would (issue #174).
+_stub_sfa = types.ModuleType("snm_from_artifacts")
+
+
+def _stub_snm_for(path, pair):
+    json.load(open(path))
+    raise RuntimeError("stub snm_from_artifacts.snm_for: pinned extractor not under test")
+
+
+_stub_sfa.snm_for = _stub_snm_for
+sys.modules.setdefault("snm_from_artifacts", _stub_sfa)
+sys.path.insert(0, str(HERE.parents[1] / "column/lib"))  # make_column_record's own directory
+import make_column_record  # noqa: E402
 import make_controls_record  # noqa: E402
 import make_record  # noqa: E402
 import make_write_mc_record  # noqa: E402
@@ -436,6 +449,320 @@ class SaveGzJsonIsByteReproducible(unittest.TestCase):
             first = p.read_bytes()
             rc.save_gz_json(p, {"k": [1, 2, 3]})
             self.assertEqual(p.read_bytes(), first)
+
+
+class RefusesBeforeWritingEvidence(unittest.TestCase):
+    """Issue #129: every report a record needs is read before any evidence artifact is written.
+
+    Three of the four writers used to interleave their report reads with their gzip writes, so a
+    missing or unparseable report for bench N left the gzips for benches 0..N-1 on disk in the
+    evidence directory the published record cites -- indistinguishable from a completed run until
+    someone counts the files. The refusal must land zero .json.gz files; the pre-change
+    interleaved shape leaves N-1 (the distinguishing measurement this class holds).
+
+    Issue #172 extends the same refusal to the inputs that are not argv paths: the repo-tracked
+    constants each writer still read after its gzip writes (design/bitcell/sizing.json in the two
+    bitcell writers, the sim/column/requests/<bench>.request.json shas in the column writer).
+
+    Issue #174 extends it once more to the per-corner waveform.raw.json artifacts the column
+    writer reads through snm_rows after its eleven report gzips have landed.
+
+    Issue #176 extends it to the read benches' waveform.raw.json (read_rows): present but
+    unparseable refuses; absent stays a supported input (tsa=None), the wf.exists() guard.
+    """
+
+    def stub_provenance(self):
+        """Hermetic provenance lookups (same shape as regenerate_controls_record): main()'s
+        git/klt calls answer rc 0 with non-empty stdout so a refusal test fails on the report
+        read it is about, never on a missing binary or a git-archive checkout."""
+        fake = subprocess.CompletedProcess([], 0, stdout="stub", stderr="")
+        p = mock.patch.object(subprocess, "run", return_value=fake)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def assert_refused(self, main_fn, argv, ev, exc):
+        """main() refuses with `exc` and leaves zero .json.gz in the evidence directory."""
+        self.stub_provenance()
+        ev = pathlib.Path(ev)
+        with mock.patch.object(sys, "argv", argv):
+            with self.assertRaises(exc):
+                main_fn()
+        left = sorted(p.name for p in ev.glob("*.json.gz")) if ev.exists() else []
+        self.assertEqual(left, [], f"refusal left evidence behind: {left}")
+
+    @staticmethod
+    def make_record_argv(tmp, mc_body):
+        """Full make_record.py argv with an `--mc-report-read` file holding `mc_body`
+        ('{' = truncated); the read/hold/write reports are minimal but parseable."""
+        tmp = pathlib.Path(tmp)
+        for nm in ("read", "hold"):
+            (tmp / f"{nm}.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "write.json").write_text('{"corners": [], "environment": {}}')
+        if mc_body is not None:
+            (tmp / "mc-read.json").write_text(mc_body)
+        return ["make_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"),
+                "--read", str(tmp / "read.json"), str(tmp / "a-read"),
+                "--hold", str(tmp / "hold.json"), str(tmp / "a-hold"),
+                "--write", str(tmp / "write.json"),
+                "--mc-report-read", str(tmp / "mc-read.json")], tmp / "ev"
+
+    def test_make_record_missing_mc_report_writes_nothing(self):
+        """The orphan window: three primary gzips used to land before the MC reports were read."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, None)
+            self.assert_refused(make_record.main, argv, ev, FileNotFoundError)
+
+    def test_make_record_unparseable_mc_report_writes_nothing(self):
+        """The other reachable shape: the MC report exists but is truncated JSON."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, "{")
+            self.assert_refused(make_record.main, argv, ev, json.JSONDecodeError)
+
+    def controls_argv(self, tmp, base_body):
+        """make_controls_record.py argv whose `--base-reports` file holds `base_body`
+        (None = absent). det/neg/det-ref exist; --neg-read/--neg-hold are omitted."""
+        tmp = pathlib.Path(tmp)
+        for nm in ("det", "neg"):
+            (tmp / f"{nm}.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "detref.json").write_text('{"corners": [], "environment": {}}')
+        (tmp / "base.md").write_text("## stub\n")
+        if base_body is not None:
+            (tmp / "base.json").write_text(base_body)
+        return ["make_controls_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--base-record", str(tmp / "base.md"),
+                "--base-reports", str(tmp / "base.json"),
+                "--det-ref", str(tmp / "detref.json"),
+                "--det", str(tmp / "det.json"), "--neg", str(tmp / "neg.json")], tmp / "ev"
+
+    def test_controls_missing_base_report_writes_nothing(self):
+        """--base-reports is read after every keep() pre-change: the det/neg gzips orphan."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, None)
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_unparseable_det_ref_writes_nothing(self):
+        """A truncated --det-ref (read last pre-change) must refuse with all gzips unwritten."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            (pathlib.Path(td) / "detref.json").write_text("{")
+            self.assert_refused(make_controls_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_controls_missing_base_record_writes_nothing(self):
+        """--base-record was still read after the mkdir until #168: the det/neg gzips orphan."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            (pathlib.Path(td) / "base.md").unlink()
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_missing_job_log_writes_nothing(self):
+        """A --job-log stderr file that does not exist must refuse before the mkdir (#168)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            argv += ["--job-log", f"det={pathlib.Path(td) / 'det.log'}"]
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_job_log_missing_last_file_writes_nothing(self):
+        """Several --job-log files with only the last one missing: the earlier ones are read
+        but no gzip may land (all reads complete before the mkdir)."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            for nm in ("det", "neg"):
+                (tmp / f"{nm}.log").write_text("batch job klt-sim-deadbeef submitting\n")
+            argv += ["--job-log", f"det={tmp / 'det.log'}", f"neg={tmp / 'neg.log'}",
+                     f"neg-read={tmp / 'missing.log'}"]
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    @staticmethod
+    def column_argv(tmp, missing_or_body):
+        """make_column_record.py argv over a scratch holding all 11 benches except that
+        `col_write0.json` (bench 3 of 11) holds `missing_or_body` (None = absent, str = content)."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = missing_or_body if b == "col_write0" else '{"corners": [], "environment": {}}'
+            if body is not None:
+                (scratch / f"{b}.json").write_text(body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_missing_bench_writes_nothing(self):
+        """The README's manual invocation against a scratch missing bench 3: pre-change leaves
+        col_read0/col_read1 gzips behind."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, None)
+            self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
+
+    def test_column_unparseable_bench_writes_nothing(self):
+        """A truncated bench report (present but malformed) refuses the same way."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def column_snm_argv(tmp, wf_body):
+        """make_column_record.py argv over a complete scratch (all 11 bench reports present)
+        whose `col_read_snm` report carries one corner, with the corner's `waveform.raw.json`
+        artifact holding `wf_body` (None = absent, str = content). Every other bench is an
+        empty-corner report, so the only reachable refusal is the SNM waveform read."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        corner = ('{"corner_id": "tt/1.800V/25C", "process": "tt", "supply_v": {"vvdd": 1.8},'
+                  ' "temperature_c": 25, "measurements": []}')
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = f'{{"corners": [{corner}], "environment": {{}}}}' if b == "col_read_snm" \
+                else '{"corners": [], "environment": {}}'
+            (scratch / f"{b}.json").write_text(body)
+        d = scratch / "col_read_snm" / rc.dirname("tt/1.800V/25C")
+        d.mkdir(parents=True)
+        if wf_body is not None:
+            (d / "waveform.raw.json").write_text(wf_body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_missing_snm_waveform_writes_nothing(self):
+        """A missing SNM-corner waveform.raw.json is an input too: pre-#174 it raised after
+        all eleven report gzips had landed (the distinguishing measurement: 11 left)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_snm_argv(td, None)
+            self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
+
+    def test_column_unparseable_snm_waveform_writes_nothing(self):
+        """A truncated waveform artifact (present but malformed) refuses the same way."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_snm_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def column_read1_argv(tmp, wf_body):
+        """make_column_record.py argv over a complete scratch (all 11 bench reports present)
+        whose `col_read1` report carries one corner with a full passing read-1 measurement set
+        over `gen.READ_D` (so `ladder_min(ok)` is 0 and `read_rows` reaches the corner's
+        `waveform.raw.json` artifact, holding `wf_body`: None = absent, str = content). Every
+        other bench is an empty-corner report, so the only reachable refusal on the read benches
+        is this waveform read (`col_read0` cannot reach it: the `want == 1` guard)."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        vdd, n = 1.8, len(make_column_record.gen.READ_D)
+        ms = [{"name": f"dout{k:02d}", "value": 1.0} for k in range(n)]
+        ms += [{"name": f"q{k:02d}", "value": 1.0} for k in range(n)]
+        ms += [{"name": f"dv{k:02d}", "value": 0.1} for k in range(n)]
+        ms += [{"name": nm, "value": v} for nm, v in (("bump", 0.0), ("hs1", vdd), ("hs2", vdd))]
+        corner = ('{"corner_id": "tt/1.800V/25C", "process": "tt", "supply_v": {"vvdd": 1.8},'
+                  f' "temperature_c": 25, "measurements": {json.dumps(ms)}}}')
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = f'{{"corners": [{corner}], "environment": {{}}}}' if b == "col_read1" \
+                else '{"corners": [], "environment": {}}'
+            (scratch / f"{b}.json").write_text(body)
+        d = scratch / "col_read1" / rc.dirname("tt/1.800V/25C")
+        d.mkdir(parents=True)
+        if wf_body is not None:
+            (d / "waveform.raw.json").write_text(wf_body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_unparseable_read1_waveform_writes_nothing(self):
+        """A truncated read-1 waveform artifact (present but malformed) is an input too (#176):
+        the read_rows hoist makes it refuse before any of the eleven report gzips land."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_read1_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_column_read1_absent_waveform_yields_tsa_none(self):
+        """The positive counterpart the wf.exists() guard exists for (#176): a read-1 corner
+        with NO waveform artifact is a supported input, not a refusal -- the row lands with
+        tsa=None and the rest of the measurement set intact."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, _ = self.column_read1_argv(td, None)
+            scratch = pathlib.Path(argv[argv.index("--scratch") + 1])
+            rep, rows = make_column_record.read_rows(scratch, "col_read1")
+            (cid, x), = rows
+            self.assertEqual(cid, "tt/1.800V/25C")
+            self.assertEqual(x["dmin"], make_column_record.gen.READ_D[0])
+            self.assertIsNone(x["tsa"])
+            self.assertFalse(x["low_fail"])
+            self.assertTrue(x["all_state_ok"])
+            self.assertEqual(x["dv"], 0.1)
+            self.assertEqual(x["bump"], 0.0)
+            self.assertEqual(x["hs"], (1.8, 1.8))
+            self.assertEqual(x["vdd"], 1.8)
+
+    @staticmethod
+    def sizing_repo(tmp, body):
+        """A stub repo whose tracked `design/bitcell/sizing.json` holds `body` ('{' = truncated):
+        the constant all three other writers read for the provenance lines."""
+        repo = pathlib.Path(tmp) / "stub-repo"
+        (repo / "design" / "bitcell").mkdir(parents=True)
+        (repo / "design" / "bitcell" / "sizing.json").write_text(body)
+        return repo
+
+    def test_make_record_unparseable_sizing_writes_nothing(self):
+        """The repo-tracked sizing constant is still read after the mkdir pre-#172: the four
+        report gzips orphan even with every report input present and parseable."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, '{"corners": [], "environment": {}}')
+            with mock.patch.object(make_record, "repo", self.sizing_repo(td, "{")):
+                self.assert_refused(make_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_make_record_missing_request_writes_nothing(self):
+        """The three sim/bitcell/requests/<bench>.request.json sha lookups ran after the gzip
+        writes too (pre-#172, missed by the issue's sizing-only enumeration): one missing
+        request file orphans all four report gzips."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.make_record_argv(td, '{"corners": [], "environment": {}}')
+            repo = self.sizing_repo(td, (REPO / "design" / "bitcell" / "sizing.json").read_text())
+            requests = repo / "sim" / "bitcell" / "requests"
+            requests.mkdir(parents=True)
+            for req in ("read_snm_corners", "hold_snm_corners"):  # write_trip_corners missing
+                (requests / f"{req}.request.json").write_text("{}")
+            with mock.patch.object(make_record, "repo", repo):
+                self.assert_refused(make_record.main, argv, ev, FileNotFoundError)
+
+    @staticmethod
+    def write_mc_argv(tmp):
+        """make_write_mc_record.py argv with two parseable reports: the base plus one new one
+        (a single report writes no gzip at all, so the orphan would go unnoticed)."""
+        tmp = pathlib.Path(tmp)
+        body = '{"corners": [], "environment": {}}'
+        (tmp / "base.json").write_text(body)
+        (tmp / "new.json").write_text(body)
+        return ["make_write_mc_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"),
+                "--report", str(tmp / "base.json"), str(tmp / "new.json")], tmp / "ev"
+
+    def test_write_mc_unparseable_sizing_writes_nothing(self):
+        """Same shape one writer later: the sizing constant is read after the new report's gzip
+        landed pre-#172, so that gzip orphans."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.write_mc_argv(td)
+            with mock.patch.object(make_write_mc_record, "repo", self.sizing_repo(td, "{")):
+                self.assert_refused(make_write_mc_record.main, argv, ev, json.JSONDecodeError)
+
+    def test_column_missing_request_writes_nothing(self):
+        """One `sim/column/requests/<bench>.request.json` missing among eleven: its sha256
+        lookup ran after all eleven bench gzips landed pre-#172 (the issue's edge case)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_argv(td, '{"corners": [], "environment": {}}')
+            repo = self.sizing_repo(td, "{}")
+            requests = repo / "sim" / "column" / "requests"
+            requests.mkdir(parents=True)
+            for b in ["col_read0", "col_read1", "col_write1", "col_write0_nowen", "col_read_snm",
+                      "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg",
+                      "col_mc_hold_snm_neg"]:  # col_write0's request file is the missing one
+                (requests / f"{b}.request.json").write_text("{}")
+            with mock.patch.object(make_column_record, "repo", repo):
+                self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
 
 
 unittest.main()

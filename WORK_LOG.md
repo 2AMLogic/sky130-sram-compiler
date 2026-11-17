@@ -5,6 +5,12 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-16
 
+- **Issue #145** (closed): verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
+- **PR #164**: test: wire the PDK-resolution suite into hygiene CI and re-attest item 10
+- **Issue #153** (closed): Dedupe xschem device-stub emitter duplicated in the two gen_schematic.py generators
+- **PR #163**: refactor: share xschem device-stub emitter via sky130_pdk.SchematicWriter
+- **Issue #122** (closed): No check that every committed records/ directory is covered by the README Reproduce section
+- **PR #158**: feat(hygiene): gate Reproduce-table coverage of committed records/ dirs
 - **PR #150**: fix: remove dangling worktree:return npm script (target retired upstream)
 - **PR #149**: fix(lvs): read make_ref.py inputs via pathlib.read_text, document exit-1 overloading
 - **PR #148**: test: probe every guarded member of each --check gate via per-gate globs

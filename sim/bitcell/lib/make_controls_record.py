@@ -107,25 +107,31 @@ def main():
     git = git_short_sha(repo)
     klt_local = klt_version_local()
 
+    # Every report input is loaded before the evidence directory is created (issues #129 and #168):
+    # a missing or unparseable one must refuse before any artifact lands, not after earlier inputs'
+    # .json.gz files are already on disk. Hoisted: --det, --neg, the optional --neg-read/--neg-hold
+    # reports, --base-reports and --det-ref (#129; those last two used to be read after every
+    # write), and --base-record plus the --job-log stderr files (#168; both used to be read after
+    # the mkdir). Same shape as make_write_mc_record.py: loads first, mkdir second, writes third.
+    det_rep, neg_rep = load(a.det), load(a.neg)
+    extra = [("read", a.neg_read), ("hold", a.neg_hold)]
+    neg_loaded = [(f"mc_{nm}_snm_neg.report", load(x[1])) for nm, x in extra if x]
+    base_reps = [load(r) for r in a.base_reports]
+    ref = ref_kstar(load(a.det_ref))
+    base_snm = parse_base_snm(a.base_record)
+    job_log_text = {nm: pathlib.Path(path).read_text()
+                    for nm, path in (spec.split("=", 1) for spec in a.job_log)}
+
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
+    save_gz_json(ev / "mc_write_trip_det.report.json.gz", det_rep)
+    save_gz_json(ev / "mc_write_trip_neg.report.json.gz", neg_rep)
+    for name, rep in neg_loaded:
+        save_gz_json(ev / f"{name}.json.gz", rep)
 
-    def keep(src, name):
-        save_gz_json(ev / f"{name}.json.gz", load(src))
-
-    keep(a.det, "mc_write_trip_det.report")
-    keep(a.neg, "mc_write_trip_neg.report")
-    extra = [("read", a.neg_read), ("hold", a.neg_hold)]
-    for nm, x in extra:
-        if x:
-            keep(x[1], f"mc_{nm}_snm_neg.report")
-
-    base_reps = [load(r) for r in a.base_reports]
     bpts, _, _ = stats(merge(base_reps))
-    det_rep, neg_rep = load(a.det), load(a.neg)
     dpts, dfail, _ = stats(det_rep["corners"])
     npts, nfail, _ = stats(neg_rep["corners"])
-    ref = ref_kstar(load(a.det_ref))
 
     # --- determinism
     drows, dok = [], True
@@ -159,7 +165,6 @@ def main():
                      f"{bm:.3f} / {bs:.3f} | {cm:.3f} / {cs:.3f} | {bz:.1f} | {cz:.1f} | {'yes' if d else 'NO'} |")
 
     # --- read / hold negative control
-    base_snm = parse_base_snm(a.base_record)
     snm_blocks, snm_det = [], {}
     for nm, x in extra:
         if not x:
@@ -233,9 +238,8 @@ def main():
          "- baseline: n=60 per point write-trip MC (seed 20261018) from `corners/20261018-write-mc/` merged with "
          "`corners/20261018-write-mc-complete/` (rule of `make_write_mc_record.py`), and the read/hold MC tables of "
          "`records/20261018-040941-91ba071.md`; neither was re-run.", ""]
-    for spec in a.job_log:
-        nm, path = spec.split("=", 1)
-        ids = sorted(set(re.findall(r"batch job (klt-sim-[0-9a-f]+) submitting", pathlib.Path(path).read_text())))
+    for nm, text in job_log_text.items():
+        ids = sorted(set(re.findall(r"batch job (klt-sim-[0-9a-f]+) submitting", text)))
         L.append(f"- fleet jobs, {nm} ({len(ids)}): " + ", ".join(f"`{i}`" for i in ids))
     L += ["",
           "## Grading bar (by reference, not redesigned)", "",

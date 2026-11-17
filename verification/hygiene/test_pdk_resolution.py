@@ -16,10 +16,6 @@ klayout engine. It asserts, in the exact #131 collision shape (PDK=sky130A
 with PDK_ROOT and SKY130_VARIANT_DIR unset), that the resolved dir is absolute
 and correct; that both legacy styles still resolve; and that the old dir-style
 override and a non-absolute dir now fail loudly naming SKY130_VARIANT_DIR.
-
-Unwired from .github/workflows/hygiene.yml / manifests/hygiene-inventory.json
-on purpose: wiring costs an item-10 re-attestation (issue #88 owns that), so
-run it by hand, as verification/hygiene/test_check_gates.py (#87) also is.
 """
 import os
 import pathlib

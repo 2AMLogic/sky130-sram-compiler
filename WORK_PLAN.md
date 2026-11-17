@@ -27,23 +27,22 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#122**: No check that every committed records/ directory is covered by the README Reproduce section
 - **#129**: Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips
-- **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
-- **#153**: Dedupe xschem device-stub emitter duplicated in the two gen_schematic.py generators
 - **#155**: Use save_gz_json in make_column_record.py instead of an inline gzip writer
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
+- **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
 - **#151**: A record can be stamped with a commit that cannot reproduce it: git_short_sha never checks the tree is clean
+- **#159**: check_reproduce_coverage.py: git ls-files enumeration mangles paths containing whitespace
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#164**: test: wire the PDK-resolution suite into hygiene CI and re-attest item 10
 
 ## Approved (Awaiting Merge)
 
@@ -57,10 +56,10 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)*
-- **#122**: No check that every committed records/ directory is covered by the README Reproduce section *(curated)*
 - **#129**: Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips *(curated)*
 - **#145**: verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent) *(curated)*
 - **#151**: A record can be stamped with a commit that cannot reproduce it: git_short_sha never checks the tree is clean *(curated)*
+- **#159**: check_reproduce_coverage.py: git ls-files enumeration mangles paths containing whitespace *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -77,9 +76,9 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 5 |
-| In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 0 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 6 |
 | Architect / Hermit proposals | 0 |
