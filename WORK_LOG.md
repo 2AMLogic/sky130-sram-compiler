@@ -5,6 +5,12 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-17
 
+- **PR #193**: test: run the ERC exit gate in a scratch copy of the tree
+- **Issue #189** (closed): test_erc_exit_gate.py mutates the live layout/erc/*.json evidence; test_drc_exit_gate.py's scratch-repo pattern does not
+- **PR #192**: fix: pass --untracked-files=normal explicitly in git_short_sha's dirty probe
+- **Issue #186** (closed): git_short_sha's untracked-file half of the dirty check can be silenced by a user git config
+- **PR #188**: fix: gate layout/erc klt erc exits and validate envelopes before the --write copy
+- **Issue #185** (closed): Gate klt erc exit codes in run_erc.sh and validate reports before the --write copy
 - **PR #184**: fix: gate verification/drc klt drc exit codes and validate evidence envelopes before copying
 - **Issue #183** (closed): verification/drc/run_drc.sh discards every klt drc exit code (|| true x3) and make_record.py clobbers committed evidence before parsing it
 - **PR #152**: fix: stamp a dirty working tree <sha>-dirty in record provenance sha
