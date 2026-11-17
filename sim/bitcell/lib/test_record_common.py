@@ -28,8 +28,19 @@ import tb_common  # noqa: E402
 # make_controls_record -> make_record -> snm_from_artifacts loads the pinned gf180-sram SNM extractor
 # (sim/build/pinned/, fetched by fetch_pinned.sh), which has nothing to do with the write-trip ladder and
 # is not available in a PDK-free checkout. An attribute-less stub keeps this suite PDK-free and still fails
-# loudly if anything under test ever actually reaches for the extractor.
-sys.modules.setdefault("snm_from_artifacts", types.ModuleType("snm_from_artifacts"))
+# loudly if anything under test ever actually reaches for the extractor -- except for the file access
+# itself: snm_for keeps the real function's open/json.load so a missing or unparseable waveform.raw.json
+# raises exactly what the real writer would (issue #174).
+_stub_sfa = types.ModuleType("snm_from_artifacts")
+
+
+def _stub_snm_for(path, pair):
+    json.load(open(path))
+    raise RuntimeError("stub snm_from_artifacts.snm_for: pinned extractor not under test")
+
+
+_stub_sfa.snm_for = _stub_snm_for
+sys.modules.setdefault("snm_from_artifacts", _stub_sfa)
 sys.path.insert(0, str(HERE.parents[1] / "column/lib"))  # make_column_record's own directory
 import make_column_record  # noqa: E402
 import make_controls_record  # noqa: E402
@@ -452,6 +463,9 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
     Issue #172 extends the same refusal to the inputs that are not argv paths: the repo-tracked
     constants each writer still read after its gzip writes (design/bitcell/sizing.json in the two
     bitcell writers, the sim/column/requests/<bench>.request.json shas in the column writer).
+
+    Issue #174 extends it once more to the per-corner waveform.raw.json artifacts the column
+    writer reads through snm_rows after its eleven report gzips have landed.
     """
 
     def stub_provenance(self):
@@ -585,6 +599,43 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
         """A truncated bench report (present but malformed) refuses the same way."""
         with tempfile.TemporaryDirectory() as td:
             argv, ev = self.column_argv(td, "{")
+            self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
+
+    @staticmethod
+    def column_snm_argv(tmp, wf_body):
+        """make_column_record.py argv over a complete scratch (all 11 bench reports present)
+        whose `col_read_snm` report carries one corner, with the corner's `waveform.raw.json`
+        artifact holding `wf_body` (None = absent, str = content). Every other bench is an
+        empty-corner report, so the only reachable refusal is the SNM waveform read."""
+        tmp = pathlib.Path(tmp)
+        scratch = tmp / "scratch"
+        scratch.mkdir()
+        corner = ('{"corner_id": "tt/1.800V/25C", "process": "tt", "supply_v": {"vvdd": 1.8},'
+                  ' "temperature_c": 25, "measurements": []}')
+        for b in ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen",
+                  "col_read_snm", "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm",
+                  "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]:
+            body = f'{{"corners": [{corner}], "environment": {{}}}}' if b == "col_read_snm" \
+                else '{"corners": [], "environment": {}}'
+            (scratch / f"{b}.json").write_text(body)
+        d = scratch / "col_read_snm" / rc.dirname("tt/1.800V/25C")
+        d.mkdir(parents=True)
+        if wf_body is not None:
+            (d / "waveform.raw.json").write_text(wf_body)
+        return ["make_column_record.py", "--id", "refuse", "--out", str(tmp / "record.md"),
+                "--evidence", str(tmp / "ev"), "--scratch", str(scratch)], tmp / "ev"
+
+    def test_column_missing_snm_waveform_writes_nothing(self):
+        """A missing SNM-corner waveform.raw.json is an input too: pre-#174 it raised after
+        all eleven report gzips had landed (the distinguishing measurement: 11 left)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_snm_argv(td, None)
+            self.assert_refused(make_column_record.main, argv, ev, FileNotFoundError)
+
+    def test_column_unparseable_snm_waveform_writes_nothing(self):
+        """A truncated waveform artifact (present but malformed) refuses the same way."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.column_snm_argv(td, "{")
             self.assert_refused(make_column_record.main, argv, ev, json.JSONDecodeError)
 
     @staticmethod
