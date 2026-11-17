@@ -27,6 +27,7 @@
     {"name": "check-gates", "argv": ["python3", "-I", "verification/hygiene/test_check_gates.py"]},
     {"name": "reproduce-coverage-bites", "argv": ["python3", "-I", "verification/hygiene/test_reproduce_coverage.py"]},
     {"name": "format-gate-bites", "argv": ["python3", "-I", "verification/hygiene/test_check_formats.py"]},
-    {"name": "pdk-resolution", "argv": ["python3", "-I", "verification/hygiene/test_pdk_resolution.py"]}
+    {"name": "pdk-resolution", "argv": ["python3", "-I", "verification/hygiene/test_pdk_resolution.py"]},
+    {"name": "drc-exit-gate", "argv": ["python3", "-I", "verification/hygiene/test_drc_exit_gate.py"]}
   ]
 }
