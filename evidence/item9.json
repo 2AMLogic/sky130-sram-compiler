@@ -108,7 +108,7 @@
         "role": "testbench",
         "path": "sim/bitcell/lib/record_common.py",
         "passed": true,
-        "content_hash": "sha256:91b8fc55795316512044cdf8b6ec01d1f88cdd2d5fbf70c2fa9a753455555783"
+        "content_hash": "sha256:c76920e16133f773dee0f2f6c531098c950aab6c65bcb799452767c4d10e357e"
       },
       {
         "check": "present",

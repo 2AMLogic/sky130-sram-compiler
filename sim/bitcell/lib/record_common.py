@@ -96,14 +96,17 @@ def git_short_sha(repo):
     non-empty: tracked modifications and untracked non-ignored files count (a new source file is
     a real reproducibility gap), gitignored scratch output stays out, and every `records/`
     directory is excluded by pathspec so an earlier uncommitted record in the same PR does not
-    mark the next one dirty. The status probe cannot go through _checked_output -- empty stdout
+    mark the next one dirty, and it passes --untracked-files=normal explicitly so an ambient
+    status.showUntrackedFiles=no (user or system config) cannot silence the untracked half
+    (issue #186). The status probe cannot go through _checked_output -- empty stdout
     IS the clean case -- so it carries its own rc check: a failing `git status` raises
     ProvenanceError, it is never read as "clean" (the same refusal class as #103).
     Raises ProvenanceError on a failed lookup.
     """
     sha = _checked_output(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"])
     r = subprocess.run(
-        ["git", "-C", str(repo), "status", "--porcelain", "--", ":(exclude,glob)**/records/**"],
+        ["git", "-C", str(repo), "status", "--porcelain", "--untracked-files=normal",
+         "--", ":(exclude,glob)**/records/**"],
         capture_output=True, text=True)
     if r.returncode != 0:
         tail = (r.stderr or "").strip().splitlines()
