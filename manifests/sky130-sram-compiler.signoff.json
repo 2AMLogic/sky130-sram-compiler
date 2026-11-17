@@ -930,7 +930,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:5744ad8cf001660a2ca28bc19a49603a60f966aaf33383de70565f7b0157544e",
+        "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -939,15 +939,15 @@
             "path": "manifests/hygiene-inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:5744ad8cf001660a2ca28bc19a49603a60f966aaf33383de70565f7b0157544e",
+          "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04",
           "input_verified": true,
-          "summary": "T1 item 10 (Repo hygiene): 21/21 attestation checks passed (klt signoff --attest)",
+          "summary": "T1 item 10 (Repo hygiene): 22/22 attestation checks passed (klt signoff --attest)",
           "source": "manifests/hygiene-inventory.json",
           "attestation": {
             "producer": "klt signoff --attest",
             "inventory_schema_version": 1,
-            "check_count": 21,
-            "passed_count": 21
+            "check_count": 22,
+            "passed_count": 22
           }
         }
       }
@@ -968,7 +968,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:5744ad8cf001660a2ca28bc19a49603a60f966aaf33383de70565f7b0157544e",
+        "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -977,15 +977,15 @@
             "path": "manifests/hygiene-inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:5744ad8cf001660a2ca28bc19a49603a60f966aaf33383de70565f7b0157544e",
+          "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04",
           "input_verified": true,
-          "summary": "T1 item 10 (Repo hygiene): 21/21 attestation checks passed (klt signoff --attest)",
+          "summary": "T1 item 10 (Repo hygiene): 22/22 attestation checks passed (klt signoff --attest)",
           "source": "manifests/hygiene-inventory.json",
           "attestation": {
             "producer": "klt signoff --attest",
             "inventory_schema_version": 1,
-            "check_count": 21,
-            "passed_count": 21
+            "check_count": 22,
+            "passed_count": 22
           }
         }
       }
