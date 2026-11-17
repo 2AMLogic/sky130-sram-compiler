@@ -23,7 +23,9 @@ which the runner's verdict block grades.
 
 This suite stubs `uv` and `uvx` on PATH (no klayout module, no PDK -- the
 test_drc_exit_gate.py shape; run_erc.sh reaches klt only through them) and
-asserts, against the real script:
+asserts, against the real script run inside a scratch copy of the tree it
+writes into -- a SIGKILL or timeout mid-subtest can no longer leave stub
+envelopes over the attested layout/erc/*.json evidence (#189):
   - the expected verdicts (clean macro/control, blocking severed-rail
     findings) complete with exit 0, and --write copies the envelopes
     unmodified over the committed evidence;
@@ -38,6 +40,7 @@ asserts, against the real script:
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -103,12 +106,26 @@ exit 0
 
 
 class StubEnv(unittest.TestCase):
-    """Stubs on PATH, snapshots of the committed evidence, a scratch outdir."""
+    """Stubs on PATH, a scratch copy of the tree run_erc.sh writes into,
+    a scratch outdir."""
 
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = pathlib.Path(tmp.name)
+        repo = self.repo = self.root / "repo"
+        (repo / "layout/erc").mkdir(parents=True)
+        # The script itself (copy2 keeps the exec bit) and the four committed
+        # evidence files: everything run_erc.sh opens or writes under its
+        # resolved repo. The specs, generator and GDS inputs are only passed
+        # as argv strings -- uv and uvx are stubbed below -- so the scratch
+        # copy never needs them.
+        shutil.copy2(RUN_ERC, repo / "layout/erc/run_erc.sh")
+        self.before = {}
+        for k in EVIDENCE:
+            data = (REPO / f"layout/erc/{k}.json").read_bytes()
+            (repo / f"layout/erc/{k}.json").write_bytes(data)
+            self.before[k] = data
         self.bin = self.root / "bin"
         self.bin.mkdir()
         for name, body in (("uv", UV_STUB), ("uvx", KLT_STUB)):
@@ -120,27 +137,17 @@ class StubEnv(unittest.TestCase):
         self.env["KLT_STUB_CLEAN_ENV"] = CLEAN_ENV
         self.env["KLT_STUB_FINDINGS_ENV"] = FINDINGS_ENV
         self.out = self.root / "out"
-        self.before = {k: (REPO / f"layout/erc/{k}.json").read_bytes()
-                       for k in EVIDENCE}
-        self.addCleanup(self.restore_evidence)
-
-    def restore_evidence(self):
-        # run_erc.sh --write writes into the real tree; put the committed
-        # evidence back no matter how the test ended.
-        for k, data in self.before.items():
-            p = REPO / f"layout/erc/{k}.json"
-            if p.read_bytes() != data:
-                p.write_bytes(data)
 
     def run_erc(self, write=True, **rc):
         self.env.update({k: str(v) for k, v in rc.items()})
-        cmd = [str(RUN_ERC)] + (["--write"] if write else []) + [str(self.out)]
+        script = self.repo / "layout/erc/run_erc.sh"
+        cmd = [str(script)] + (["--write"] if write else []) + [str(self.out)]
         return subprocess.run(cmd, env=self.env, capture_output=True,
                               text=True, timeout=120)
 
     def assert_evidence_untouched(self):
         for k in EVIDENCE:
-            self.assertEqual((REPO / f"layout/erc/{k}.json").read_bytes(),
+            self.assertEqual((self.repo / f"layout/erc/{k}.json").read_bytes(),
                              self.before[k], k)
 
 
@@ -152,7 +159,8 @@ class ErcGate(StubEnv):
             want = (FINDINGS_ENV if k.startswith("erc_macro_severed")
                     else CLEAN_ENV) + "\n"
             self.assertEqual(
-                (REPO / f"layout/erc/{k}.json").read_bytes().decode(), want, k)
+                (self.repo / f"layout/erc/{k}.json").read_bytes().decode(),
+                want, k)
             self.assertEqual(
                 (self.out / f"{k}.json").read_bytes().decode(), want, k)
 
@@ -165,7 +173,8 @@ class ErcGate(StubEnv):
                          KLT_STUB_FINDINGS_ENV=CLEAN_ENV)
         self.assertEqual(r.returncode, 4, r.stderr)
         self.assertEqual(
-            (REPO / "layout/erc/erc_macro_severed_vss.json").read_bytes().decode(),
+            (self.repo
+             / "layout/erc/erc_macro_severed_vss.json").read_bytes().decode(),
             CLEAN_ENV + "\n")
 
     def test_klt_failure_aborts_with_that_code_evidence_untouched(self):
