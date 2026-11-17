@@ -101,6 +101,44 @@ class ReproduceCoverageBites(unittest.TestCase):
         self.assertIn("sneaky/records", result.stderr,
                       "failure does not name the offending directory")
 
+    def test_space_bearing_uncovered_directory_fails(self):
+        files = dict(GOOD_FILES,
+                     **{"old notes/records/uncovered.md": "uncovered\n"})
+        result = self.run_fixture(files, GOOD_README)
+        self.assertNotEqual(result.returncode, 0,
+                            "checker exited 0 with an uncovered space-bearing "
+                            "committed records/ directory")
+        self.assertIn("old notes/records", result.stderr,
+                      "failure does not name the space-bearing directory "
+                      "verbatim (whitespace-mangled enumeration?)")
+
+    def test_whitespace_collision_fails_not_vacuous_pass(self):
+        files = {"old notes/records/a.md": "record a\n",
+                 "also/kept/records/b.md": "record b\n",
+                 "gone/records/note.md": "historical note\n"}
+        readme = GOOD_README.replace("`kept/records/`", "`notes/records/`")
+        result = self.run_fixture(files, readme)
+        self.assertNotEqual(
+            result.returncode, 0,
+            "checker exited 0 with a Writes cell naming `notes/records/` "
+            "while the tree commits only `old notes/records/`: a "
+            "whitespace-mangled enumeration fragment must not read as "
+            "everything-covered")
+        self.assertIn("old notes/records", result.stderr,
+                      "failure does not name the real uncovered directory "
+                      "verbatim")
+
+    def test_non_ascii_uncovered_directory_fails(self):
+        files = dict(GOOD_FILES,
+                     **{"répertoire/records/x.md": "uncovered\n"})
+        result = self.run_fixture(files, GOOD_README)
+        self.assertNotEqual(result.returncode, 0,
+                            "checker exited 0 with an uncovered non-ASCII "
+                            "committed records/ directory")
+        self.assertIn("répertoire/records", result.stderr,
+                      "failure does not name the non-ASCII directory "
+                      "unquoted/verbatim (C-quoted enumeration?)")
+
     def test_stale_preamble_exception_fails(self):
         files = {k: v for k, v in GOOD_FILES.items()
                  if not k.startswith("gone/")}
