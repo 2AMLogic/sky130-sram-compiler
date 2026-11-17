@@ -40,10 +40,10 @@ class ParseError(Exception):
 
 
 def committed_records_dirs():
-    out = subprocess.run(["git", "ls-files"], cwd=ROOT, check=True,
+    out = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, check=True,
                          capture_output=True, text=True).stdout
     dirs = set()
-    for f in out.split():
+    for f in out.split("\0")[:-1]:
         parts = f.split("/")[:-1]
         for i, part in enumerate(parts):
             if part == "records":
