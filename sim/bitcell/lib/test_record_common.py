@@ -528,6 +528,32 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
             (pathlib.Path(td) / "detref.json").write_text("{")
             self.assert_refused(make_controls_record.main, argv, ev, json.JSONDecodeError)
 
+    def test_controls_missing_base_record_writes_nothing(self):
+        """--base-record was still read after the mkdir until #168: the det/neg gzips orphan."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            (pathlib.Path(td) / "base.md").unlink()
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_missing_job_log_writes_nothing(self):
+        """A --job-log stderr file that does not exist must refuse before the mkdir (#168)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            argv += ["--job-log", f"det={pathlib.Path(td) / 'det.log'}"]
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
+    def test_controls_job_log_missing_last_file_writes_nothing(self):
+        """Several --job-log files with only the last one missing: the earlier ones are read
+        but no gzip may land (all reads complete before the mkdir)."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
+            for nm in ("det", "neg"):
+                (tmp / f"{nm}.log").write_text("batch job klt-sim-deadbeef submitting\n")
+            argv += ["--job-log", f"det={tmp / 'det.log'}", f"neg={tmp / 'neg.log'}",
+                     f"neg-read={tmp / 'missing.log'}"]
+            self.assert_refused(make_controls_record.main, argv, ev, FileNotFoundError)
+
     @staticmethod
     def column_argv(tmp, missing_or_body):
         """make_column_record.py argv over a scratch holding all 11 benches except that
