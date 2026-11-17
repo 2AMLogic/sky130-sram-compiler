@@ -444,6 +444,41 @@ class DirtyTreeIsStamped(unittest.TestCase):
         (repo / "src" / "new_cell.py").write_text("b = 1\n")
         self.assertEqual(rc.git_short_sha(repo), f"{self.rev_sha(repo)}-dirty")
 
+    def test_user_config_cannot_silence_untracked_dirty(self):
+        """status.showUntrackedFiles=no in ambient git config must not switch the untracked half of the check off (issue #186).
+
+        The status probe inherited the ambient config's untracked-files default, so a user- or
+        system-level `showUntrackedFiles = no` suppressed exactly the new-source-file half of the
+        dirty decision and stamped a bare sha for a tree HEAD cannot reproduce -- the silent-clean
+        direction the record stamps exist to make impossible. The helper passes
+        --untracked-files=normal itself; the test proves the hostile config is live (a bare
+        `git status --porcelain` under the same env lists nothing) and that the helper still
+        stamps dirty. GIT_CONFIG_SYSTEM is pointed at /dev/null so the host's system config
+        cannot mask the result either way.
+        """
+        repo = self.scratch_repo()
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        hostile = pathlib.Path(d.name) / "gitconfig"
+        hostile.write_text("[status]\n\tshowUntrackedFiles = no\n")
+        saved = {k: os.environ.get(k) for k in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM")}
+
+        def restore_env():
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        self.addCleanup(restore_env)
+        os.environ["GIT_CONFIG_GLOBAL"] = str(hostile)
+        os.environ["GIT_CONFIG_SYSTEM"] = os.devnull
+        (repo / "src" / "new_cell.py").write_text("b = 1\n")
+        bare = subprocess.run(["git", "-C", str(repo), "status", "--porcelain"],
+                              capture_output=True, text=True, check=True).stdout
+        self.assertEqual(bare, "", "hostile config is not live: untracked files are listed anyway")
+        self.assertEqual(rc.git_short_sha(repo), f"{self.rev_sha(repo)}-dirty")
+
     def test_gitignored_scratch_output_is_not_dirty(self):
         repo = self.scratch_repo()
         (repo / ".gitignore").write_text("out/\n")
