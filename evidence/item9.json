@@ -80,7 +80,7 @@
         "role": "testbench",
         "path": "sim/bitcell/lib/make_controls_record.py",
         "passed": true,
-        "content_hash": "sha256:07ed927e942fd19ab37222b38bc8e8451f64e1e376553241ca0541f262083f1f"
+        "content_hash": "sha256:d07596d9605b1d6d174ad26bfe723c692e8ae66a386bfac2400892d8d62c7cc2"
       },
       {
         "check": "present",
