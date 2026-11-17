@@ -30,9 +30,9 @@ MIN_PY = 31
 
 
 def tracked_files():
-    out = subprocess.run(["git", "ls-files"], cwd=ROOT, check=True,
+    out = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, check=True,
                          capture_output=True, text=True).stdout
-    files = out.split()
+    files = out.split("\0")[:-1]
     return [f for f in files
             if (f.endswith(".json") or f.endswith(".py"))
             and not f.startswith(EXCLUDED_PREFIXES)
