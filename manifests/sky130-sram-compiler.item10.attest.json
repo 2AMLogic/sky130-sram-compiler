@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 22/22 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 23/23 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 22,
-    "passed_count": 22,
+    "check_count": 23,
+    "passed_count": 23,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:9c03776b32bc72671bdccfdc5f71d3acaa0496d0200ef1ac0771af893735cbc8"
+        "content_hash": "sha256:d1d904d92fd6b112b62b44db20f1b38fddaaaa9069c590e9301d825fbeff27b7"
       },
       {
         "check": "present",
@@ -272,6 +272,19 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "drc-exit-gate",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_drc_exit_gate.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -285,7 +298,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04"
+      "content_hash": "sha256:77783e7af4250ce1b4e334ed8ba993db93d97793ccd30e67319b97c40f66d06a"
     }
   }
 }
