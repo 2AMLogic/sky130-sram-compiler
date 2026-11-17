@@ -33,8 +33,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#185**: Gate klt erc exit codes in run_erc.sh and validate reports before the --write copy
-- **#186**: git_short_sha's untracked-file half of the dirty check can be silenced by a user git config
+- **#197**: Suggestion: gate the unused-name class in CI (pyflakes step in hygiene.yml)
 
 ## PRs Awaiting Review
 
@@ -46,7 +45,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#188**: fix: gate layout/erc klt erc exits and validate envelopes before the --write copy
+_None._
 
 ## Proposed
 
@@ -54,7 +53,7 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
-- **#186**: git_short_sha's untracked-file half of the dirty check can be silenced by a user git config *(curated)*
+- **#197**: Suggestion: gate the unused-name class in CI (pyflakes step in hygiene.yml) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -72,9 +71,9 @@ _None._
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 2 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
+| Approved PRs awaiting merge | 0 |
 | Curated | 3 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
