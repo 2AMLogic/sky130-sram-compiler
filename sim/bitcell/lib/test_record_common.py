@@ -665,7 +665,6 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
     def test_controls_unparseable_det_ref_writes_nothing(self):
         """A truncated --det-ref (read last pre-change) must refuse with all gzips unwritten."""
         with tempfile.TemporaryDirectory() as td:
-            tmp = pathlib.Path(td)
             argv, ev = self.controls_argv(td, '{"corners": [], "environment": {}}')
             (pathlib.Path(td) / "detref.json").write_text("{")
             self.assert_refused(make_controls_record.main, argv, ev, json.JSONDecodeError)
