@@ -5,6 +5,7 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-17
 
+- **PR #180**: chore(loom): resync installed Loom to v0.19.1306
 - **PR #179**: fix: format gate enumerates with git ls-files -z so space-bearing tracked files are validated and named, not fragmented
 - **Issue #178** (closed): check_formats.py: git ls-files enumeration has the same whitespace split #159 fixed — a space-bearing tracked .json is silently never validated
 - **PR #177**: test: pin the read-1 waveform.raw.json refusal in make_column_record
