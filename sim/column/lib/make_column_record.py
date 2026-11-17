@@ -141,16 +141,18 @@ def main():
     scratch, ev = pathlib.Path(a.scratch), pathlib.Path(a.evidence)
     benches = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
                "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
-    # Every bench report is loaded before the evidence directory is created (issue #129): a
-    # missing or unparseable one must refuse before any artifact lands, not after earlier
-    # benches' .json.gz files are already on disk. Loads first, mkdir second, writes third.
+    # Every input -- report and repo-tracked constant alike -- is read before the evidence
+    # directory is created (issues #129 and #172): a missing or unparseable one must refuse
+    # before any artifact lands, not after earlier benches' .json.gz files are already on
+    # disk. Loads first, mkdir second, writes third.
+    def sha(p):
+        return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
+
     reps = {b: load_bench(scratch, b) for b in benches}
+    request_sha = {b: sha(repo / f"sim/column/requests/{b}.request.json") for b in benches}
     ev.mkdir(parents=True, exist_ok=True)
     for b in benches:
         save_gz_json(ev / f"{b}.report.json.gz", reps[b])
-
-    def sha(p):
-        return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
 
     L = [f"# Column bench record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#29 (T1 item 9, analog partition). Append-only: add a new dated record, never edit this one.", "",
@@ -164,7 +166,7 @@ def main():
          "- margin extractor for the SNM benches: gf180-sram `snm_extract.py` @ `74ba8a621c9e` plus the inscribed-square `eyes()` of `sim/bitcell/lib/snm_from_artifacts.py`"]
     for b in benches:
         r = reps[b]["environment"].get("remote", {})
-        L.append(f"- {b}: job `{r.get('job_id')}`, {r.get('instance_type')}, request sha256 `{sha(repo / f'sim/column/requests/{b}.request.json')}`; report `{ev.name}/{b}.report.json.gz`")
+        L.append(f"- {b}: job `{r.get('job_id')}`, {r.get('instance_type')}, request sha256 `{request_sha[b]}`; report `{ev.name}/{b}.report.json.gz`")
     L.append("")
 
     # ---- read access

@@ -71,15 +71,18 @@ def main():
     # artifact lands, not after the evidence .json.gz files are on disk.
     git = git_short_sha(repo)
 
-    # Every report is loaded before the evidence directory is created (issue #129): a missing or
-    # unparseable one must refuse before any artifact lands, not after earlier benches' .json.gz
-    # files are already on disk. Same shape as make_write_mc_record.py: loads first, mkdir
-    # second, writes third.
+    # Every input -- report and repo-tracked constant alike -- is read before the evidence
+    # directory is created (issues #129 and #172): a missing or unparseable one must refuse
+    # before any artifact lands, not after earlier benches' .json.gz files are already on disk.
+    # Same shape as make_write_mc_record.py: loads first, mkdir second, writes third.
     saved = [(a.read[0], "read_snm_corners.report"), (a.hold[0], "hold_snm_corners.report"),
              (a.write, "write_trip_corners.report")]
     saved += [(p, f"mc_read_snm.report{i}") for i, p in enumerate(a.mc_report_read)]
     saved += [(p, f"mc_hold_snm.report{i}") for i, p in enumerate(a.mc_report_hold)]
     loaded = [(name, json.load(open(src))) for src, name in saved]
+    sizing = json.load(open(repo / "design/bitcell/sizing.json"))
+    request_sha = {req: sha(repo / f"sim/bitcell/requests/{req}.request.json")[:16]
+                   for req in ("read_snm_corners", "hold_snm_corners", "write_trip_corners")}
 
     rrep, rread = snm_table(*a.read)
     hrep, rhold = snm_table(*a.hold)
@@ -96,7 +99,6 @@ def main():
         return r.get("job_id"), r.get("instance_type"), w.get("pdk", {}).get("stamp_text"), \
             (w.get("simulator", {}).get("version_banner", "").split("\n")[1:2] or [""])[0].strip("* ")
 
-    sizing = json.load(open(repo / "design/bitcell/sizing.json"))
     L = [f"# Bitcell margin record {a.id} ({git})", "",
          "Issue: 2AMLogic/sky130-sram-compiler#7 (part of #2). Append-only: add a new dated record, never edit this one.", "",
          "## Provenance", "",
@@ -110,7 +112,7 @@ def main():
                          ("write trip", wrep, "write_trip_corners")):
         job, inst, pdk, eng = remote(rep)
         L.append(f"- {nm}: job `{job}`, {inst}, worker `{eng}`, worker image PDK `{pdk}`; "
-                 f"request `sim/bitcell/requests/{req}.request.json` sha256 `{sha(repo / f'sim/bitcell/requests/{req}.request.json')[:16]}`; "
+                 f"request `sim/bitcell/requests/{req}.request.json` sha256 `{request_sha[req]}`; "
                  f"report `{ev.name}/{req}.report.json.gz` (host paths scrubbed)")
     L += ["", "## Deterministic corners (45)", "",
           "`eye_snm` = largest inscribed square (graded). `pinned` = gf180-sram extractor output (vertical gap), shown for comparison. "
