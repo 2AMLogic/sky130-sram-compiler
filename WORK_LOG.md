@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-17
 
+- **PR #196**: fix: remove four unused names pyflakes reports (math, re, sys, tmp) and re-attest item 1
+- **Issue #194** (closed): Remove four remaining unused names pyflakes reports: math in sram_compile.py (left over from #82), re, sys, tmp
 - **PR #193**: test: run the ERC exit gate in a scratch copy of the tree
 - **Issue #189** (closed): test_erc_exit_gate.py mutates the live layout/erc/*.json evidence; test_drc_exit_gate.py's scratch-repo pattern does not
 - **PR #192**: fix: pass --untracked-files=normal explicitly in git_short_sha's dirty probe
