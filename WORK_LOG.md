@@ -5,6 +5,10 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-17
 
+- **PR #184**: fix: gate verification/drc klt drc exit codes and validate evidence envelopes before copying
+- **Issue #183** (closed): verification/drc/run_drc.sh discards every klt drc exit code (|| true x3) and make_record.py clobbers committed evidence before parsing it
+- **PR #152**: fix: stamp a dirty working tree <sha>-dirty in record provenance sha
+- **Issue #151** (closed): A record can be stamped with a commit that cannot reproduce it: git_short_sha never checks the tree is clean
 - **PR #180**: chore(loom): resync installed Loom to v0.19.1306
 - **PR #179**: fix: format gate enumerates with git ls-files -z so space-bearing tracked files are validated and named, not fragmented
 - **Issue #178** (closed): check_formats.py: git ls-files enumeration has the same whitespace split #159 fixed — a space-bearing tracked .json is silently never validated
