@@ -3,8 +3,29 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-17
+
+- **PR #179**: fix: format gate enumerates with git ls-files -z so space-bearing tracked files are validated and named, not fragmented
+- **Issue #178** (closed): check_formats.py: git ls-files enumeration has the same whitespace split #159 fixed — a space-bearing tracked .json is silently never validated
+- **PR #177**: test: pin the read-1 waveform.raw.json refusal in make_column_record
+- **Issue #176** (closed): Add a RefusesBeforeWritingEvidence case for the read-bench waveform.raw.json path in make_column_record
+- **PR #175**: fix: read the per-corner waveform artifacts before the column evidence dir is written
+- **Issue #174** (closed): make_column_record.py: per-corner waveform.raw.json reads still land after ev.mkdir, and the #172 comment now overstates the guarantee
+- **PR #173**: fix: read the repo-tracked record inputs before the evidence dir is written
+- **Issue #172** (closed): Record writers still read design/bitcell/sizing.json (and the column request files) after the evidence gzips land
+- **PR #171**: fix: read --base-record and --job-log before the controls evidence dir is written
+- **Issue #168** (closed): make_controls_record: --base-record and --job-log are still read after the evidence gzips land
+- **PR #170**: refactor: write column evidence via record_common.save_gz_json
+- **Issue #155** (closed): Use save_gz_json in make_column_record.py instead of an inline gzip writer
+- **PR #161**: fix: enumerate committed records/ dirs via NUL-delimited git ls-files
+- **Issue #159** (closed): check_reproduce_coverage.py: git ls-files enumeration mangles paths containing whitespace
+
 ### 2026-11-16
 
+- **PR #169**: chore(loom): resync installed Loom to v0.19.1305
+- **PR #167**: fix: load every record input before the evidence directory is written
+- **Issue #129** (closed): Record writers interleave scratch-report reads with evidence writes, so a bad report orphans the earlier gzips
+- **PR #146**: chore(loom): resync installed Loom to v0.19.1302
 - **Issue #145** (closed): verification/hygiene/test_pdk_resolution.py is a fifth PDK-free suite that #88's ACs do not enumerate (and its docstring names the wrong unwired precedent)
 - **PR #164**: test: wire the PDK-resolution suite into hygiene CI and re-attest item 10
 - **Issue #153** (closed): Dedupe xschem device-stub emitter duplicated in the two gen_schematic.py generators
