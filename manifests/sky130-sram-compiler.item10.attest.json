@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 23/23 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 24/24 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 23,
-    "passed_count": 23,
+    "check_count": 24,
+    "passed_count": 24,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:d1d904d92fd6b112b62b44db20f1b38fddaaaa9069c590e9301d825fbeff27b7"
+        "content_hash": "sha256:8689db075517d6d71e584e37ffc54218434b10b03d442d7eec0979460b278667"
       },
       {
         "check": "present",
@@ -285,6 +285,19 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "erc-exit-gate",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_erc_exit_gate.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
@@ -298,7 +311,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:77783e7af4250ce1b4e334ed8ba993db93d97793ccd30e67319b97c40f66d06a"
+      "content_hash": "sha256:10f8912e414a5765c14c7f14609ec2aba8830943c474452e0ec77804b2f8f77d"
     }
   }
 }

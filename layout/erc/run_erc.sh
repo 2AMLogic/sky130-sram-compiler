@@ -8,6 +8,8 @@
 # Negative controls cut the committed macro GDS in a copy: (a) both VSS m1/li columns of one bitcell row, (b) both VDD m2 columns of that row
 # (cutting one of the two columns is bridged by the cell and reads clean: the rails are a mesh). Each must yield a blocking finding.
 # Exit: 0 all as expected; 3 macro/control not clean; 4 a control produced no blocking finding.
+# klt erc exits outside {0,3,4} abort the run with that code, and the --write copy only follows
+# a structural check of every envelope (#185; the #183 DRC-runner rule).
 set -euo pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 write=0; [ "${1:-}" = "--write" ] && { write=1; shift; }
@@ -33,12 +35,48 @@ for tag, layers, box in (("vss", [(68, 20), (67, 20)], (x + 0.6, 50.0, x + 4.6, 
     ly.write(f"{out}/severed_{tag}.gds")
 PY
 run() { # $1 gds $2 spec $3 report
-  "${KLT[@]}" erc "$1" "$2" --findings-only --omit-antenna-tables --format json > "$3" 2> "$3.err" || true
+  # Gate the klt exit code (#185, the #183 rule for the DRC runners -- never
+  # `|| true`). klt erc contract (klayout-tools==0.9.0, docs/cli/erc.md): 0
+  # clean/clean_partial, 3 violations, 4 not_checked -- and every
+  # --findings-only run that completes exits 3 or 4, since --findings-only
+  # skips the antenna accumulation outright (#2219), so a clean connectivity
+  # read is not_checked/4, never 0. The verdict lives in the payload's
+  # erc_status, graded below. 1 (bad file/spec, unresolvable top) and 2
+  # (argparse usage) are failures: abort with that code, naming the .err.
+  local rc=0
+  "${KLT[@]}" erc "$1" "$2" --findings-only --omit-antenna-tables --format json > "$3" 2> "$3.err" || rc=$?
+  case $rc in
+    0|3|4) ;;
+    *) echo "run_erc: klt erc FAILED (exit $rc) on $1 -- see $3.err" >&2; exit "$rc";;
+  esac
 }
 run "$GDS" layout/erc/erc_macro_spec.json "$O/erc_macro.json"
 run layout/control/control.gds layout/erc/erc_control_spec.json "$O/erc_control.json"
 run "$O/severed_vss.gds" layout/erc/erc_macro_spec.json "$O/erc_macro_severed_vss.json"
 run "$O/severed_vdd.gds" layout/erc/erc_macro_spec.json "$O/erc_macro_severed_vdd.json"
+# Structural validation BEFORE the --write copy (#185, #183's make_record.py
+# rule): a call that exited 0/3/4 can still have left crash debris, and an
+# empty or keyless report must abort here -- with the committed
+# layout/erc/*.json untouched -- not be copied over them and only then fail to
+# parse. The keys checked are exactly what the verdict block below indexes.
+python3 -I - "$O" <<'PY'
+import json, sys
+o = sys.argv[1]
+for k in ("erc_macro", "erc_control", "erc_macro_severed_vss", "erc_macro_severed_vdd"):
+    try:
+        d = json.load(open(f"{o}/{k}.json"))
+    except (OSError, ValueError) as e:
+        sys.exit(f"run_erc: {k}.json is not a `klt erc` envelope "
+                 f"({type(e).__name__}: {e}); refusing to overwrite committed evidence")
+    fs = d.get("erc_findings") if isinstance(d, dict) else None
+    cov = d.get("erc_coverage") if isinstance(d, dict) else None
+    if not isinstance(d, dict) or "erc_status" not in d \
+            or not isinstance(fs, list) or not all(isinstance(f, dict) and "rule" in f for f in fs) \
+            or not isinstance(cov, dict) or "missing_tie_checked" not in cov or "skipped" not in cov:
+        sys.exit(f"run_erc: {k}.json is not a `klt erc` envelope (missing or "
+                 f"malformed erc_status/erc_findings/erc_coverage); refusing to "
+                 f"overwrite committed evidence")
+PY
 [ "$write" = 0 ] || cp "$O"/erc_macro.json "$O"/erc_control.json "$O"/erc_macro_severed_vss.json "$O"/erc_macro_severed_vdd.json layout/erc/
 python3 -I - "$O" <<'PY'
 import json, sys
