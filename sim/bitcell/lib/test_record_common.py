@@ -395,8 +395,94 @@ class ProvenanceLookupsRefuse(unittest.TestCase):
         with mock.patch.dict(os.environ, {"PATH": path}):
             self.assertEqual(rc.klt_version_local(), "klt 1.2.3")
         sha = rc.git_short_sha(REPO)
-        self.assertTrue(re.fullmatch(r"[0-9a-f]{7,}", sha),
+        self.assertTrue(re.fullmatch(r"[0-9a-f]{7,}(-dirty)?", sha),
                         f"the real repo sha should resolve, got {sha!r}")
+
+
+class DirtyTreeIsStamped(unittest.TestCase):
+    """git_short_sha stamps a dirty tree `<sha>-dirty` instead of a commit that cannot reproduce the record (issue #151).
+
+    A record generated from uncommitted code used to name plain HEAD -- a commit that does not
+    contain the code that produced it -- and records are append-only, so the mis-attribution was
+    permanent once merged (PR #139's `88af0fd` record is the concrete instance). Decision 0002:
+    stamp the dirtiness visibly rather than refuse, so the fix+evidence-in-one-PR workflow keeps
+    working and an un-reproducible stamp is honest about what it names.
+    """
+
+    def scratch_repo(self):
+        """A throwaway git repo with one committed source file; returns its path."""
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        repo = pathlib.Path(d.name)
+        git = ["git", "-C", str(repo)]
+        subprocess.run(git + ["init", "-q"], check=True)
+        (repo / "src").mkdir()
+        (repo / "src" / "cell.py").write_text("a = 1\n")
+        subprocess.run(git + ["add", "src"], check=True)
+        subprocess.run(git + ["-c", "user.email=t@t", "-c", "user.name=t",
+                              "commit", "-qm", "init"], check=True)
+        return repo
+
+    def rev_sha(self, repo):
+        """HEAD's short sha, read directly rather than through the helper under test."""
+        return subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+
+    def test_clean_tree_returns_bare_sha(self):
+        repo = self.scratch_repo()
+        self.assertEqual(rc.git_short_sha(repo), self.rev_sha(repo))
+
+    def test_modified_tracked_file_stamps_dirty(self):
+        """The defect this closes: an edit to a tracked source file changes the code HEAD names."""
+        repo = self.scratch_repo()
+        (repo / "src" / "cell.py").write_text("a = 2\n")
+        self.assertEqual(rc.git_short_sha(repo), f"{self.rev_sha(repo)}-dirty")
+
+    def test_untracked_source_file_stamps_dirty(self):
+        """A new untracked source file is a real reproducibility gap; only gitignored scratch is exempt."""
+        repo = self.scratch_repo()
+        (repo / "src" / "new_cell.py").write_text("b = 1\n")
+        self.assertEqual(rc.git_short_sha(repo), f"{self.rev_sha(repo)}-dirty")
+
+    def test_gitignored_scratch_output_is_not_dirty(self):
+        repo = self.scratch_repo()
+        (repo / ".gitignore").write_text("out/\n")
+        subprocess.run(["git", "-C", str(repo), "add", ".gitignore"], check=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.email=t@t", "-c", "user.name=t",
+                        "commit", "-qm", "ignore scratch"], check=True)
+        (repo / "out").mkdir()
+        (repo / "out" / "waveform.raw").write_text("simulator noise\n")
+        self.assertEqual(rc.git_short_sha(repo), self.rev_sha(repo))
+
+    def test_uncommitted_record_does_not_stamp_dirty(self):
+        """An earlier uncommitted record in the same PR must not mark the next one dirty."""
+        repo = self.scratch_repo()
+        (repo / "records").mkdir()
+        (repo / "records" / "draft.md").write_text("evidence written after the last commit\n")
+        self.assertEqual(rc.git_short_sha(repo), self.rev_sha(repo))
+
+    def test_failing_status_refuses_rather_than_reads_clean(self):
+        """A git whose `status` fails must raise, never degrade to a clean stamp (same refusal class as #103).
+
+        `_checked_output` cannot probe the dirty/clean split itself -- empty stdout IS the clean
+        case -- so the status lookup needs its own rc check; this stub returns a valid sha but
+        fails on `status`, the shape that would silently degrade to clean if the rc were dropped.
+        """
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        g = pathlib.Path(d.name) / "git"
+        g.write_text("#!/bin/sh\n"
+                     "for a in \"$@\"; do [ \"$a\" = status ] && "
+                     "{ echo 'stub: broken status' >&2; exit 128; }; done\n"
+                     "echo deadbee\n")
+        g.chmod(0o755)
+        with mock.patch.dict(os.environ, {"PATH": d.name}):
+            with self.assertRaises(rc.ProvenanceError) as cm:
+                rc.git_short_sha(REPO)
+        msg = str(cm.exception)
+        self.assertIn("status", msg)
+        self.assertIn("rc 128", msg)
+        self.assertIn("stub: broken status", msg)
 
 
 class SaveGzJsonIsByteReproducible(unittest.TestCase):

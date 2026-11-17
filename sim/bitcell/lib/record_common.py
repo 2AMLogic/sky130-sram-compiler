@@ -88,8 +88,30 @@ def _checked_output(argv):
 
 
 def git_short_sha(repo):
-    """Short SHA of HEAD in `repo`, as stamped into a record's title. Raises ProvenanceError on a failed lookup."""
-    return _checked_output(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"])
+    """Short SHA of HEAD in `repo`, as stamped into a record's title and filename; a dirty working tree stamps `<sha>-dirty`.
+
+    A record generated from uncommitted code names a commit that cannot reproduce it, and records
+    are append-only, so the stamp must say so rather than silently mis-attribute (decision 0002;
+    PR #139's `88af0fd` record is the concrete instance). Dirty means `git status --porcelain` is
+    non-empty: tracked modifications and untracked non-ignored files count (a new source file is
+    a real reproducibility gap), gitignored scratch output stays out, and every `records/`
+    directory is excluded by pathspec so an earlier uncommitted record in the same PR does not
+    mark the next one dirty. The status probe cannot go through _checked_output -- empty stdout
+    IS the clean case -- so it carries its own rc check: a failing `git status` raises
+    ProvenanceError, it is never read as "clean" (the same refusal class as #103).
+    Raises ProvenanceError on a failed lookup.
+    """
+    sha = _checked_output(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"])
+    r = subprocess.run(
+        ["git", "-C", str(repo), "status", "--porcelain", "--", ":(exclude,glob)**/records/**"],
+        capture_output=True, text=True)
+    if r.returncode != 0:
+        tail = (r.stderr or "").strip().splitlines()
+        raise ProvenanceError(
+            f"`git -C {repo} status --porcelain` failed (rc {r.returncode}): "
+            f"{tail[-1] if tail else 'no stderr, empty stdout'} -- cannot decide dirty vs clean "
+            "for the record stamp")
+    return sha if not r.stdout.strip() else f"{sha}-dirty"
 
 
 def klt_version_local():
