@@ -67,6 +67,9 @@ jobs:
       - name: Reproduce-coverage gate actually bites (drift test)
         run: python3 -I verification/hygiene/test_reproduce_coverage.py
 
+      - name: Format gate actually bites (drift test)
+        run: python3 -I verification/hygiene/test_check_formats.py
+
       - name: Deck runners resolve the PDK variant DIR (regression test)
         run: python3 -I verification/hygiene/test_pdk_resolution.py
 

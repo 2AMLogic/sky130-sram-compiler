@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 21/21 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 22/22 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 21,
-    "passed_count": 21,
+    "check_count": 22,
+    "passed_count": 22,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:838a6eeb3e6d6291c68d31725fb618e774bbc13c31f62891b42c75cbbf8e7074"
+        "content_hash": "sha256:9c03776b32bc72671bdccfdc5f71d3acaa0496d0200ef1ac0771af893735cbc8"
       },
       {
         "check": "present",
@@ -45,7 +45,7 @@
         "role": "hygiene",
         "path": "verification/hygiene/check_formats.py",
         "passed": true,
-        "content_hash": "sha256:c2344c0b988898ae1ba82a76a459ce15ac7d8b58c91bcf3fa538dadd41566f9f"
+        "content_hash": "sha256:ebf298d0a7ef85d7a9535118487e414b4d37253fa7f705198e70f4171e2b2f00"
       },
       {
         "check": "present",
@@ -250,6 +250,19 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "format-gate-bites",
+        "argv": [
+          "python3",
+          "-I",
+          "verification/hygiene/test_check_formats.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "pdk-resolution",
         "argv": [
           "python3",
@@ -272,7 +285,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:5744ad8cf001660a2ca28bc19a49603a60f966aaf33383de70565f7b0157544e"
+      "content_hash": "sha256:10ce61f1e471db9f7ee207f142ad215f9c51df1fbd79873edbf1663af6016b04"
     }
   }
 }

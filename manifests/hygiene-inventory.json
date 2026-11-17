@@ -26,6 +26,7 @@
     {"name": "column-sim-requests", "argv": ["python3", "-I", "sim/column/lib/make_column_tb.py", "--check"]},
     {"name": "check-gates", "argv": ["python3", "-I", "verification/hygiene/test_check_gates.py"]},
     {"name": "reproduce-coverage-bites", "argv": ["python3", "-I", "verification/hygiene/test_reproduce_coverage.py"]},
+    {"name": "format-gate-bites", "argv": ["python3", "-I", "verification/hygiene/test_check_formats.py"]},
     {"name": "pdk-resolution", "argv": ["python3", "-I", "verification/hygiene/test_pdk_resolution.py"]}
   ]
 }
