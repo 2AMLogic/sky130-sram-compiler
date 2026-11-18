@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-17
 
+- **PR #200**: ci: gate the unused-name class with pinned pyflakes in hygiene.yml
+- **Issue #197** (closed): Suggestion: gate the unused-name class in CI (pyflakes step in hygiene.yml)
 - **PR #196**: fix: remove four unused names pyflakes reports (math, re, sys, tmp) and re-attest item 1
 - **Issue #194** (closed): Remove four remaining unused names pyflakes reports: math in sram_compile.py (left over from #82), re, sys, tmp
 - **PR #193**: test: run the ERC exit gate in a scratch copy of the tree
