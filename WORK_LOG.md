@@ -3,6 +3,11 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-18
+
+- **PR #204**: ci: add merge_group trigger to required-check workflows
+- **Issue #202** (closed): Merge queue: add the merge_group trigger to the required-check workflow(s)
+
 ### 2026-11-17
 
 - **PR #200**: ci: gate the unused-name class with pinned pyflakes in hygiene.yml
