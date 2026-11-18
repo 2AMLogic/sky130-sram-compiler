@@ -33,7 +33,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#202**: Merge queue: add the merge_group trigger to the required-check workflow(s)
+_None._
 
 ## PRs Awaiting Review
 
@@ -53,7 +53,6 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
-- **#202**: Merge queue: add the merge_group trigger to the required-check workflow(s) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -71,10 +70,10 @@ _None._
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 3 |
+| Curated | 2 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
