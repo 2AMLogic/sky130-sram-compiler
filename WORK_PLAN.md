@@ -22,12 +22,13 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack) *(held)*
+- **#206**: T1 item 7 (post-layout, digital): SDF-annotated klt functional-verification of the routed sram_ctrl
 
 ## Ready
 
 Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
-_None._
+- **#206**: T1 item 7 (post-layout, digital): SDF-annotated klt functional-verification of the routed sram_ctrl
 
 ## In Progress
 
@@ -53,6 +54,8 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
+- **#206**: T1 item 7 (post-layout, digital): SDF-annotated klt functional-verification of the routed sram_ctrl *(curated)*
+- **#208**: Measure bitcell and full-macro PEX capacity and body bias *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -68,12 +71,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 1 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
+| Important | 2 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 2 |
+| Curated | 4 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
