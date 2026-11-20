@@ -102,6 +102,10 @@ sim/bitcell/requests/.klt/
 
 # klt place-and-route scratch (root-owned container output; committed outputs are copied by layout/control/run_pnr.sh)
 layout/control/.klt/
+# klt sta scratch (SDFs are copied out by layout/control/sdf/run_sta_sdf.sh)
+layout/control/sdf/.klt/
+# requests materialized from the committed *.request.json.in templates
+layout/control/sdf/.fv-*.request.json
 
 # Repo Skills Codex-side machine-local install metadata (never committed)
 .agents/skills/repo/.install-local.json

@@ -1,0 +1,89 @@
+{
+  "schema_version": 2,
+  "engine": "icarus",
+  "hdl_toplevel": "tb_top",
+  "testbench": "test_sram_ctrl",
+  "status": "pass",
+  "test_count": 5,
+  "passed_count": 5,
+  "failed_count": 0,
+  "skipped_count": 0,
+  "tests": [
+    {
+      "name": "reset_state",
+      "status": "passed",
+      "sim_time_ns": 25.0,
+      "real_time_s": 0.113
+    },
+    {
+      "name": "write_read_walk",
+      "status": "passed",
+      "sim_time_ns": 3225.0,
+      "real_time_s": 0.22
+    },
+    {
+      "name": "random_mix_vs_model",
+      "status": "passed",
+      "sim_time_ns": 26265.0,
+      "real_time_s": 0.535
+    },
+    {
+      "name": "ce_ignored_while_busy",
+      "status": "passed",
+      "sim_time_ns": 185.0,
+      "real_time_s": 0.003
+    },
+    {
+      "name": "reset_mid_access",
+      "status": "passed",
+      "sim_time_ns": 115.0,
+      "real_time_s": 0.002
+    }
+  ],
+  "coverage": null,
+  "trace": null,
+  "environment": {
+    "engine": "icarus",
+    "engine_version": "13.0",
+    "tools": [],
+    "cocotb_version": "2.1.0",
+    "results_xml": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-tt/results_icarus.xml",
+      "scope": "repo"
+    },
+    "test_log": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-tt/test_icarus.log",
+      "scope": "repo"
+    },
+    "build_log": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-tt/build_icarus.log",
+      "scope": "repo"
+    },
+    "random_seed": 20261120,
+    "source_defines": {},
+    "env": {
+      "SRAM_WORDS": "256",
+      "SRAM_BITS": "32",
+      "SRAM_SEED": "20261027"
+    },
+    "initial_state": null,
+    "sdf": {
+      "file": "/home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/layout/control/sdf/sram_ctrl.tt_025C_1v80.sdf",
+      "corner": "typ",
+      "entries": "all",
+      "scope": "dut",
+      "annotated": true,
+      "partial": true,
+      "dropped": {
+        "timingcheck": {
+          "count": 81,
+          "reason": "Icarus Verilog implements SDF delay annotation (IOPATH/INTERCONNECT) but not SDF TIMINGCHECK -- every TIMINGCHECK section in the SDF is dropped, so $setup/$hold/$width checks run against the cell library's own placeholder timing, not the characterised limits in the SDF"
+        },
+        "zero_delay_bus_port_source_interconnect": {
+          "count": 40,
+          "reason": "Icarus Verilog can fail to insert an intermodpath for an INTERCONNECT entry whose source is a bit-selected top-level input port -- such an entry fails with 'Could not find intermodpath!'. Entries whose every min:typ:max delay value is zero model no delay at any corner, so they are removed before annotation and counted here instead of failing the run -- a non-zero-delay entry on the same source is left in place and still fails loudly"
+        }
+      }
+    }
+  }
+}

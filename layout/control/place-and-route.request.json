@@ -25,5 +25,7 @@
   "constraints": {"clock_port": "clk", "clock_period_ns": 10.0},
   "seed": 1,
   "target_stage": "route",
+  "post_route_spef": true,
+  "post_route_sdf": true,
   "portable_paths": true
 }

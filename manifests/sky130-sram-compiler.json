@@ -72,6 +72,10 @@
         "file": "design/control/evidence/lvs-sram_ctrl.json",
         "content_hash": "sha256:8d22fcb1ffc9da78508311e825761b66c6983e70887dbdcfee651f41636bb6a6"
       }
-    ]
+    ],
+    "7.digital": {
+      "file": "evidence/item7-digital.json",
+      "content_hash": "sha256:6b267a5028be7ff658e4e462f376f3954f4c996b645c8ef89bb72dd9ffedd2ef"
+    }
   }
 }

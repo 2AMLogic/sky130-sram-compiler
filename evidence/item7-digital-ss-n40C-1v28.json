@@ -1,0 +1,97 @@
+{
+  "schema_version": 2,
+  "engine": "icarus",
+  "hdl_toplevel": "tb_top",
+  "testbench": "test_sram_ctrl",
+  "status": "fail",
+  "test_count": 5,
+  "passed_count": 1,
+  "failed_count": 4,
+  "skipped_count": 0,
+  "tests": [
+    {
+      "name": "reset_state",
+      "status": "passed",
+      "sim_time_ns": 25.0,
+      "real_time_s": 0.108
+    },
+    {
+      "name": "write_read_walk",
+      "status": "failed",
+      "sim_time_ns": 30.999999999999996,
+      "real_time_s": 0.001,
+      "error_type": "AssertionError",
+      "error_message": "ready must drop on acceptance\nassert not 1\n +  where 1 = int(Logic('1'))\n +    where Logic('1') = LogicObject(klt_sdf_dut_wrapper.ready).value\n +      where LogicObject(klt_sdf_dut_wrapper.ready) = HierarchyObject(klt_sdf_dut_wrapper with definition klt_sdf_dut_wrapper (at /home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/sim/build/fv-sdf/out-fv-sdf-ss/klt_sdf_dut_wrapper.v)).ready"
+    },
+    {
+      "name": "random_mix_vs_model",
+      "status": "failed",
+      "sim_time_ns": 60.99999999999999,
+      "real_time_s": 0.002,
+      "error_type": "AssertionError",
+      "error_message": "ready must be back after the REST phase\nassert 0\n +  where 0 = int(Logic('0'))\n +    where Logic('0') = LogicObject(klt_sdf_dut_wrapper.ready).value\n +      where LogicObject(klt_sdf_dut_wrapper.ready) = HierarchyObject(klt_sdf_dut_wrapper with definition klt_sdf_dut_wrapper (at /home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/sim/build/fv-sdf/out-fv-sdf-ss/klt_sdf_dut_wrapper.v)).ready"
+    },
+    {
+      "name": "ce_ignored_while_busy",
+      "status": "failed",
+      "sim_time_ns": 30.999999999999986,
+      "real_time_s": 0.001,
+      "error_type": "AssertionError",
+      "error_message": "ready must drop on acceptance\nassert not 1\n +  where 1 = int(Logic('1'))\n +    where Logic('1') = LogicObject(klt_sdf_dut_wrapper.ready).value\n +      where LogicObject(klt_sdf_dut_wrapper.ready) = HierarchyObject(klt_sdf_dut_wrapper with definition klt_sdf_dut_wrapper (at /home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/sim/build/fv-sdf/out-fv-sdf-ss/klt_sdf_dut_wrapper.v)).ready"
+    },
+    {
+      "name": "reset_mid_access",
+      "status": "failed",
+      "sim_time_ns": 31.0,
+      "real_time_s": 0.001,
+      "error_type": "AssertionError",
+      "error_message": "ready must drop on acceptance\nassert not 1\n +  where 1 = int(Logic('1'))\n +    where Logic('1') = LogicObject(klt_sdf_dut_wrapper.ready).value\n +      where LogicObject(klt_sdf_dut_wrapper.ready) = HierarchyObject(klt_sdf_dut_wrapper with definition klt_sdf_dut_wrapper (at /home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/sim/build/fv-sdf/out-fv-sdf-ss/klt_sdf_dut_wrapper.v)).ready"
+    }
+  ],
+  "coverage": null,
+  "trace": null,
+  "environment": {
+    "engine": "icarus",
+    "engine_version": "13.0",
+    "tools": [],
+    "cocotb_version": "2.1.0",
+    "results_xml": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-ss/results_icarus.xml",
+      "scope": "repo"
+    },
+    "test_log": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-ss/test_icarus.log",
+      "scope": "repo"
+    },
+    "build_log": {
+      "path": "sim/build/fv-sdf/out-fv-sdf-ss/build_icarus.log",
+      "scope": "repo"
+    },
+    "random_seed": 20261120,
+    "source_defines": {},
+    "env": {
+      "SRAM_WORDS": "256",
+      "SRAM_BITS": "32",
+      "SRAM_SEED": "20261027"
+    },
+    "initial_state": null,
+    "sdf": {
+      "file": "/home/ubuntu/GitHub/sky130-sram-compiler/.loom/worktrees/issue-206/layout/control/sdf/sram_ctrl.ss_n40C_1v28.sdf",
+      "corner": "typ",
+      "entries": "all",
+      "scope": "dut",
+      "annotated": true,
+      "partial": true,
+      "dropped": {
+        "timingcheck": {
+          "count": 81,
+          "reason": "Icarus Verilog implements SDF delay annotation (IOPATH/INTERCONNECT) but not SDF TIMINGCHECK -- every TIMINGCHECK section in the SDF is dropped, so $setup/$hold/$width checks run against the cell library's own placeholder timing, not the characterised limits in the SDF"
+        },
+        "zero_delay_bus_port_source_interconnect": {
+          "count": 40,
+          "reason": "Icarus Verilog can fail to insert an intermodpath for an INTERCONNECT entry whose source is a bit-selected top-level input port -- such an entry fails with 'Could not find intermodpath!'. Entries whose every min:typ:max delay value is zero model no delay at any corner, so they are removed before annotation and counted here instead of failing the run -- a non-zero-delay entry on the same source is left in place and still fails loudly"
+        }
+      }
+    }
+  }
+}

@@ -3,14 +3,14 @@
 An SRAM compiler on sky130 with a logic-rule 6T bitcell, built as a canary for
 the tool surface underneath a memory compiler (see the [README](README.md)).
 
-Status as of 2026-11-13, `main` @ `7d0e3fa`. [`WORK_PLAN.md`](WORK_PLAN.md) is
+Status as of 2026-11-20, `main` @ `c7f09e2`. [`WORK_PLAN.md`](WORK_PLAN.md) is
 the generated snapshot of label state; the graded verdict is
 [`manifests/sky130-sram-compiler.signoff.json`](manifests/sky130-sram-compiler.signoff.json),
 never this file.
 
 ## Where it stands
 
-Verdict of record: **not T1, 14 of 22 rows met** (11 T1 items, one row per
+Verdict of record: **not T1, 15 of 22 rows met** (11 T1 items, one row per
 partition; block kind `mixed-signal`). All evidence is for the 256 x 32
 reference instance (`sram_256x32_m4`, 64 rows x 128 columns) and its control
 block `sram_ctrl`.
@@ -23,7 +23,8 @@ block `sram_ctrl`.
 | 4 LVS clean | met, both | `design/macro/records/`, `design/control/records/`, `power_connectivity: match` (#33) |
 | 5 Corner verification vs a ratified spec | unmet | no ratified spec (#2, #8) |
 | 6 Monte Carlo for statistical rows | unmet | bitcell MC exists (`sim/bitcell/records/`) but grades against no spec |
-| 7 Post-layout verification | unmet | no extracted-netlist run |
+| 7 Post-layout verification (analog) | unmet | no extracted-netlist run |
+| 7 Post-layout verification (digital) | met | SDF-annotated cocotb re-run on the routed netlist, `evidence/item7-digital.json` (#206) |
 | 8 Characterization report | unmet | follows 5 to 7 |
 | 9 Testbenches shipped | met, both | `evidence/item9.json` over `sim/testbench-inventory.json` (#29 part 1, #51) |
 | 10 Repo hygiene | met | `manifests/sky130-sram-compiler.item10.attest.json` (#28) |
@@ -84,10 +85,16 @@ Startable today; none depends on the ratified spec.
   comes from the spec, `layout/control/run_pnr.sh` is re-run, and the corners
   in question are either in the ratified PVT set and closed or recorded as
   outside it. Blocked on #8.
-- **Post-layout verification** (item 7). Done when the column benches re-run
-  on a `klt pex` netlist of the macro and the record sits beside the
-  pre-layout one. `sim/column/README.md` lists wire parasitics as not
-  modelled. Unblocked by the pre-layout grids (#29) and the spec.
+- **Post-layout verification** (item 7). The legs are separate. *Digital*:
+  done — the cocotb bench re-ran on the routed netlist with post-route SDF
+  timing at `tt_025C_1v80` (pass) and at the worst-setup corner
+  `ss_n40C_1v28` (fails functionally there; timing closure stays with #40);
+  `evidence/item7-digital*.json`, `layout/control/sdf/` (#206). Tied to the
+  10 ns placeholder clock: a re-route under #40 supersedes it. *Analog*:
+  unchanged — done when the column benches re-run on a `klt pex` netlist of
+  the macro and the record sits beside the pre-layout one.
+  `sim/column/README.md` lists wire parasitics as not modelled. Unblocked by
+  the pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS
   records exist for it from the same compiler path. Blocked on the
