@@ -45,8 +45,8 @@ done
 # shellcheck source=../../../sim/env.sh
 source sim/env.sh >/dev/null || { echo "run_functional_sdf.sh: PDK environment refused (see env.sh error above)" >&2; exit 1; }
 
-run() { # $1 = template stem, $2 = evidence output
-  local tmpl="$dir/$1.request.json.in" out="$2"
+run() { # $1 = template stem, $2 = evidence output, $3 = annotated | control
+  local tmpl="$dir/$1.request.json.in" out="$2" mode="$3"
   [[ -f "$tmpl" ]] || { echo "run_functional_sdf.sh: missing template $tmpl" >&2; exit 1; }
   sed "s|@SKY130_VARIANT_DIR@|$SKY130_VARIANT_DIR|g" "$tmpl" > "$dir/.fv-$1.request.json"
   mkdir -p "$scratch"
@@ -61,12 +61,22 @@ run() { # $1 = template stem, $2 = evidence output
     rm -f "$out.tmp"
     exit 1
   fi
-  jq -e '(.environment.sdf == null) or .environment.sdf.annotated == true' "$out.tmp" >/dev/null \
-    || { echo "run_functional_sdf.sh: $1: report is not annotated (environment.sdf.annotated != true)" >&2; exit 1; }
+  # The annotation mode must match the request's role before the committed
+  # report is replaced: a corner report is only evidence if environment.sdf.annotated
+  # is true, and the zero-delay control only if environment.sdf is null. A swapped
+  # or mis-templated request is rejected, never moved into evidence/. An annotated
+  # run with failing tests is still valid evidence (exit 3 above).
+  if [[ "$mode" == annotated ]]; then
+    jq -e '.environment.sdf.annotated == true' "$out.tmp" >/dev/null \
+      || { echo "run_functional_sdf.sh: $1: expected an annotated report (environment.sdf.annotated == true)" >&2; rm -f "$out.tmp"; exit 1; }
+  else
+    jq -e '.environment.sdf == null' "$out.tmp" >/dev/null \
+      || { echo "run_functional_sdf.sh: $1: expected the zero-delay control (environment.sdf == null)" >&2; rm -f "$out.tmp"; exit 1; }
+  fi
   mv "$out.tmp" "$out"
   echo "run_functional_sdf.sh: $1 -> $out: $(jq -r '"\(.status) \(.passed_count)/\(.test_count) tests"' "$out")"
 }
 
-run fv-sdf-tt          evidence/item7-digital.json
-run fv-sdf-ss          evidence/item7-digital-ss-n40C-1v28.json
-run fv-zero-delay-tt   evidence/item7-digital-unannotated.json
+run fv-sdf-tt          evidence/item7-digital.json annotated
+run fv-sdf-ss          evidence/item7-digital-ss-n40C-1v28.json annotated
+run fv-zero-delay-tt   evidence/item7-digital-unannotated.json control

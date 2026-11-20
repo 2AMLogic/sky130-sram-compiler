@@ -38,9 +38,10 @@ item 10).
     (`--report`).
   - **7.digital** — `evidence/item7-digital.json`, the `klt functional-verification` report of the SDF-annotated re-run of the routed
     control (`layout/control/sdf/run_functional_sdf.sh`; SDFs from `layout/control/run_pnr.sh`'s `post_route_sdf` and
-    `layout/control/sdf/run_sta_sdf.sh`). Its `environment.sdf.annotated` is `true` (#206). The companions
-    `evidence/item7-digital-ss-n40C-1v28.json` (worst-setup corner; a recorded functional failure under annotated timing) and
-    `evidence/item7-digital-unannotated.json` (negative control — grades `not_post_layout`) are cited here, not in the manifest; the
+    `layout/control/sdf/run_sta_sdf.sh`). Its `environment.sdf.annotated` is `true` (#206). The citation is an
+    array of both annotated runs: that report (tt, 5/5) and `evidence/item7-digital-ss-n40C-1v28.json` (worst-setup corner,
+    1/5, a recorded functional failure under annotated timing), so the item grades `unmet / check_failed` until timing closes (#40).
+    `evidence/item7-digital-unannotated.json` (negative control — grades `not_post_layout`) is not cited; the
     dated record is `evidence/item7-digital-record-20261120.md`.
   - **9.analog / 9.digital** — `evidence/item9.json` (one envelope for both partitions), `klt signoff --attest 9` over
     `sim/testbench-inventory.json`.
@@ -124,10 +125,9 @@ A manifest change without a regenerated record fails the build.
 
 ## Current verdict
 
-**Not-T1: 15 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
+**Not-T1: 14 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
 Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, item 9, Testbenches shipped, item 10, Repo hygiene, and item 11, Power delivery (`layout/erc/`, #34), each for
-the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33), plus item 7, Post-layout verification, met for the digital partition only
-(`evidence/item7-digital.json`, SDF-annotated functional re-run of the routed control, #206). Item 4 grades the
+the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33), while item 7, Post-layout verification, is `unmet / check_failed` for the digital partition: the SDF-annotated functional re-run of the routed control (#206) passes at `tt_025C_1v80` (`evidence/item7-digital.json`) and fails at the worst-setup corner `ss_n40C_1v28` (`evidence/item7-digital-ss-n40C-1v28.json`), and both are cited. Item 4 grades the
 `status: match` reports with `power_connectivity: match` (`design/macro/records/`, `design/control/records/`,
 klt 0.9.0 for the digital one). Item 9's envelope is `evidence/item9.json` (76/76 checks under klt 0.9.0, local cold start); `git log -- evidence/item9.json` is its re-attestation history. The `klt` pin is
 0.9.0, which contains the klayout-tools#4366 fix for the pwell `VNB` power-connectivity artifact. Each unmet row's `reason` is in the record.

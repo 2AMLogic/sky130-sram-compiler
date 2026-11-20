@@ -10,7 +10,7 @@ never this file.
 
 ## Where it stands
 
-Verdict of record: **not T1, 15 of 22 rows met** (11 T1 items, one row per
+Verdict of record: **not T1, 14 of 22 rows met** (11 T1 items, one row per
 partition; block kind `mixed-signal`). All evidence is for the 256 x 32
 reference instance (`sram_256x32_m4`, 64 rows x 128 columns) and its control
 block `sram_ctrl`.
@@ -24,7 +24,7 @@ block `sram_ctrl`.
 | 5 Corner verification vs a ratified spec | unmet | no ratified spec (#2, #8) |
 | 6 Monte Carlo for statistical rows | unmet | bitcell MC exists (`sim/bitcell/records/`) but grades against no spec |
 | 7 Post-layout verification (analog) | unmet | no extracted-netlist run |
-| 7 Post-layout verification (digital) | met | SDF-annotated cocotb re-run on the routed netlist, `evidence/item7-digital.json` (#206) |
+| 7 Post-layout verification (digital) | unmet (`check_failed`) | SDF-annotated cocotb re-run on the routed netlist: passes 5/5 at `tt_025C_1v80` (`evidence/item7-digital.json`), fails 4 of 5 at the worst-setup corner `ss_n40C_1v28` (`evidence/item7-digital-ss-n40C-1v28.json`); both cited, so the row grades unmet (#206; closure with #40) |
 | 8 Characterization report | unmet | follows 5 to 7 |
 | 9 Testbenches shipped | met, both | `evidence/item9.json` over `sim/testbench-inventory.json` (#29 part 1, #51) |
 | 10 Repo hygiene | met | `manifests/sky130-sram-compiler.item10.attest.json` (#28) |
@@ -86,9 +86,10 @@ Startable today; none depends on the ratified spec.
   in question are either in the ratified PVT set and closed or recorded as
   outside it. Blocked on #8.
 - **Post-layout verification** (item 7). The legs are separate. *Digital*:
-  done — the cocotb bench re-ran on the routed netlist with post-route SDF
-  timing at `tt_025C_1v80` (pass) and at the worst-setup corner
-  `ss_n40C_1v28` (fails functionally there; timing closure stays with #40);
+  measured, not met — the cocotb bench re-ran on the routed netlist with
+  post-route SDF timing at `tt_025C_1v80` (pass) and at the worst-setup corner
+  `ss_n40C_1v28` (fails functionally, 1/5 pass); both reports are cited, so
+  the row grades `unmet / check_failed`; closure stays with #40;
   `evidence/item7-digital*.json`, `layout/control/sdf/` (#206). Tied to the
   10 ns placeholder clock: a re-route under #40 supersedes it. *Analog*:
   unchanged — done when the column benches re-run on a `klt pex` netlist of
