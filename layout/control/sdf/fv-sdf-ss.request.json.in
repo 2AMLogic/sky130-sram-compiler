@@ -1,0 +1,33 @@
+{
+  "schema": "klt.functional_verification.request/1",
+  "engine": "icarus",
+  "sources": [
+    "@SKY130_VARIANT_DIR@/libs.ref/sky130_fd_sc_hd/verilog/primitives.v",
+    "@SKY130_VARIANT_DIR@/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v",
+    "../sram_ctrl_routed.v",
+    "../../../rtl/sram_behav.v",
+    "../../../rtl/tb/cocotb/tb_top.v"
+  ],
+  "hdl_toplevel": "tb_top",
+  "testbench": {
+    "module": "test_sram_ctrl",
+    "search_path": "../../../rtl/tb/cocotb"
+  },
+  "env": {
+    "SRAM_WORDS": "256",
+    "SRAM_BITS": "32",
+    "SRAM_SEED": "20261027"
+  },
+  "options": {
+    "timescale": ["1ns", "1ps"],
+    "random_seed": 20261120,
+    "defines": {
+      "SYNTH_NETLIST": null
+    },
+    "sdf": {
+      "file": "sram_ctrl.ss_n40C_1v28.sdf",
+      "corner": "typ",
+      "scope": "dut"
+    }
+  }
+}

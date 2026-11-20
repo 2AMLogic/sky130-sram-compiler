@@ -128,6 +128,7 @@ klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
 | Supply ERC: macro, control, severed-rail controls (T1 item 11) | `layout/erc/run_erc.sh [--write] <scratch>` | `layout/erc/` | [`layout/README.md`](layout/README.md) |
 | Column (bit-slice) benches, one local corner each | `sim/column/run.sh [bench ...]` | `sim/build/column-probe/` (scratch; the corner and Monte Carlo grids are the committed `klt sim` requests in `sim/column/requests/`) | [`sim/column/README.md`](sim/column/README.md) |
 | cocotb control bench (RTL and synthesized netlist) | `rtl/tb/cocotb/run.sh [rtl\|synth\|mutants\|both]` | `sim/build/venv-cocotb/` (scratch; no committed record — the attestation is `evidence/item9.json`) | [`sim/column/README.md`](sim/column/README.md) |
+| SDF-annotated functional re-run of the routed control (T1 item 7 digital) | `layout/control/sdf/run_functional_sdf.sh` (SDFs from `layout/control/run_pnr.sh` and `layout/control/sdf/run_sta_sdf.sh`) | `evidence/item7-digital*.json` | [`layout/README.md`](layout/README.md) |
 | Every T1 item 9 bench at once (digital + analog) | `sim/run_all_benches.sh` | `sim/build/` (scratch) | [`sim/column/README.md`](sim/column/README.md) |
 | T1 item 1 attestation | `klt signoff --attest 1 --inventory design/compiler/inventory.json -o design/compiler/evidence/item1.json` | `design/compiler/evidence/` | [`manifests/README.md`](manifests/README.md) |
 

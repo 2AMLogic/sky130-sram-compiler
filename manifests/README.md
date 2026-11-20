@@ -9,7 +9,7 @@ item 10).
 
 - **`sky130-sram-compiler.json`** — the block manifest. `kind: mixed-signal`
   (analog bitcell and periphery, synthesized control logic). The `evidence`
-  map cites 13 keys (`<item>.<partition>`, one key for a whole-block item), each pinning the `content_hash` of what it cites:
+  map cites 14 keys (`<item>.<partition>`, one key for a whole-block item), each pinning the `content_hash` of what it cites:
   - **1.analog / 1.digital** — `design/compiler/evidence/item1.json` (from `design/compiler/inventory.json`) and
     `evidence/item1-digital.json` (from `rtl/inventory.json`), both `klt signoff --attest 1`. The analog inventory's
     `sources` includes the shared `design/sky130_pdk.py` (the layer table and PDK drawing rules all four generators
@@ -36,6 +36,13 @@ item 10).
   - **4.analog / 4.digital** — the `klt lvs` envelopes `design/macro/evidence/lvs-sram_256x32_m4.json` and
     `design/control/evidence/lvs-sram_ctrl.json`, written by `design/macro/lvs/run_lvs.sh` and `design/control/lvs/run_lvs.sh`
     (`--report`).
+  - **7.digital** — `evidence/item7-digital.json`, the `klt functional-verification` report of the SDF-annotated re-run of the routed
+    control (`layout/control/sdf/run_functional_sdf.sh`; SDFs from `layout/control/run_pnr.sh`'s `post_route_sdf` and
+    `layout/control/sdf/run_sta_sdf.sh`). Its `environment.sdf.annotated` is `true` (#206). The citation is an
+    array of both annotated runs: that report (tt, 5/5) and `evidence/item7-digital-ss-n40C-1v28.json` (worst-setup corner,
+    1/5, a recorded functional failure under annotated timing), so the item grades `unmet / check_failed` until timing closes (#40).
+    `evidence/item7-digital-unannotated.json` (negative control — grades `not_post_layout`) is not cited; the
+    dated record is `evidence/item7-digital-record-20261120.md`.
   - **9.analog / 9.digital** — `evidence/item9.json` (one envelope for both partitions), `klt signoff --attest 9` over
     `sim/testbench-inventory.json`.
   - **10** — `manifests/sky130-sram-compiler.item10.attest.json`, `klt signoff --attest 10` over `hygiene-inventory.json`
@@ -44,7 +51,7 @@ item 10).
     (written by `layout/erc/run_erc.sh --write`), each cited together with its LVS envelope above; the digital entry also
     cites `layout/control/place-and-route.response.json` (from `layout/control/run_pnr.sh`).
 
-  Items 5, 6, 7 and 8 are the uncited ones and grade `unmet`; they need the ratified spec
+  Items 5, 6, 8 and item 7's analog row are the uncited ones and grade `unmet`; they need the ratified spec
   ([#2](https://github.com/2AMLogic/sky130-sram-compiler/issues/2)). `partition_boundary.digital` is set (like the analog
   one, #26): it declares `sram_ctrl` (`rtl/sram_ctrl.v`) and `sram_behav` (`rtl/sram_behav.v`) with their ports. Evidence is
   added one item at a time. A PR that adds or changes an `evidence` key updates this bullet in the same PR.
@@ -120,7 +127,7 @@ A manifest change without a regenerated record fails the build.
 
 **Not-T1: 14 of 22 rows met** (11 T1 items, rendered once per partition): T1 item 1,
 Design sources, item 2, Layout, item 3, DRC clean, item 4, LVS clean, item 9, Testbenches shipped, item 10, Repo hygiene, and item 11, Power delivery (`layout/erc/`, #34), each for
-the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33). Item 4 grades the
+the analog and the digital partition (issues #26, #27, #28, #29, #30, #31, #32, #33), while item 7, Post-layout verification, is `unmet / check_failed` for the digital partition: the SDF-annotated functional re-run of the routed control (#206) passes at `tt_025C_1v80` (`evidence/item7-digital.json`) and fails at the worst-setup corner `ss_n40C_1v28` (`evidence/item7-digital-ss-n40C-1v28.json`), and both are cited. Item 4 grades the
 `status: match` reports with `power_connectivity: match` (`design/macro/records/`, `design/control/records/`,
 klt 0.9.0 for the digital one). Item 9's envelope is `evidence/item9.json` (76/76 checks under klt 0.9.0, local cold start); `git log -- evidence/item9.json` is its re-attestation history. The `klt` pin is
 0.9.0, which contains the klayout-tools#4366 fix for the pwell `VNB` power-connectivity artifact. Each unmet row's `reason` is in the record.

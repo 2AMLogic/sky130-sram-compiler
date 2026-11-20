@@ -158,11 +158,27 @@ those issues' records.
 
 | File | Role |
 | --- | --- |
-| `place-and-route.request.json` | the request: utilization floorplan, `sky130hd` PDN preset (tapcell + straps + fillers), `target_stage: route`, `seed: 1` |
-| `run_pnr.sh` | reproducible wrapper; `--check` runs the flow twice and requires both GDS identical to each other and to the committed one (exit 3 on drift) |
+| `place-and-route.request.json` | the request: utilization floorplan, `sky130hd` PDN preset (tapcell + straps + fillers), `target_stage: route`, `seed: 1`, `post_route_spef` + `post_route_sdf` (route-stage SPEF extraction and the tt-corner post-route SDF) |
+| `run_pnr.sh` | reproducible wrapper; `--check` runs the flow twice and requires both GDS identical to each other and to the committed one (exit 3 on drift); in write mode it also writes `sram_ctrl.def`, `sram_ctrl.spef` and `sdf/sram_ctrl.tt_025C_1v80.sdf` |
 | `control.gds`, `control.gds.sha256` | committed routed stream and its hash |
-| `place-and-route.response.json` | committed P&R response (`power.pdn: true`, named `power.tapcell_master`); item 11 consumes it |
+| `place-and-route.response.json` | committed P&R response (`power.pdn: true`, named `power.tapcell_master`, `spef_sta` SPEF-fed re-report); item 11 consumes it |
 | `item2-inventory.json` | the item-2 attestation inventory: one `local_only` audit check, `run_pnr.sh --check` |
+| `sram_ctrl.def`, `sram_ctrl.spef` | committed routed DEF and extracted SPEF (the `post_route_spef` output the SDFs are written from) |
+| `sdf/` | post-route SDFs and the T1 item 7 (digital) flow — see below |
+
+### sdf/ — post-route SDFs and the SDF-annotated functional re-run (T1 item 7, digital)
+
+| File | Role |
+| --- | --- |
+| `sram_ctrl.tt_025C_1v80.sdf` | post-route SDF at the P&R corner, written by the P&R flow itself (`post_route_sdf`) |
+| `sram_ctrl.ss_n40C_1v28.sdf` | post-route SDF at the worst-setup corner the P&R response reports, written by `klt sta` on the same committed DEF + SPEF |
+| `sta.request.json` | the `klt sta` request (def mode, `spef`, `sdf: true`, one corner) |
+| `run_sta_sdf.sh` | regenerates the per-corner SDFs from the committed DEF + SPEF |
+| `fv-sdf-tt.request.json.in`, `fv-sdf-ss.request.json.in`, `fv-zero-delay-tt.request.json.in` | `klt functional-verification` request templates: the cocotb bench (`rtl/tb/cocotb/`, unmodified) against the routed netlist with `options.sdf` at tt and ss, and the unannotated negative control. `@SKY130_VARIANT_DIR@` is substituted at run time (the verb has no `--pdk` flag) |
+| `run_functional_sdf.sh` | materializes the requests and rewrites `evidence/item7-digital.json` (cited by the manifest), `evidence/item7-digital-ss-n40C-1v28.json` and `evidence/item7-digital-unannotated.json`; the dated record is `evidence/item7-digital-record-20261120.md` |
+
+Everything in `sdf/` is tied to the placeholder 10 ns clock (#40); a re-route
+regenerates it (see the record).
 
 Regenerate: `layout/control/run_pnr.sh`; verify: `layout/control/run_pnr.sh --check`.
 Then rewrite the T1 item 2 digital envelope (`--check` instead of `-o` to verify

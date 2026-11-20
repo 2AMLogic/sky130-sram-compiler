@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "engine": "icarus",
+  "hdl_toplevel": "tb_top",
+  "testbench": "test_sram_ctrl",
+  "status": "pass",
+  "test_count": 5,
+  "passed_count": 5,
+  "failed_count": 0,
+  "skipped_count": 0,
+  "tests": [
+    {
+      "name": "reset_state",
+      "status": "passed",
+      "sim_time_ns": 25.0,
+      "real_time_s": 0.002
+    },
+    {
+      "name": "write_read_walk",
+      "status": "passed",
+      "sim_time_ns": 3225.0,
+      "real_time_s": 0.046
+    },
+    {
+      "name": "random_mix_vs_model",
+      "status": "passed",
+      "sim_time_ns": 26265.0,
+      "real_time_s": 0.356
+    },
+    {
+      "name": "ce_ignored_while_busy",
+      "status": "passed",
+      "sim_time_ns": 185.0,
+      "real_time_s": 0.002
+    },
+    {
+      "name": "reset_mid_access",
+      "status": "passed",
+      "sim_time_ns": 115.0,
+      "real_time_s": 0.002
+    }
+  ],
+  "coverage": null,
+  "trace": null,
+  "environment": {
+    "engine": "icarus",
+    "engine_version": "13.0",
+    "tools": [],
+    "cocotb_version": "2.1.0",
+    "results_xml": {
+      "path": "sim/build/fv-sdf/out-fv-zero-delay-tt/results_icarus.xml",
+      "scope": "repo"
+    },
+    "test_log": {
+      "path": "sim/build/fv-sdf/out-fv-zero-delay-tt/test_icarus.log",
+      "scope": "repo"
+    },
+    "build_log": {
+      "path": "sim/build/fv-sdf/out-fv-zero-delay-tt/build_icarus.log",
+      "scope": "repo"
+    },
+    "random_seed": 20261120,
+    "source_defines": {},
+    "env": {
+      "SRAM_WORDS": "256",
+      "SRAM_BITS": "32",
+      "SRAM_SEED": "20261027"
+    },
+    "initial_state": null,
+    "sdf": null
+  }
+}
