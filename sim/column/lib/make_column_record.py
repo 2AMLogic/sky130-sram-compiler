@@ -23,6 +23,12 @@ import snm_from_artifacts as sa  # noqa: E402
 from record_common import (dirname, fmt_mc, git_short_sha, klt_version_of, load, mc_stats,  # noqa: E402
                            runner_version_of, save_gz_json)  # noqa: E402
 
+# The ordered bench roster. The order is load order and evidence-output order alike (the
+# .report.json.gz loop), so it must not be reshuffled; tests build their scratch fixtures
+# from this name instead of restating the list (issue #213).
+BENCHES = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
+           "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
+
 
 def load_bench(scratch, bench):
     return load(scratch / f"{bench}.json")
@@ -139,8 +145,6 @@ def main():
     # artifact lands, not after the evidence .json.gz files are on disk.
     git = git_short_sha(repo)
     scratch, ev = pathlib.Path(a.scratch), pathlib.Path(a.evidence)
-    benches = ["col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen", "col_read_snm",
-               "col_hold_snm", "col_mc_read_snm", "col_mc_hold_snm", "col_mc_read_snm_neg", "col_mc_hold_snm_neg"]
     # Every input -- report, repo-tracked constant, and per-corner waveform.raw.json artifact
     # alike (the SNM benches' via snm_rows, the read benches' via read_rows) -- is read before
     # the evidence directory is created (issues #129, #172 and #174): a missing or unparseable
@@ -149,14 +153,14 @@ def main():
     def sha(p):
         return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()[:16]
 
-    reps = {b: load_bench(scratch, b) for b in benches}
-    request_sha = {b: sha(repo / f"sim/column/requests/{b}.request.json") for b in benches}
+    reps = {b: load_bench(scratch, b) for b in BENCHES}
+    request_sha = {b: sha(repo / f"sim/column/requests/{b}.request.json") for b in BENCHES}
     r0rep, r0 = read_rows(scratch, "col_read0")
     r1rep, r1 = read_rows(scratch, "col_read1")
     rrep, rs = snm_rows(scratch, "col_read_snm")
     hrep, hs = snm_rows(scratch, "col_hold_snm")
     ev.mkdir(parents=True, exist_ok=True)
-    for b in benches:
+    for b in BENCHES:
         save_gz_json(ev / f"{b}.report.json.gz", reps[b])
 
     L = [f"# Column bench record {a.id} ({git})", "",
@@ -169,7 +173,7 @@ def main():
          "(both read from the report's `environment`, never hardcoded; the client must match the runner, see Limits)",
          "- backend: batch fleet; models staged from the repo-pinned PDK (`options.stage_model_inputs`)",
          "- margin extractor for the SNM benches: gf180-sram `snm_extract.py` @ `74ba8a621c9e` plus the inscribed-square `eyes()` of `sim/bitcell/lib/snm_from_artifacts.py`"]
-    for b in benches:
+    for b in BENCHES:
         r = reps[b]["environment"].get("remote", {})
         L.append(f"- {b}: job `{r.get('job_id')}`, {r.get('instance_type')}, request sha256 `{request_sha[b]}`; report `{ev.name}/{b}.report.json.gz`")
     L.append("")
