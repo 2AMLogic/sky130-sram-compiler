@@ -22,6 +22,7 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack) *(held)*
+- **#208**: Measure bitcell and full-macro PEX capacity and body bias
 
 ## Ready
 
@@ -33,13 +34,14 @@ _None._
 
 Issues currently being built (`loom:building`).
 
+- **#208**: Measure bitcell and full-macro PEX capacity and body bias
 - **#213**: Deduplicate column record test fixtures and verify which request is missing
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#214**: test: build column record fixtures from the writer's BENCHES roster
+- **#216**: feat: add PEX extract-only capacity wrapper, record bitcell and macro results
 
 ## Approved (Awaiting Merge)
 
@@ -69,9 +71,9 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 1 |
+| Important | 2 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 3 |
