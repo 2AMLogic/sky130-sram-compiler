@@ -42,7 +42,8 @@
 # failure shapes plus the good shape (its netlist has .GLOBAL before the first .SUBCKT),
 # checks a retry into the same <outdir> keeps the first run's evidence, a bad body_bias
 # status is rejected, file-level globals are retained, relative paths resolve against the
-# caller, and a failed --report copy fails. Each self-test allocates its own unique child
+# caller, a failed --report copy fails, the launcher is probed (--version) before any scratch,
+# and the validator summary/diagnostic reaches stdout/stderr. Each self-test allocates its own unique child
 # of <tmpdir>. Exits 0 only if every case verdicts as expected.
 set -uo pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -70,6 +71,7 @@ if [ -n "$self_test" ]; then
   stub="$T/stub-klt"; cat > "$stub" <<'STUB'
 #!/usr/bin/env bash
 # Stub klt for run_pex.sh --self-test. Behaviour keyed by $STUB_MODE.
+[ "${1:-}" = "--version" ] && { echo "klt 0.test"; exit 0; }
 scratch="" ; prev=""
 for a in "$@"; do
   [ "$prev" = "-o" ] && scratch="$a"
@@ -109,10 +111,27 @@ STUB
   declare -A want=([good]=0 [error-envelope]=4 [no-netlist]=4 [killed]=4 [malformed]=3 [badbias]=3)
   fail=0
   for mode in good error-envelope no-netlist killed malformed badbias; do
-    STUB_MODE="$mode" run "case-$mode" >"$T/case-$mode.log" 2>&1
+    STUB_MODE="$mode" run "case-$mode" >"$T/case-$mode.out" 2>"$T/case-$mode.err"
     got=$?
     [ "$got" -eq "${want[$mode]}" ] && verdict=ok || { verdict=BAD; fail=1; }
     echo "self-test $mode: exit $got (want ${want[$mode]}) $verdict"
+  done
+  # stdout/stderr content: accepted summary on stdout; specific diagnostics on stderr
+  { grep -q 'top=t exit=4 .*devices=6 nets=8 body_bias.status=biased' "$T/case-good.out" \
+    && grep -q 'scratch ' "$T/case-good.out" && [ ! -s "$T/case-good.err" ]; } \
+    && verdict=ok || { verdict=BAD; fail=1; }
+  echo "self-test good-summary-on-stdout: $verdict"
+  { grep -q 'report.json unreadable' "$T/case-malformed.err" && grep -q 'scratch preserved at' "$T/case-malformed.err" \
+    && grep -q 'unexpected exit 137' "$T/case-killed.err" && grep -q 'killed by OOM' "$T/case-killed.err" \
+    && grep -q 'klt: boom' "$T/case-error-envelope.err" && grep -q "body_bias.status=''" "$T/case-badbias.err"; } \
+    && verdict=ok || { verdict=BAD; fail=1; }
+  echo "self-test rejection-diagnostics-on-stderr: $verdict"
+  # launcher pre-flight: missing executable and a multiword launcher whose child is missing
+  for L in "$T/no-such-klt" "env no-such-tool-xyz"; do
+    STUB_MODE=good "$self" --klt "$L" "$G" t "$T/pre" >"$T/pre.out" 2>"$T/pre.err"; r=$?
+    { [ "$r" -eq 1 ] && grep -q TOOL_MISSING "$T/pre.err" && grep -q -- "${L##*/}" "$T/pre.err" && [ ! -e "$T/pre" ]; } \
+      && verdict=ok || { verdict=BAD; fail=1; }
+    echo "self-test tool-missing '${L##*/}': exit $r (want 1), no scratch $verdict"
   done
   # retry into the SAME outdir: the first run's evidence must survive the second run
   STUB_MODE=good run shared >"$T/shared-1.log" 2>&1; s1=$?
@@ -142,10 +161,16 @@ fi
 
 [ $# -eq 3 ] || { echo "run_pex.sh: usage: run_pex.sh [--report PATH] [--klt CMD] <layout.gds> <top> <outdir>" >&2; exit 2; }
 G=$1; TOP=$2; O=$3
-for t in "$KLT" python3 /usr/bin/time; do
-  # shellcheck disable=SC2086
-  command -v $t >/dev/null || { echo "run_pex.sh: TOOL_MISSING: $t not on PATH" >&2; exit 1; }
+# Parse the launcher into arguments ONCE; the probe and the extraction use the same array.
+read -r -a KLT_ARR <<< "$KLT"
+[ "${#KLT_ARR[@]}" -gt 0 ] || { echo "run_pex.sh: TOOL_MISSING: empty klt command" >&2; exit 1; }
+for t in python3 /usr/bin/time "${KLT_ARR[0]}"; do
+  command -v "$t" >/dev/null || { echo "run_pex.sh: TOOL_MISSING: $t not on PATH" >&2; exit 1; }
 done
+# Probe the full launcher (not just its first word): a launcher such as `uvx ... klt` must
+# actually be able to run the requested tool. Done before any scratch is allocated.
+timeout 300 "${KLT_ARR[@]}" --version >/dev/null 2>&1 \
+  || { echo "run_pex.sh: TOOL_MISSING: '$KLT --version' failed (launcher or tool unavailable)" >&2; exit 1; }
 [ -f "$G" ] || { echo "run_pex.sh: NO_INPUT: $G is not a file" >&2; exit 1; }
 # Resolve every caller-supplied path against the caller's directory BEFORE changing directory.
 G=$(realpath "$G"); GSRC=$G
@@ -171,15 +196,13 @@ scratch=$(mktemp -d "$O/$TOP.XXXXXX") && [ -d "$scratch" ] \
 
 # The capacity probe itself. --outdir keeps klt's own .klt/pex/ artifacts in the scratch,
 # out of the repo tree next to the layout. Everything else is the issue-#208 contract verb.
-# shellcheck disable=SC2086
-/usr/bin/time -v -o "$scratch/time.v" -- $KLT pex "$GSRC" --top "$TOP" --deck sky130 \
+/usr/bin/time -v -o "$scratch/time.v" -- "${KLT_ARR[@]}" pex "$GSRC" --top "$TOP" --deck sky130 \
   --extract-only --outdir "$scratch/klt-outdir" \
   -o "$scratch/extracted.spice" --envelope-out "$scratch/report.json" \
   --format json > "$scratch/stdout.json" 2> "$scratch/stderr"
 rc=$?
 
-# shellcheck disable=SC2086
-verdict=$(python3 -I - "$scratch" "$G" "$TOP" "$rc" "$KLT" <<'PY'
+vout=$(python3 -I - "$scratch" "$G" "$TOP" "$rc" "$KLT" <<'PY'
 import json, re, sys
 
 scratch, layout, top, rc, klt_cmd = sys.argv[1:6]
@@ -295,12 +318,21 @@ finish(0, None,
        f"body_bias.status={bb['status']} unbiased_nets={bb['unbiased_nets']} "
        f"bulk_nets={list(out['netlist']['device_bulk_nets'])[:6]}")
 PY
-) || verdict="rc=$?"
-verdict="$(printf '%s\n' "$verdict" | tail -n1)"   # the validator's verdict= line (summary precedes it)
+)
+vrc=$?
+# The validator prints its summary/diagnostic lines, then a final verdict= line; its exit
+# status (0 accepted, 3 contract violation, 4 extractor failure) is kept separately.
+verdict=$(printf '%s\n' "$vout" | tail -n1)
+summary=$(printf '%s\n' "$vout" | sed '$d')
 verdict="${verdict#verdict=}"
 
 case "$verdict" in
   accepted)
+    if [ "$vrc" -ne 0 ]; then
+      echo "run_pex.sh: $TOP validator reported accepted but exited $vrc; scratch $scratch" >&2
+      exit 1
+    fi
+    echo "run_pex.sh: $summary"
     if [ -n "$report" ] && ! cp "$scratch/report.json" "$report"; then
       echo "run_pex.sh: $TOP accepted but publishing the report to $report FAILED; scratch $scratch" >&2
       exit 1
@@ -308,6 +340,8 @@ case "$verdict" in
     echo "run_pex.sh: $TOP extract-only accepted; scratch $scratch"
     exit 0 ;;
   *)
-    echo "run_pex.sh: $TOP extract-only FAILED ($verdict); scratch preserved at $scratch" >&2
-    exit "${verdict#rc=}" ;;
+    [ "$vrc" -ne 0 ] || vrc=1
+    [ -z "$summary" ] || echo "run_pex.sh: $summary" >&2
+    echo "run_pex.sh: $TOP extract-only FAILED (${verdict:-validator produced no verdict; exit $vrc}); scratch preserved at $scratch" >&2
+    exit "$vrc" ;;
 esac
