@@ -94,6 +94,27 @@ block's sweeps, so one request holds at most half of it. The instance cap
 refused with `batch_no_capacity`; the flag makes the submit wait with backoff instead of failing the
 run.
 
+## PEX extract-only capacity (pre-#209/#210)
+
+Before the column benches move to a `klt pex` netlist of the macro, the pinned
+signoff tool has to be able to extract it at all.
+[`design/macro/lvs/run_pex.sh`](../../design/macro/lvs/run_pex.sh) runs
+`klt pex --extract-only --deck sky130` (default launcher `uvx --from
+klayout-tools==0.9.0 klt`, the `signoff.yml` pin) on one layout per invocation,
+in a fresh scratch directory, and accepts the run only on exit 4 plus a report
+with `status: "not_checked"`, `measurement.mode: "extract-only"`, an empty
+`delta`, an extraction model and a `body_bias` block. `--self-test` exercises
+the failure paths (error envelope, malformed report, bad `body_bias` status, missing
+netlist, killed extractor), a retry into the same outdir that must keep the first run's
+files (every invocation gets its own `mktemp -d` child), file-level `.GLOBAL` retention,
+caller-relative paths and a failing `--report` copy.
+The reports and the dated record — wall time, peak RSS, extraction model,
+body bias read from the extraction itself — live in `records/` (issue #208);
+the extracted SPICE stays in scratch, per the append-only convention. A
+resource-limited macro run is itself a finding for #207: the wrapper preserves
+the scratch and records the enforced limits (`ulimit`, cgroup, host memory), any
+terminating signal, elapsed time, peak RSS and last diagnostic.
+
 | Path | What |
 |---|---|
 | `tb/`, `requests/` | Generated benches and `klt sim` requests (`*.probe.request.json` = single-corner local probes) |

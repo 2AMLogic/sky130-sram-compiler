@@ -91,11 +91,17 @@ Startable today; none depends on the ratified spec.
   `ss_n40C_1v28` (fails functionally, 1/5 pass); both reports are cited, so
   the row grades `unmet / check_failed`; closure stays with #40;
   `evidence/item7-digital*.json`, `layout/control/sdf/` (#206). Tied to the
-  10 ns placeholder clock: a re-route under #40 supersedes it. *Analog*:
-  unchanged — done when the column benches re-run on a `klt pex` netlist of
-  the macro and the record sits beside the pre-layout one.
-  `sim/column/README.md` lists wire parasitics as not modelled. Unblocked by
-  the pre-layout grids (#29) and the spec.
+  10 ns placeholder clock: a re-route under #40 supersedes it. *Analog*: extract-only
+  capacity measured (#208) — the signoff pin `klayout-tools==0.9.0` extracts the bare
+  bitcell (3.3 s, 119 MiB peak) and the full 8,192-cell macro (93.6 min, 6.2 GiB peak,
+  51,226 devices / 17,259 nets) with clean exit-4 extract-only reports, and body bias
+  read from the extractions: klt reports no unbiased PMOS bodies in either (that status is
+  PMOS-only); macro nfet bulks are all on the drawn VSS taps, while the bare cell's 4 nfet
+  bulks sit on the exported `vsubs` pin, which a consuming bench must bias itself — record
+  `sim/column/records/20261121-3c2d73b.md`. Remaining simulation work: re-run the column
+  benches on a `klt pex` netlist of the macro with the record beside the pre-layout one;
+  `sim/column/README.md` lists wire parasitics as not modelled. Unblocked by the
+  pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS
   records exist for it from the same compiler path. Blocked on the
