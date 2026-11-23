@@ -104,13 +104,16 @@ klayout-tools==0.9.0 klt`, the `signoff.yml` pin) on one layout per invocation,
 in a fresh scratch directory, and accepts the run only on exit 4 plus a report
 with `status: "not_checked"`, `measurement.mode: "extract-only"`, an empty
 `delta`, an extraction model and a `body_bias` block. `--self-test` exercises
-the failure paths (error envelope, malformed report, missing netlist, killed
-extractor, and a success followed by a malformed report in the same scratch).
+the failure paths (error envelope, malformed report, bad `body_bias` status, missing
+netlist, killed extractor), a retry into the same outdir that must keep the first run's
+files (every invocation gets its own `mktemp -d` child), file-level `.GLOBAL` retention,
+caller-relative paths and a failing `--report` copy.
 The reports and the dated record — wall time, peak RSS, extraction model,
 body bias read from the extraction itself — live in `records/` (issue #208);
 the extracted SPICE stays in scratch, per the append-only convention. A
 resource-limited macro run is itself a finding for #207: the wrapper preserves
-the scratch and records the limit, elapsed time, peak RSS and last diagnostic.
+the scratch and records the enforced limits (`ulimit`, cgroup, host memory), any
+terminating signal, elapsed time, peak RSS and last diagnostic.
 
 | Path | What |
 |---|---|
