@@ -22,7 +22,8 @@ rtl/tb/cocotb/run.sh                 # or the digital bench only
 `sim/column/run.sh` checks the committed benches against the macro (`make_column_tb.py --check`), runs each
 bench's `requests/<bench>.probe.request.json` (tt, 1.8 V, 25 C, `--backend local`) and asserts the bench shows what
 it exists to detect (`lib/check_probe.py`: a ladder must have a failing and a passing end; the negative control must
-never flip). The corner / Monte Carlo grids are the committed `requests/<bench>.request.json`:
+never flip; every measurement name the probe request asks for must be present in the report, so a dropped sample
+fails and is named: `python3 -I sim/column/lib/test_check_probe.py`). The corner / Monte Carlo grids are the committed `requests/<bench>.request.json`:
 
 ```bash
 python3 -I sim/column/lib/make_column_tb.py          # regenerate tb/ + requests/ (--check = drift gate)
@@ -118,5 +119,5 @@ terminating signal, elapsed time, peak RSS and last diagnostic.
 | Path | What |
 |---|---|
 | `tb/`, `requests/` | Generated benches and `klt sim` requests (`*.probe.request.json` = single-corner local probes) |
-| `lib/` | `make_column_tb.py`, `check_probe.py`, `make_column_record.py` |
+| `lib/` | `make_column_tb.py`, `check_probe.py`, `test_check_probe.py`, `make_column_record.py` |
 | `corners/`, `records/` | Append-only evidence: compressed `klt sim` reports and dated records |

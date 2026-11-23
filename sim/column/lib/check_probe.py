@@ -1,21 +1,32 @@
 #!/usr/bin/env python3
 """Assert that a single-corner (tt, 1.8 V, 25 C) probe report shows the behaviour its bench exists to detect.
 
-Usage: check_probe.py <bench> <klt-sim-report.json>
+Usage: check_probe.py <bench> <klt-sim-report.json> [request.json]
+The expected samples are the measurement names the bench's probe request asks for (default
+requests/<bench>.probe.request.json beside this lib/ directory, or the explicit third argument), so a report
+that silently dropped samples (an empty Q list would otherwise pass the "never flipped" test) fails and names
+what is missing. The same check applies to the schematic and the extracted (PEX) leg.
 A probe that merely ran proves little: each ladder bench must show BOTH a failing and a passing end (so a
 broken stimulus that makes every trial pass or fail is caught), and the negative control must never flip.
 Exit 0 = as expected, 1 = not.
 """
 import json
+import os
 import sys
 
 bench, path = sys.argv[1], sys.argv[2]
+req_path = sys.argv[3] if len(sys.argv) > 3 else os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "requests", f"{bench}.probe.request.json")
+requested = [x["name"] for x in json.load(open(req_path))["measurements"]]
 r = json.load(open(path))
 if r["status"] != "pass" or len(r["corners"]) != 1:
     sys.exit(f"check_probe: {bench}: klt sim status {r['status']!r}, {len(r['corners'])} corner(s)")
 c = r["corners"][0]
 vdd = c["supply_v"]["vvdd"]
 m = {x["name"]: x["value"] for x in c["measurements"]}
+missing = [k for k in requested if k not in m]
+if not requested or missing:
+    sys.exit(f"check_probe: {bench}: requested sample(s) missing from the report: {missing or 'request lists none'}")
 if any(v is None for v in m.values()):
     sys.exit(f"check_probe: {bench}: measurement(s) without value: {[k for k, v in m.items() if v is None]}")
 

@@ -35,6 +35,7 @@
     "sim/column/requests/col_write1.request.json",
     "sim/column/lib/make_column_tb.py",
     "sim/column/lib/check_probe.py",
+    "sim/column/lib/test_check_probe.py",
     "sim/column/lib/make_column_record.py",
     "sim/column/run.sh",
     "sim/column/README.md",
