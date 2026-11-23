@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-23
 
+- **PR #216**: feat: add PEX extract-only capacity wrapper, record bitcell and macro results
+- **Issue #208** (closed): Measure bitcell and full-macro PEX capacity and body bias
 - **PR #214**: test: build column record fixtures from the writer's BENCHES roster
 - **Issue #213** (closed): Deduplicate column record test fixtures and verify which request is missing
 
