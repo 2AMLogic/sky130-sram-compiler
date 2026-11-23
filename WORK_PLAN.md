@@ -35,7 +35,6 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#208**: Measure bitcell and full-macro PEX capacity and body bias
-- **#213**: Deduplicate column record test fixtures and verify which request is missing
 
 ## PRs Awaiting Review
 
@@ -73,7 +72,7 @@ _None._
 | Very important | 1 |
 | Important | 2 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 2 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 3 |

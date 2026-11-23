@@ -3,6 +3,11 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-23
+
+- **PR #214**: test: build column record fixtures from the writer's BENCHES roster
+- **Issue #213** (closed): Deduplicate column record test fixtures and verify which request is missing
+
 ### 2026-11-20
 
 - **PR #212**: feat: verify the routed sram_ctrl with an SDF-annotated cocotb re-run (T1 item 7 digital)
