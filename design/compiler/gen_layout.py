@@ -27,8 +27,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
 from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC,  # noqa: E402
-                        POLY_DIFF, POLY_END, VIA,
-                        write_gds as _shared_write_gds)
+                        POLY_DIFF, POLY_END, VIA, write_gds)
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -665,57 +664,55 @@ def _choose_slots(G, w_sa, w_wd, sa_x, wd_x, pitch=0.7):
     return t_sa, t_wd, slots
 
 
-def build(words, bits, mux):
-    """Place the macro layout for (words, bits, mux).
-
-    Returns (ly, T, BuildGeom(ag=..., hcm=...)): the layout, its top-cell Pen,
-    and the named geometry record — `ag`, the ArrayGeom (rows, cols, strap rows,
-    height/width), and `hcm`, the column-mux cell height in um.
-    """
-    g = sc.geometry(words, bits, mux)
-    rows, cols = g["rows"], g["cols"]
-    name = sc.top_name(words, bits, mux)
-    ly = db.Layout()
-    ly.dbu = 0.001
-    ly.read(str(BITCELL_GDS))
-    bcc = ly.cell(BITCELL)
-    bb = bcc.dbbox()
-    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
-    bc = _Ref(bcc)
+def _mk_logic_cell(ly, cname, nm, hc, pitch):
+    """Build the standard-height logic cell for macro-netlist cell type `cname`."""
     S = cells.SIZING
+    if cname == "sram_wldrv":
+        return cell_inv(ly, nm, 4, S["wldrv_n"]["w"], S["wldrv_p"]["w"], hc=hc, pitch=pitch)
+    if cname == "sram_inv":
+        return cell_inv(ly, nm, 1, S["inv_n"]["w"], S["inv_p"]["w"], hc=hc, pitch=pitch)
+    k = int(cname[-1])
+    return cell_nand(ly, nm, k, S[f"nand{k}_n"]["w"], S[f"nand{k}_p"]["w"], hc=hc, pitch=pitch)
 
-    # ---- cells --------------------------------------------------------------------
-    pc = cell_precharge(ly, "sram_precharge")
-    cm = [cell_colmux(ly, f"sram_colmux_m{m}", m, mux) for m in range(mux)]
-    sa = cell_senseamp(ly, "sram_senseamp")
-    wd = cell_wdrv(ly, "sram_wdrv")
-    T = Pen(ly, name, labels=True)
-    ag = ArrayGeom(rows, cols)
-    G = mux * BC_W
 
-    # ---- array, precharge row (above), column-mux row (below) ----------------------
-    build_array(T, bc, ag)
-    place_array(T, pc, 0, ag.height, cols, 1, BC_W, 0)
-    hcm = cm[0].size[1]
-    for m in range(mux):
-        place_array(T, cm[m], m * BC_W, -hcm, bits, 1, G, 0)
-        y_cs = -hcm + 1.55 + 0.7 * m
-        hbar(T, "m3", 0, ag.width, y_cs, 0.30)
-    CW = ag.width
+def _nat_hc(cname):
+    """Natural (minimum) cell height of logic cell type `cname`."""
+    S = cells.SIZING
+    if cname == "sram_wldrv":
+        return _natural_hc(S["wldrv_n"]["w"] / 4, S["wldrv_p"]["w"] / 4)
+    if cname == "sram_inv":
+        return _natural_hc(S["inv_n"]["w"], S["inv_p"]["w"])
+    k = int(cname[-1])
+    return _natural_hc(S[f"nand{k}_n"]["w"], S[f"nand{k}_p"]["w"])
 
-    for c in range(cols):                       # one label per net: anchors for LVS name hints
-        T.label("m1", f"BL{c}", c * BC_W + BL_X, 0.1)
-        T.label("m1", f"BLB{c}", c * BC_W + BLB_X, 0.1)
-    for r in range(rows):
-        T.label("m3", f"WL{r}", -0.40, ag.row_y(r) + 1.105)
 
-    # ---- bit slices: collectors, sense amps, write drivers --------------------------
+class _BusRouter:
+    """Vertical m4 buses to the left of the decoder lanes: net -> [x, ymin, ymax]."""
+
+    def __init__(self, xr):
+        self.xr = xr
+        self.buses = {}
+
+    def bus(self, nm):
+        if nm not in self.buses:
+            self.buses[nm] = [snap(self.xr - 0.9 * len(self.buses)), None, None]
+        return self.buses[nm]
+
+    def touch(self, nm, y):
+        b = self.bus(nm)
+        b[1] = y if b[1] is None else min(b[1], y)
+        b[2] = y if b[2] is None else max(b[2], y)
+        return b[0]
+
+
+def _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd):
+    """Collectors, sense amps, write drivers and the Q/D m4 verticals.
+    Returns (t_sa, t_wd, y_sa, y_wd, y_qd_top)."""
     yc1 = -hcm - 0.7
     yc2 = yc1 - 0.7
     sa_x = {"SBL": sa.pins["SBL"][1], "SBLB": sa.pins["SBLB"][1], "Q": sa.pins["DOUT"][1]}
     wd_x = {"SBL": wd.pins["SBL"][1], "SBLB": wd.pins["SBLB"][1], "D": wd.pins["DIN"][1]}
     t_sa, t_wd, slots = _choose_slots(G, sa.size[0], wd.size[0], sa_x, wd_x)
-    off_wd = 0.0
     y_sa0 = yc2 - 1.0 - sa.size[1]
     y_sa = [y_sa0 - t * (sa.size[1] + 0.8) for t in range(t_sa)]
     y_wd0 = y_sa[-1] - 1.0 - wd.size[1]
@@ -724,7 +721,7 @@ def build(words, bits, mux):
     for t in range(t_sa):
         place_array(T, sa, t * G, y_sa[t], len(range(t, bits, t_sa)), 1, t_sa * G, 0)
     for t in range(t_wd):
-        place_array(T, wd, t * G + off_wd, y_wd[t], len(range(t, bits, t_wd)), 1, t_wd * G, 0)
+        place_array(T, wd, t * G, y_wd[t], len(range(t, bits, t_wd)), 1, t_wd * G, 0)
     col_spans = {}      # (net, y) -> [xmin, xmax] of m3 collector bars
     for k in range(bits):
         xs_sbl = [(k * mux + j) * BC_W + BL_X for j in range(mux)]
@@ -735,7 +732,7 @@ def build(words, bits, mux):
                 stack(T, x, yc, "m1", "m3")
             col_spans.setdefault((nm, k), [yc, min(xs), max(xs)])
         tsa, twd = k % t_sa, k % t_wd
-        xsa, xwd = k * G, k * G + off_wd
+        xsa, xwd = k * G, k * G
         sa_pin = lambda n: (xsa + sa.pins[n][1], y_sa[tsa] + sa.pins[n][2], sa.pins[n][0])
         wd_pin = lambda n: (xwd + wd.pins[n][1], y_wd[twd] + wd.pins[n][2], wd.pins[n][0])
         for nm, yc in (("SBL", yc1), ("SBLB", yc2)):
@@ -761,7 +758,12 @@ def build(words, bits, mux):
         pad_ = max(0.2, (0.9 - (x1 - x0)) / 2)          # m3 area rule: bar at least 0.9 long
         hbar(T, "m3", x0 - pad_, x1 + pad_, yc, 0.30)
         T.label("m3", f"{nm}{k}", x0, yc)
-    # ---- logic instances from the macro netlist --------------------------------------
+    return t_sa, t_wd, y_sa, y_wd, y_qd_top
+
+
+def _partition_logic(words, bits, mux, rows):
+    """Split the macro netlist's logic instances into row gates, row drivers and control logic.
+    Returns (row_gate, row_drv, ctl, gname, nin)."""
     LOGIC = ("sram_inv", "sram_nand2", "sram_nand3", "sram_nand4", "sram_wldrv")
     row_gate, row_drv, ctl = {}, {}, []
     for ln in sc.macro_body(words, bits, mux):
@@ -785,28 +787,15 @@ def build(words, bits, mux):
             f"{words}x{bits} mux {mux}: {rows} rows need {nin} predecode lines per row, but the "
             f"decoder lanes route one m3 track per input per {PITCH_Y} um row pitch and three per "
             f"row do not fit the m3 pitch (generator limit: rows <= 64; see layout/README.md)")
+    return row_gate, row_drv, ctl, gname, nin
 
-    def mk(cname, nm, hc, pitch):
-        if cname == "sram_wldrv":
-            return cell_inv(ly, nm, 4, S["wldrv_n"]["w"], S["wldrv_p"]["w"], hc=hc, pitch=pitch)
-        if cname == "sram_inv":
-            return cell_inv(ly, nm, 1, S["inv_n"]["w"], S["inv_p"]["w"], hc=hc, pitch=pitch)
-        k = int(cname[-1])
-        return cell_nand(ly, nm, k, S[f"nand{k}_n"]["w"], S[f"nand{k}_p"]["w"], hc=hc, pitch=pitch)
 
-    def nat(cname):
-        if cname == "sram_wldrv":
-            return _natural_hc(S["wldrv_n"]["w"] / 4, S["wldrv_p"]["w"] / 4)
-        if cname == "sram_inv":
-            return _natural_hc(S["inv_n"]["w"], S["inv_p"]["w"])
-        k = int(cname[-1])
-        return _natural_hc(S[f"nand{k}_n"]["w"], S[f"nand{k}_p"]["w"])
-
-    # ---- row decoder lanes (left of the array) ----------------------------------------
-    hc_row = max(nat(gname), nat("sram_wldrv"))
+def _place_row_decoders(T, ly, ag, rows, row_gate, gname, nin):
+    """Row decoder lanes to the left of the array. Returns (lanes, router)."""
+    hc_row = max(_nat_hc(gname), _nat_hc("sram_wldrv"))
     L = max(2, -(-int(round(hc_row * 1000)) // int(round(PITCH_Y * 1000))))
-    gate_r = mk(gname, "row_" + gname, hc_row, 1.0)
-    wl_r = mk("sram_wldrv", "row_sram_wldrv", hc_row, 1.0)
+    gate_r = _mk_logic_cell(ly, gname, "row_" + gname, hc_row, 1.0)
+    wl_r = _mk_logic_cell(ly, "sram_wldrv", "row_sram_wldrv", hc_row, 1.0)
     wg = gate_r.size[0]
     Wl = wg + wl_r.size[0]
     lanes, xr = [], -1.4
@@ -814,19 +803,7 @@ def build(words, bits, mux):
         xl = xr - Wl
         lanes.append({"xl": xl, "xr": xr, "vss": xl - 1.0, "vdd": xl - 2.2})
         xr = lanes[-1]["vdd"] - 1.4
-    buses = {}
-
-    def bus(nm):
-        if nm not in buses:
-            buses[nm] = [snap(xr - 0.9 * len(buses)), None, None]      # x, ymin, ymax
-        return buses[nm]
-
-    def bus_touch(nm, y):
-        b = bus(nm)
-        b[1] = y if b[1] is None else min(b[1], y)
-        b[2] = y if b[2] is None else max(b[2], y)
-        return b[0]
-
+    router = _BusRouter(xr)
     for r in range(rows):
         j = r % L
         ln = lanes[j]
@@ -842,7 +819,7 @@ def build(words, bits, mux):
             via1(T, ax, ay)
             vbar(T, "m2", ax, min(ystub, ay) - 0.115, max(ystub, ay) + 0.115, 0.23)
             via2(T, ax, ystub)
-            bx = bus_touch(gnets[i], ystub)
+            bx = router.touch(gnets[i], ystub)
             hbar(T, "m3", bx, ax, ystub, 0.30)
             via3(T, bx, ystub)
         yx, yy = ln["xl"] + gate_r.pins["Y"][1], y0 + gate_r.pins["Y"][2]
@@ -861,21 +838,26 @@ def build(words, bits, mux):
             xsp = ln["vss"] if net == "VSS" else ln["vdd"]
             hbar(T, "m1", xsp - 0.16, ln["xl"] + 0.2, yr, RAIL)
             via1(T, xsp, yr)
+    return lanes, router
 
-    # ---- control logic row (under the bit slices) -------------------------------------
+
+def _place_control_row(T, ly, g, mux, bits, G, CW, sa, wd, y_wd, ctl, router):
+    """Control logic row under the bit slices plus its left-edge channel router.
+    Returns (x_end, x_rd_pre, y_cell0, hc_ctl, y_track)."""
+    buses = router.buses
     for m in range(mux if mux > 1 else 0):
-        bus(f"CS{m}")
-    bus("SAE")
-    bus("SAEB")
+        router.bus(f"CS{m}")
+    router.bus("SAE")
+    router.bus("SAEB")
     cnames = sorted({c for c, _ in ctl})
-    hc_ctl = max(nat(c) for c in cnames)
-    cvar = {c: mk(c, "ctl_" + c, hc_ctl, 0.9) for c in cnames}
+    hc_ctl = max(_nat_hc(c) for c in cnames)
+    cvar = {c: _mk_logic_cell(ly, c, "ctl_" + c, hc_ctl, 0.9) for c in cnames}
     xc, cinst = 0.0, []
     for (cname, nets) in ctl:
         cinst.append((cname, nets, xc))
         xc += cvar[cname].size[0]
     x_ctl_right = xc
-    x_right = max(CW, (bits - 1) * G + sa.size[0], (bits - 1) * G + off_wd + wd.size[0], x_ctl_right)
+    x_right = max(CW, (bits - 1) * G + sa.size[0], (bits - 1) * G + wd.size[0], x_ctl_right)
     x_end = snap(x_right + 1.0)
     x_rd_pre = snap(x_end + 3.6)
     pin_right = {f"A{i}" for i in range(g["na"])} | {"WLEN", "SAE"}
@@ -934,17 +916,21 @@ def build(words, bits, mux):
             if net not in buses and net not in pin_right:
                 T.label("m3", net, a, yt)
             if net in buses:
-                bx = bus_touch(net, yt)
+                bx = router.touch(net, yt)
                 via3(T, bx, yt)
+    return x_end, x_rd_pre, y_cell0, hc_ctl, y_track
 
-    # ---- global m3 lines through the bit slices --------------------------------------
+
+def _route_globals(T, ag, hcm, mux, bits, G, CW, sa, wd, t_sa, t_wd, y_sa, y_wd, router,
+                   x_end, x_rd_pre):
+    """Global m3 lines through the bit slices and the vertical m4 buses. Returns (y_wen, y_pchb)."""
     for t in range(t_sa):
         ks = list(range(t, bits, t_sa))
         for pn, lay in (("SAE", "m1"), ("SAEB", "m2")):
             yl = y_sa[t] + sa.pins[pn][2]
             for k in ks:
                 stack(T, k * G + sa.pins[pn][1], yl, lay, "m3")
-            bx = bus_touch(pn, yl)
+            bx = router.touch(pn, yl)
             hbar(T, "m3", bx, x_end - 0.2, yl, 0.30)
             via3(T, bx, yl)
     y_wen = []
@@ -953,8 +939,8 @@ def build(words, bits, mux):
         yl = y_wd[t] + wd.pins["WEN"][2]
         y_wen.append(yl)
         for k in ks:
-            stack(T, k * G + off_wd + wd.pins["WEN"][1], yl, "m2", "m3")
-        hbar(T, "m3", ks[0] * G + off_wd + wd.pins["WEN"][1] - 0.3, x_end - 0.2, yl, 0.30)
+            stack(T, k * G + wd.pins["WEN"][1], yl, "m2", "m3")
+        hbar(T, "m3", ks[0] * G + wd.pins["WEN"][1] - 0.3, x_end - 0.2, yl, 0.30)
     if t_wd > 1:                                # tie the per-tier WEN lines at the right-hand end
         for yl in y_wen:
             via3(T, x_end - 0.2, yl)
@@ -965,17 +951,21 @@ def build(words, bits, mux):
             hbar(T, "m3", 0, x_rd_pre, yl, 0.30)
             via3(T, x_rd_pre, yl)
             continue
-        bx = bus_touch(f"CS{m}", yl)
+        bx = router.touch(f"CS{m}", yl)
         hbar(T, "m3", bx, 0, yl, 0.30)
         via3(T, bx, yl)
     y_pchb = ag.height + 1.45
     hbar(T, "m3", CW, x_end - 0.2, y_pchb, 0.30)
-    for nm, (bx, y0b, y1b) in buses.items():
+    for nm, (bx, y0b, y1b) in router.buses.items():
         vbar(T, "m4", bx, y0b - 0.15, y1b + 0.15, 0.30)
         if nm != "SAE":                         # SAE is labelled once, at its macro pin
             T.label("m4", nm, bx, y0b + 0.5)
+    return y_wen, y_pchb
 
-    # ---- supplies: lane spines + top bars, rails of every row to the right-hand ring ---
+
+def _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, y_cell0, hc_ctl,
+                             x_end, y_track, y_wen, y_pchb):
+    """Supply spines, right-hand VDD/VSS ring and macro pin export."""
     y_a = snap(y_qd_top + 1.2)
     y_b = snap(y_a + 0.8)
     x_rv, x_rd = snap(x_end + 2.0), snap(x_end + 3.6)
@@ -1013,6 +1003,60 @@ def build(words, bits, mux):
         T.label("m3", nm, x_end - 0.2, yv_, drawing=True)
         T.pins[nm] = ("m3", x_end - 0.2, yv_)
         T.pin_rects[nm] = ("m3", x_end - 1.0, yv_ - 0.15, x_end - 0.2, yv_ + 0.15)
+
+
+def build(words, bits, mux):
+    """Place the macro layout for (words, bits, mux).
+
+    Returns (ly, T, BuildGeom(ag=..., hcm=...)): the layout, its top-cell Pen,
+    and the named geometry record — `ag`, the ArrayGeom (rows, cols, strap rows,
+    height/width), and `hcm`, the column-mux cell height in um.
+    """
+    g = sc.geometry(words, bits, mux)
+    rows, cols = g["rows"], g["cols"]
+    name = sc.top_name(words, bits, mux)
+    ly = db.Layout()
+    ly.dbu = 0.001
+    ly.read(str(BITCELL_GDS))
+    bcc = ly.cell(BITCELL)
+    bb = bcc.dbbox()
+    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
+    bc = _Ref(bcc)
+
+    # ---- cells --------------------------------------------------------------------
+    pc = cell_precharge(ly, "sram_precharge")
+    cm = [cell_colmux(ly, f"sram_colmux_m{m}", m, mux) for m in range(mux)]
+    sa = cell_senseamp(ly, "sram_senseamp")
+    wd = cell_wdrv(ly, "sram_wdrv")
+    T = Pen(ly, name, labels=True)
+    ag = ArrayGeom(rows, cols)
+    G = mux * BC_W
+
+    # ---- array, precharge row (above), column-mux row (below) ----------------------
+    build_array(T, bc, ag)
+    place_array(T, pc, 0, ag.height, cols, 1, BC_W, 0)
+    hcm = cm[0].size[1]
+    for m in range(mux):
+        place_array(T, cm[m], m * BC_W, -hcm, bits, 1, G, 0)
+        y_cs = -hcm + 1.55 + 0.7 * m
+        hbar(T, "m3", 0, ag.width, y_cs, 0.30)
+    CW = ag.width
+
+    for c in range(cols):                       # one label per net: anchors for LVS name hints
+        T.label("m1", f"BL{c}", c * BC_W + BL_X, 0.1)
+        T.label("m1", f"BLB{c}", c * BC_W + BLB_X, 0.1)
+    for r in range(rows):
+        T.label("m3", f"WL{r}", -0.40, ag.row_y(r) + 1.105)
+
+    t_sa, t_wd, y_sa, y_wd, y_qd_top = _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd)
+    row_gate, _row_drv, ctl, gname, nin = _partition_logic(words, bits, mux, rows)
+    lanes, router = _place_row_decoders(T, ly, ag, rows, row_gate, gname, nin)
+    x_end, x_rd_pre, y_cell0, hc_ctl, y_track = _place_control_row(
+        T, ly, g, mux, bits, G, CW, sa, wd, y_wd, ctl, router)
+    y_wen, y_pchb = _route_globals(T, ag, hcm, mux, bits, G, CW, sa, wd, t_sa, t_wd, y_sa, y_wd,
+                                   router, x_end, x_rd_pre)
+    _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, y_cell0, hc_ctl,
+                             x_end, y_track, y_wen, y_pchb)
     bb_all = T.cell.dbbox()
     T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
     T.size = (bb_all.width(), bb_all.height())
@@ -1020,22 +1064,14 @@ def build(words, bits, mux):
 
 
 # ---- outputs -------------------------------------------------------------------------
-PIN_LABEL_LAYER = {"m3": (70, 20), "m4": (71, 20)}
-PIN_METAL_LAYER = {"m3": (70, 20), "m4": (71, 20)}
-
-
-def write_gds(ly, path):
-    _shared_write_gds(ly, path)
-
-
 def socket_descriptor(T, name):
     """klt socket descriptor for `klt lef-abstract`: outline plus every macro pin."""
     bb = T.cell.dbbox()
     pins = []
     for pn in sorted(T.pins, key=lambda n: (n.rstrip("0123456789"), int("".join(c for c in n if c.isdigit()) or 0))):
         lay, x, y = T.pins[pn]
-        entry = {"name": pn, "layer": list(PIN_LABEL_LAYER[lay]), "x": round(x, 4), "y": round(y, 4),
-                 "tolerance_um": 0.05, "metal_layer": list(PIN_METAL_LAYER[lay])}
+        entry = {"name": pn, "layer": list(LAYERS[lay]), "x": round(x, 4), "y": round(y, 4),
+                 "tolerance_um": 0.05, "metal_layer": list(LAYERS[lay])}
         if pn == "VDD":
             entry["use"] = "POWER"
         elif pn == "VSS":
