@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-24
 
+- **PR #229**: feat: add decoupled half-cell column top for DC SNM fixture
+- **Issue #228** (closed): Dedicated half-cell column top for the DC SNM fixture, DRC/LVS clean
 - **PR #220**: fix(pex): probe launched klt and surface validator summary
 - **Issue #219** (closed): run_pex.sh: TOOL_MISSING pre-flight does not actually check the launched tool, and the validator summary never prints
 
