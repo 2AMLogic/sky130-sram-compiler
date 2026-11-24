@@ -29,6 +29,7 @@
     {"name": "format-gate-bites", "argv": ["python3", "-I", "verification/hygiene/test_check_formats.py"]},
     {"name": "pdk-resolution", "argv": ["python3", "-I", "verification/hygiene/test_pdk_resolution.py"]},
     {"name": "drc-exit-gate", "argv": ["python3", "-I", "verification/hygiene/test_drc_exit_gate.py"]},
-    {"name": "erc-exit-gate", "argv": ["python3", "-I", "verification/hygiene/test_erc_exit_gate.py"]}
+    {"name": "erc-exit-gate", "argv": ["python3", "-I", "verification/hygiene/test_erc_exit_gate.py"]},
+    {"name": "snm-pex-dut", "argv": ["python3", "-I", "sim/column/lib/test_snm_pex.py"]}
   ]
 }

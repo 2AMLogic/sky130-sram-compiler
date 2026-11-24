@@ -93,6 +93,9 @@ jobs:
       - name: ERC runner gates klt exits, --write validates before copying
         run: python3 -I verification/hygiene/test_erc_exit_gate.py
 
+      - name: Extracted-DUT SNM measurement path tests (PDK-free)
+        run: python3 -I sim/column/lib/test_snm_pex.py
+
       - name: Item 10 attestation still reproduces
         run: |
           klt signoff --attest 10 --inventory manifests/hygiene-inventory.json \
