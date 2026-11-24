@@ -53,7 +53,10 @@ sits behind one `.include` — the flat schematic DUT `tb/pex/sram_col_slice.spi
 macro netlist: its leaf subckts inlined, nothing hand-copied, the four probed storage nodes exported
 as pins `Q00/QB00/Q01/Q02`) — which `klt pex` swaps for the extraction of the LVS-matched layout top
 `layout/sram_col_slice.gds` (`gen_layout.py --bench-slice`). The 124 omitted columns' word-line gate
-load stays in the bench body, so it loads both legs alike. `run_pex.sh [bench …]` drift-gates both
+load stays in the bench body, so it loads both legs alike — as gate load only: it carries no wire
+parasitics, and the extracted word-line R/C covers just the drawn 4-column span (`SLICE_COLS = 4`),
+so the recorded write-completion shift is expected to be a lower bound on the full-macro figure
+(dated addendum in `records/20261123-69ff7430.md`). `run_pex.sh [bench …]` drift-gates both
 generators, LVS-matches the pair (with a negative control), runs both legs of every requested bench at
 one corner (tt, 1.8 V, 25 °C, local) under the signoff-pinned klt 0.9.0, and asserts the ladder checks
 on each leg (`lib/check_pex_probe.py`, per side, from the report's own per-side evidence). The dated
