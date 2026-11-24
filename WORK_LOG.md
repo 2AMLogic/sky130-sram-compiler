@@ -5,6 +5,8 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-24
 
+- **PR #225**: feat: provisional read/write PEX deltas on an LVS-matched column slice
+- **Issue #209** (closed): Measure provisional read and write deltas on an LVS-matched column slice
 - **PR #229**: feat: add decoupled half-cell column top for DC SNM fixture
 - **Issue #228** (closed): Dedicated half-cell column top for the DC SNM fixture, DRC/LVS clean
 - **PR #220**: fix(pex): probe launched klt and surface validator summary
