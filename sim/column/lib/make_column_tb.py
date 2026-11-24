@@ -242,7 +242,7 @@ def slice_instance():
     single swap point), the supply, the instantiation in SLICE_PINS order, and the 124 omitted
     columns' word-line gate load -- outside the extracted top, so it loads both legs alike."""
     nets = " ".join("0" if n == "VSS" else n.lower() for n in SLICE_PINS)
-    return [f"* PEX bench: the matched DUT sits behind the single .include line klt pex swaps",
+    return ["* PEX bench: the matched DUT sits behind the single .include line klt pex swaps",
             f"* for the extracted netlist ({SLICE_TOP}.spice here, the layout extraction there).",
             f".include '{SLICE_TOP}.spice'",
             "VVDD vdd 0 dc 1.8",
