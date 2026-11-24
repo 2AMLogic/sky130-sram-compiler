@@ -4,6 +4,11 @@ Usage (needs klayout's python module; the repo does not pin the runner):
   uv run --no-project --with klayout python -I design/compiler/gen_layout.py WORDS BITS MUX \
       [-o OUT.gds] [--socket OUT.json] [--lef OUT.lef] [--report] [--check OUT.gds]
       [--check-socket OUT.json] [--check-lef OUT.lef]
+  uv run --no-project --with klayout python -I design/compiler/gen_layout.py --snm-halfcell \
+      [-o OUT.gds] [--check OUT.gds] [--report]
+--snm-halfcell builds the dedicated test top for the DC SNM fixture instead of a macro: a 64-row
+single column whose row 0 is the decoupled half-cell (free IN/OUT, own WL), rows 1..63 are bitcell_6t,
+and the column carries one sram_precharge. It takes no WORDS BITS MUX and no --socket/--lef.
 --check / --check-socket / --check-lef exit 3 when the committed file differs from a fresh build. --lef and
 --check-lef run `klt lef-abstract` (needs klt and PDK_ROOT/PDK in the environment).
 
@@ -19,11 +24,13 @@ import hashlib
 import json
 import pathlib
 import sys
+import tempfile
 
 import klayout.db as db
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # design/: sky130_pdk
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "bitcell"))  # gen_bitcell
 import cells  # noqa: E402
 import sram_compile as sc  # noqa: E402
 from sky130_pdk import (DIFF_END, IMPL, LAYERS, LIC, NPC_ENC,  # noqa: E402
@@ -573,14 +580,20 @@ class BuildGeom:
         self.hcm = hcm
 
 
-def build_array(T, bc, ag):
+def build_array(T, bc, ag, row0_cell=None):
     """Tile the committed bitcell (translation only, +ROW_DY vertical pitch), add the
     shapes the cell leaves to the array: implant/poly bridges, continuous well, bit-line,
-    VSS and VDD columns, the p-substrate tap rows, and the wordline landing pads."""
+    VSS and VDD columns, the p-substrate tap rows, and the wordline landing pads.
+    row0_cell (SNM test top only, a one-column array): a cell of the bitcell footprint
+    placed in row 0 in place of the bitcell."""
     rows, cols = ag.rows, ag.cols
     for i in range(len(ag.B) - 1):
         r0, r1 = ag.B[i], ag.B[i + 1]
-        place_array(T, bc, 0, ag.row_y(r0), cols, r1 - r0, BC_W, PITCH_Y)
+        if row0_cell is not None and r0 == 0:
+            place(T, row0_cell, 0, ag.row_y(0))
+            place_array(T, bc, 0, ag.row_y(1), cols, r1 - 1, BC_W, PITCH_Y)
+        else:
+            place_array(T, bc, 0, ag.row_y(r0), cols, r1 - r0, BC_W, PITCH_Y)
         y0, y1 = ag.row_y(r0) + 0.075, ag.row_y(r1 - 1) + BC_H - 0.075
         for c in range(cols):
             x = c * BC_W
@@ -1064,6 +1077,53 @@ def build(words, bits, mux):
 
 
 # ---- outputs -------------------------------------------------------------------------
+SNM_TOP = "sram_snm_halfcell_col64"
+SNM_ROWS = 64
+
+
+def build_snm_halfcell_column():
+    """The DC SNM fixture's layout top: one column of SNM_ROWS rows, the decoupled half-cell in
+    row 0, 63 bitcell_6t above it and one sram_precharge on top, all through build_array /
+    cell_precharge exactly as the macro's columns. Ports (top-cell labels): BL0 BLB0 IN OUT
+    WL0 (the half-cell's own word line) WL1..WL63 (the background rows') PCHB VDD VSS. Returns (ly, T, BuildGeom)."""
+    import gen_bitcell as gb  # noqa: E402  (design/bitcell is put on sys.path below)
+    ly = db.Layout()
+    ly.dbu = 0.001
+    ly.read(str(BITCELL_GDS))
+    half_ly, half_info = gb.build(half=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        hp = pathlib.Path(tmp) / "half.gds"
+        write_gds(half_ly, hp)
+        ly.read(str(hp))
+    bcc, hcc = ly.cell(BITCELL), ly.cell(gb.HALF_CELL)
+    for c in (bcc, hcc):
+        bb = c.dbbox()
+        assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, (c.name, bb)
+    pc = cell_precharge(ly, "sram_precharge")
+    T = Pen(ly, SNM_TOP, labels=True)
+    ag = ArrayGeom(SNM_ROWS, 1)
+    build_array(T, _Ref(bcc), ag, row0_cell=_Ref(hcc))
+    place_array(T, pc, 0, ag.height, 1, 1, BC_W, 0)
+    T.label("m1", "BL0", BL_X, 0.1)
+    T.label("m1", "BLB0", BLB_X, 0.1)
+    for r in range(SNM_ROWS):
+        y = ag.row_y(r) + 1.105
+        # the macro's row decoder gives each WL pad its m3 area; here the pad is the port, so give it
+        # a 0.30 stub to the left (met3.area.1)
+        T.rect("m3", -0.40 - PAD3 / 2 - 0.30, y - PAD3 / 2, -0.40 + PAD3 / 2, y + PAD3 / 2)
+        T.label("m3", f"WL{r}", -0.40, y)
+    y0 = ag.row_y(0)
+    T.label("m1", "IN", half_info["in_xy"][0], y0 + half_info["in_xy"][1])
+    T.label("li", "OUT", half_info["out_xy"][0], y0 + half_info["out_xy"][1])
+    for name in ("PCHB", "VDD", "VSS"):          # BL/BLB are the bit-line labels above
+        layer, x, y = pc.pins[name]
+        T.pin(name, layer, x, ag.height + y)
+    bb_all = T.cell.dbbox()
+    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
+    T.size = (bb_all.width(), bb_all.height())
+    return ly, T, BuildGeom(ag=ag, hcm=0.0)
+
+
 def socket_descriptor(T, name):
     """klt socket descriptor for `klt lef-abstract`: outline plus every macro pin."""
     bb = T.cell.dbbox()
@@ -1132,8 +1192,10 @@ def make_lef(T, name):
 
 
 def main(argv):
-    import tempfile
     args = argv[1:]
+    snm = "--snm-halfcell" in args
+    if snm:
+        args.remove("--snm-halfcell")
     out = check = sock = lef = check_lef = check_sock = None
     report = "--report" in args
     if report:
@@ -1155,12 +1217,17 @@ def main(argv):
                 check_lef = val
             else:
                 check_sock = val
-    if len(args) != 3:
+    if len(args) != (0 if snm else 3) or (snm and (sock or lef or check_lef or check_sock)):
         print(__doc__, file=sys.stderr)
         return 2
     try:
-        words, bits, mux = (int(a) for a in args)
-        ly, T, geom = build(words, bits, mux)
+        if snm:
+            top_name = SNM_TOP
+            ly, T, geom = build_snm_halfcell_column()
+        else:
+            words, bits, mux = (int(a) for a in args)
+            top_name = sc.top_name(words, bits, mux)
+            ly, T, geom = build(words, bits, mux)
     except (sc.RangeError, GenError, ValueError) as e:
         print(f"gen_layout: error: {e}", file=sys.stderr)
         return 1
@@ -1176,7 +1243,7 @@ def main(argv):
             print(f"gen_layout: {check} drifted from the generator", file=sys.stderr)
             return 3
     if sock or check_sock:
-        text = json.dumps(socket_descriptor(T, sc.top_name(words, bits, mux)), indent=1) + "\n"
+        text = json.dumps(socket_descriptor(T, top_name), indent=1) + "\n"
         if sock:
             pathlib.Path(sock).write_text(text)
         if check_sock:
@@ -1185,7 +1252,7 @@ def main(argv):
                 print(f"gen_layout: {check_sock} drifted from the generator", file=sys.stderr)
                 return 3
     if lef or check_lef:
-        text = make_lef(T, sc.top_name(words, bits, mux))
+        text = make_lef(T, top_name)
         if lef:
             pathlib.Path(lef).write_text(text)
         if check_lef:
@@ -1195,7 +1262,7 @@ def main(argv):
                 return 3
     if report:
         bb = T.cell.dbbox()
-        print(json.dumps({"top": sc.top_name(words, bits, mux), "sha256": hashlib.sha256(data).hexdigest(),
+        print(json.dumps({"top": top_name, "sha256": hashlib.sha256(data).hexdigest(),
                           "width_um": round(bb.width(), 3), "height_um": round(bb.height(), 3),
                           "area_um2": round(bb.width() * bb.height(), 1),
                           "array_um": [round(geom.ag.width, 3), round(geom.ag.height, 3)],

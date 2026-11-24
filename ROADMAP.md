@@ -100,8 +100,11 @@ Startable today; none depends on the ratified spec.
   bulks sit on the exported `vsubs` pin, which a consuming bench must bias itself — record
   `sim/column/records/20261121-3c2d73b.md`. Remaining simulation work: re-run the column
   benches on a `klt pex` netlist of the macro with the record beside the pre-layout one;
-  `sim/column/README.md` lists wire parasitics as not modelled. Unblocked by the
-  pre-layout grids (#29) and the spec.
+  `sim/column/README.md` lists wire parasitics as not modelled. The DC SNM fixture's
+  layout top now exists (#228): `gen_layout.py --snm-halfcell`, a 64-row column with a decoupled
+  half-cell in row 0, DRC/LVS clean, extract-only accepted in 1 s; it measures nothing —
+  the extracted hold/read SNM is #210; record `design/macro/records/20261124-snm-halfcell-col64.md`.
+  Unblocked by the pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS
   records exist for it from the same compiler path. Blocked on the

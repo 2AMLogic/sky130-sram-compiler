@@ -39,6 +39,7 @@ PU_W, PU_L = _SZ["pu"]["w"], _SZ["pu"]["l"]     # pull-up    pfet_01v8
 # ----------------------------------------------------------------------------
 
 CELL = "sky130_sram_bitcell_6t"
+HALF_CELL = "sky130_sram_halfcell_6t"
 # The layers this cell draws on, with the numbers taken from the shared table
 # (design/sky130_pdk.py). The tuple is a local fact and is ordered deliberately:
 # build() registers the klayout layers in this order and the GDS writer emits
@@ -67,10 +68,19 @@ def r(x0, y0, x1, y1):
     return db.DBox(round(x0, 4), round(y0, 4), round(x1, 4), round(y1, 4))
 
 
-def build():
+def build(half=False):
+    """The 6T bitcell, or with half=True the decoupled half-cell for the DC SNM fixture.
+
+    The half-cell is the left half of the bitcell on the same footprint: pull-up, pull-down
+    and access device drawn from the same geometry (so W/L track sizing.json), but the
+    cross-coupling is cut. The shared gate (the left-inverter head, which the bitcell strapped
+    to QB) is the free input IN; the drain node (Q, which the bitcell routed to the right
+    inverter's gate) is the free output OUT. The right half's devices and contacts are not
+    drawn; the well, bit-line, VSS and VDD columns are kept so the cell abuts the bitcell
+    column unchanged. build(False) is the committed bitcell, byte for byte."""
     ly = db.Layout()
     ly.dbu = 0.001
-    top = ly.create_cell(CELL)
+    top = ly.create_cell(HALF_CELL if half else CELL)
     li_ = {k: ly.layer(*v) for k, v in L.items()}
 
     def put(layer, box):
@@ -81,7 +91,8 @@ def build():
 
     def both(layer, x0, y0, x1, y1):
         put(layer, r(x0, y0, x1, y1))
-        put(layer, r(mirror_x(x1), y0, mirror_x(x0), y1))
+        if not half:
+            put(layer, r(mirror_x(x1), y0, mirror_x(x0), y1))
 
     # ---- y levels (absolute) ------------------------------------------------
     gate_b = Y0 + 0.285
@@ -135,12 +146,13 @@ def build():
     lh_b = Y0 - 0.09                                 # head bottom
     put("poly", r(lh_l, lh_b, lh_r, gate_b + PD_L))
     # right inverter row (mirror of nR/pR, head pad up)
-    put("poly", r(rh_l, gate_b, mirror_x(nl_l - POLY_END), gate_b + PD_L))
-    put("poly", r(mirror_x(pl_r + POLY_END), gate_b, mirror_x(pl_l - POLY_END), gate_b + PU_L))
-    rh_t = gate_b + PAD
-    put("poly", r(rh_l, gate_b, rh_r, rh_t))
-    # wordline row
-    put("poly", r(nl_l - POLY_END, ax_b, mirror_x(nl_l - POLY_END), ax_t))
+    if not half:
+        put("poly", r(rh_l, gate_b, mirror_x(nl_l - POLY_END), gate_b + PD_L))
+        put("poly", r(mirror_x(pl_r + POLY_END), gate_b, mirror_x(pl_l - POLY_END), gate_b + PU_L))
+        rh_t = gate_b + PAD
+        put("poly", r(rh_l, gate_b, rh_r, rh_t))
+    # wordline row (the half-cell keeps only the left access gate)
+    put("poly", r(nl_l - POLY_END, ax_b, nl_r + POLY_END if half else mirror_x(nl_l - POLY_END), ax_t))
 
     # ---- licon --------------------------------------------------------------
     def lic(cx, cy):
@@ -148,7 +160,8 @@ def build():
 
     def lic_pair(cx, cy):
         lic(cx, cy)
-        lic(mirror_x(cx), cy)
+        if not half:
+            lic(mirror_x(cx), cy)
 
     cy_vss, cy_q, cy_bl = (vss_b + vss_t) / 2, (q_b + q_t) / 2, (bl_b + bl_t) / 2
     lic_pair(bl_cx, cy_bl)
@@ -160,7 +173,8 @@ def build():
     lh_cx, lh_cy = (lh_l + lh_r) / 2, lh_b + 0.08 + LIC / 2
     rh_cx, rh_cy = (rh_l + rh_r) / 2, gate_b + 0.08 + LIC / 2
     lic(lh_cx, lh_cy)
-    lic(rh_cx, rh_cy)
+    if not half:
+        lic(rh_cx, rh_cy)
 
     # ---- li1 ----------------------------------------------------------------
     def li_pad(cx, cy, below=LI_ENC, above=LI_ENC):
@@ -174,18 +188,21 @@ def build():
                                  (vss_cx, cy_vss, LI_ENC, 0.0), (pl_cx, cy_vss, LI_ENC, 0.0),
                                  (vss_cx, cy_q, 0.0, LI_ENC), (pl_cx, cy_q, 0.0, LI_ENC)]:
         li_pad(cx, cy, below, above)
-        li_pad(mirror_x(cx), cy, below, above)
+        if not half:
+            li_pad(mirror_x(cx), cy, below, above)
     li_pad(pl_cx, tap_lic_b + LIC / 2)
     li_pad(lh_cx, lh_cy)
-    li_pad(rh_cx, rh_cy)
-    # Q net (left): nL node -> pL drain -> right-inverter head
+    if not half:
+        li_pad(rh_cx, rh_cy)
+    # Q net (left): nL node -> pL drain -> right-inverter head (half-cell: stops at the drain, = OUT)
     bar_h = LIC
-    put("li", r(vss_cx, cy_q - bar_h / 2, rh_cx, cy_q + bar_h / 2))
-    # QB net (right): mirror link nR node <- pR drain
-    put("li", r(mirror_x(vss_cx), cy_q - bar_h / 2, mirror_x(pl_cx), cy_q + bar_h / 2))
-    # mcon landing for the QB strap, on the right QB bar
+    put("li", r(vss_cx, cy_q - bar_h / 2, pl_cx if half else rh_cx, cy_q + bar_h / 2))
     sx = mirror_x(pl_cx) + 0.30
-    put("li", r(sx - LIC / 2, cy_q - bar_h / 2, sx + LIC / 2, cy_q + bar_h / 2))
+    if not half:
+        # QB net (right): mirror link nR node <- pR drain
+        put("li", r(mirror_x(vss_cx), cy_q - bar_h / 2, mirror_x(pl_cx), cy_q + bar_h / 2))
+        # mcon landing for the QB strap, on the right QB bar
+        put("li", r(sx - LIC / 2, cy_q - bar_h / 2, sx + LIC / 2, cy_q + bar_h / 2))
 
     # ---- mcon / met1 --------------------------------------------------------
     def mcon(cx, cy):
@@ -196,11 +213,13 @@ def build():
 
     # bit lines (vertical met1, full height) and VSS (vertical met1)
     for cx, cy, name in [(bl_cx, cy_bl, "BL"), (mirror_x(bl_cx), cy_bl, "BLB")]:
-        mcon(cx, cy)
-        m1_pad(cx, cy)
+        if name == "BL" or not half:      # the half-cell has no right access device: BLB passes through
+            mcon(cx, cy)
+            m1_pad(cx, cy)
         put("m1", r(cx - 0.07, 0, cx + 0.07, H))
     for cx in (vss_cx, mirror_x(vss_cx)):
-        mcon(cx, cy_vss)
+        if cx == vss_cx or not half:      # no right n diff to land on in the half-cell
+            mcon(cx, cy_vss)
         m1_pad(cx, cy_vss, PAD)
         put("m1", r(cx - 0.07, 0, cx + 0.07, H))
         # VSS up to a horizontal met3 rail that ties the two VSS columns together
@@ -211,7 +230,8 @@ def build():
     put("m3", r(vss_cx - 0.1 - 0.085, cy_vss - m3_h / 2, mirror_x(vss_cx) + 0.1 + 0.085, cy_vss + m3_h / 2))
     # VDD: m1 pad + via + vertical m2
     for cx in (pl_cx, mirror_x(pl_cx)):
-        mcon(cx, cy_vss)
+        if cx == pl_cx or not half:       # no right p diff to land on in the half-cell
+            mcon(cx, cy_vss)
         put("m1", r(cx - PAD / 2, cy_vss - VIA / 2 - 0.09, cx + PAD / 2, cy_vss + VIA / 2 + 0.055))
         put("via", r(cx - VIA / 2, cy_vss - VIA / 2, cx + VIA / 2, cy_vss + VIA / 2))
         put("m2", r(cx - PAD / 2, 0, cx + PAD / 2, H))
@@ -225,12 +245,14 @@ def build():
     # QB strap (met1): left-inverter head -> up over the Q row -> across -> down to QB bar
     mcon(lh_cx, lh_cy)
     m1_pad(lh_cx, lh_cy)
-    mcon(sx, cy_q)
-    m1_pad(sx, cy_q)
+    if not half:
+        mcon(sx, cy_q)
+        m1_pad(sx, cy_q)
     sy = ax_t + 0.10 + 0.07
     put("m1", r(lh_cx - 0.07, lh_cy, lh_cx + 0.07, sy + 0.07))
-    put("m1", r(lh_cx - 0.07, sy - 0.07, sx + 0.07, sy + 0.07))
-    put("m1", r(sx - 0.07, cy_q, sx + 0.07, sy + 0.07))
+    if not half:                          # half-cell: the strap stops here, the head is IN
+        put("m1", r(lh_cx - 0.07, sy - 0.07, sx + 0.07, sy + 0.07))
+        put("m1", r(sx - 0.07, cy_q, sx + 0.07, sy + 0.07))
 
     # ---- implants / well / npc ---------------------------------------------
     nwr = mirror_x(nw_l)
@@ -240,7 +262,7 @@ def build():
     both("psdm", pl_l - IMPL, Y0 - IMPL, pl_r + IMPL, pdiff_t + IMPL)
     put("nsdm", r(nl_r + IMPL, tap_b - IMPL, tap_r + IMPL, H))   # merged with nL implant
     put("npc", r(lh_cx - LIC / 2 - NPC_ENC, lh_cy - LIC / 2 - NPC_ENC,
-                 rh_cx + LIC / 2 + NPC_ENC, rh_cy + LIC / 2 + NPC_ENC))
+                 (lh_cx if half else rh_cx) + LIC / 2 + NPC_ENC, (lh_cy if half else rh_cy) + LIC / 2 + NPC_ENC))
 
     # ---- labels / boundary ---------------------------------------------------
     def lbl(layer, text, cx, cy):
@@ -253,12 +275,19 @@ def build():
     lbl("m2_lbl", "VDD", pl_cx, H - 0.1)
     lbl("m2_lbl", "VDD", mirror_x(pl_cx), H - 0.1)
     lbl("poly_lbl", "WL", nl_l, (ax_b + ax_t) / 2)
-    lbl("li_lbl", "Q", vss_cx, cy_q)
-    lbl("li_lbl", "QB", mirror_x(vss_cx), cy_q)
+    if half:
+        lbl("li_lbl", "OUT", vss_cx, cy_q)
+        lbl("m1_lbl", "IN", lh_cx, sy)
+    else:
+        lbl("li_lbl", "Q", vss_cx, cy_q)
+        lbl("li_lbl", "QB", mirror_x(vss_cx), cy_q)
     put("bound", r(0, 0, W, H))
 
     info = {"width_um": round(W, 4), "height_um": round(H, 4), "xc": round(XC, 4),
             "sizing": {"pd": [PD_W, PD_L], "ax": [AX_W, AX_L], "pu": [PU_W, PU_L]}}
+    if half:
+        info["in_xy"] = [round(lh_cx, 4), round(sy, 4)]
+        info["out_xy"] = [round(vss_cx, 4), round(cy_q, 4)]
     return ly, info
 
 
