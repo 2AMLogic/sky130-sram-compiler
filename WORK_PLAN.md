@@ -34,14 +34,12 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#227**: check_pex_probe.py swallows check_probe.py's stderr, so a structural per-leg failure is unnamed
-- **#232**: Name the word-line wire truncation in the column-slice PEX record's Scope section
-- **#236**: SNM PEX record: cite provenance for the 'Committed col_*_snm probe (pre-layout)' column
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#237**: (feature/issue-236) SNM PEX record provenance
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -56,8 +54,6 @@ Issues carrying `loom:curated`.
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
 - **#227**: check_pex_probe.py swallows check_probe.py's stderr, so a structural per-leg failure is unnamed *(curated)*
-- **#232**: Name the word-line wire truncation in the column-slice PEX record's Scope section *(curated)*
-- **#236**: SNM PEX record: cite provenance for the 'Committed col_*_snm probe (pre-layout)' column *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,10 +71,10 @@ _None._
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 1 |
+| In Progress (`loom:building`) | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
+| Curated | 3 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
