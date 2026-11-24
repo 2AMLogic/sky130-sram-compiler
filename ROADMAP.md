@@ -108,6 +108,10 @@ Startable today; none depends on the ratified spec.
   differential −5 %) — record `sim/column/records/20261123-69ff7430.md`. Remaining
   simulation work: the post-layout corner grids and Monte Carlo on the extracted slice
   (the pre-layout grids are the committed `klt sim` requests); item 7 stays uncited.
+  The DC SNM fixture's
+  layout top now exists (#228): `gen_layout.py --snm-halfcell`, a 64-row column with a decoupled
+  half-cell in row 0, DRC/LVS clean, extract-only accepted in 1 s; it measures nothing —
+  the extracted hold/read SNM is #210; record `design/macro/records/20261124-snm-halfcell-col64.md`.
   Unblocked by the pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS

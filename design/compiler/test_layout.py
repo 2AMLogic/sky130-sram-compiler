@@ -3,6 +3,7 @@
 """
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -10,7 +11,9 @@ import unittest
 import klayout.db as db
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # -I drops the script dir
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "bitcell"))
 import gen_layout as gl  # noqa: E402
+import gen_bitcell as gb  # noqa: E402
 import sram_compile as sc  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -149,6 +152,52 @@ class Layout(unittest.TestCase):
         for p in d["pins"]:
             self.assertTrue(bb["x0"] <= p["x"] <= bb["x1"] and bb["y0"] <= p["y"] <= bb["y1"], p["name"])
         json.dumps(d)
+
+
+class SnmHalfcellColumn(unittest.TestCase):
+    """--snm-halfcell: the dedicated DC SNM column top, through the same generator entry point."""
+
+    def test_bitcell_generator_unchanged_by_half_mode(self):
+        self.assertEqual(gds_bytes(gb.build()[0]), (ROOT / "design/bitcell/bitcell_6t.gds").read_bytes())
+
+    def test_structure(self):
+        ly, T, geom = gl.build_snm_halfcell_column()
+        self.assertEqual((geom.ag.rows, geom.ag.cols), (64, 1))
+        self.assertEqual(count_instances(ly, T, gl.BITCELL), 63)
+        self.assertEqual(count_instances(ly, T, gb.HALF_CELL), 1)
+        self.assertEqual(count_instances(ly, T, "sram_precharge"), 1)
+        self.assertEqual(sorted(T.pins), ["PCHB", "VDD", "VSS"])
+        texts = set()
+        for lbl in ("li_lbl", "m1_lbl", "m3_lbl"):
+            texts |= {sh.text.string for sh in ly.top_cell().shapes(ly.layer(*gl.LAYERS[lbl])).each()
+                      if sh.is_text()}
+        want = {"BL0", "BLB0", "IN", "OUT", "PCHB", "VDD", "VSS"} | {f"WL{r}" for r in range(64)}
+        self.assertTrue(want <= texts, want - texts)
+
+    def test_half_cell_is_cut_from_the_bitcell_devices(self):
+        """Same footprint and sizing as the bitcell; only the left inverter + access device are drawn."""
+        hly, info = gb.build(half=True)
+        bb = hly.top_cell().dbbox()
+        self.assertEqual((round(bb.width(), 3), round(bb.height(), 3)), (gl.BC_W, gl.BC_H))
+        self.assertEqual(info["sizing"], gb.build()[1]["sizing"])
+        full = gb.build()[0]
+        for layer in ("poly", "diff", "licon"):
+            n_half = db.Region(hly.top_cell().begin_shapes_rec(hly.layer(*gl.LAYERS[layer]))).count()
+            n_full = db.Region(full.top_cell().begin_shapes_rec(full.layer(*gl.LAYERS[layer]))).count()
+            self.assertLess(n_half, n_full, layer)
+
+    def test_deterministic_and_same_entry_point(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = pathlib.Path(tmp) / "a.gds", pathlib.Path(tmp) / "b.gds"
+            self.assertEqual(gl.main(["gen_layout.py", "--snm-halfcell", "-o", str(a)]), 0)
+            self.assertEqual(gl.main(["gen_layout.py", "--snm-halfcell", "-o", str(b)]), 0)
+            self.assertEqual(a.read_bytes(), b.read_bytes())
+            self.assertEqual(gl.main(["gen_layout.py", "--snm-halfcell", "--check", str(a)]), 0)
+        self.assertEqual(gl.main(["gen_layout.py", "--snm-halfcell", "16", "8", "2"]), 2)
+
+    def test_lvs_reference_is_current(self):
+        r = subprocess.run([sys.executable, "-I", str(ROOT / "design/macro/lvs/make_snm_ref.py"), "--check"])
+        self.assertEqual(r.returncode, 0)
 
 
 unittest.main()
