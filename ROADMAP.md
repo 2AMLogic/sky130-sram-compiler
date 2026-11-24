@@ -98,9 +98,17 @@ Startable today; none depends on the ratified spec.
   read from the extractions: klt reports no unbiased PMOS bodies in either (that status is
   PMOS-only); macro nfet bulks are all on the drawn VSS taps, while the bare cell's 4 nfet
   bulks sit on the exported `vsubs` pin, which a consuming bench must bias itself — record
-  `sim/column/records/20261121-3c2d73b.md`. Remaining simulation work: re-run the column
-  benches on a `klt pex` netlist of the macro with the record beside the pre-layout one;
-  `sim/column/README.md` lists wire parasitics as not modelled. The DC SNM fixture's
+  `sim/column/records/20261121-3c2d73b.md`. The provisional one-corner comparison landed
+  (#209): the column benches re-ran on an LVS-matched bench slice (4 columns + periphery,
+  DRC-clean, 543/543 nets and 1575/1575 devices by LVS with a biting negative control,
+  `layout/sram_col_slice.gds`) against the flat generated schematic DUT — both legs
+  simulated, every ladder and the WEN-off control held on each side, and the write
+  completion transition moved from a 0.35–0.40 ns to a 0.45–0.50 ns bounding pulse width
+  at tt/1.8 V/25 °C (read access unshifted at the 50 ps ladder resolution; sense
+  differential −5 %) — record `sim/column/records/20261123-69ff7430.md`. Remaining
+  simulation work: the post-layout corner grids and Monte Carlo on the extracted slice
+  (the pre-layout grids are the committed `klt sim` requests); item 7 stays uncited.
+  The DC SNM fixture's
   layout top now exists (#228): `gen_layout.py --snm-halfcell`, a 64-row column with a decoupled
   half-cell in row 0, DRC/LVS clean, extract-only accepted in 1 s; it measures nothing —
   the extracted hold/read SNM is #210; record `design/macro/records/20261124-snm-halfcell-col64.md`.

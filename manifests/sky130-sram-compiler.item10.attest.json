@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 24/24 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 25/25 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 24,
-    "passed_count": 24,
+    "check_count": 25,
+    "passed_count": 25,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:e7a9040cdb1bcccd557791a0561ef02d233af3189a116969f7856da51c08d058"
+        "content_hash": "sha256:e3388258050376311c8009c95760162ebbe0800f844d30010bc128ec08363788"
       },
       {
         "check": "present",
@@ -38,7 +38,7 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:cbd31480a1e99a37df8083e195ebef521f06560925ceaebefb610e2361bb866a"
+        "content_hash": "sha256:be9301e7732354e650ae5ded595df24fec7d321274bd85777bdf983f924abe68"
       },
       {
         "check": "present",
@@ -224,6 +224,19 @@
       {
         "check": "command",
         "role": "audit",
+        "name": "column-probe-completeness",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/column/lib/test_check_probe.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
         "name": "check-gates",
         "argv": [
           "python3",
@@ -302,7 +315,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -311,7 +324,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:10f8912e414a5765c14c7f14609ec2aba8830943c474452e0ec77804b2f8f77d"
+      "content_hash": "sha256:e2eccf17964b10c94bacc057e20fa12040f794a11ccb03981c0909fbf57c384e"
     }
   }
 }

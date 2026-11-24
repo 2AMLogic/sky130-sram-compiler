@@ -4,13 +4,16 @@ Usage (needs klayout's python module; the repo does not pin the runner):
   uv run --no-project --with klayout python -I design/compiler/gen_layout.py WORDS BITS MUX \
       [-o OUT.gds] [--socket OUT.json] [--lef OUT.lef] [--report] [--check OUT.gds]
       [--check-socket OUT.json] [--check-lef OUT.lef]
+  uv run --no-project --with klayout python -I design/compiler/gen_layout.py \
+      --bench-slice OUT.gds | --check-bench-slice OUT.gds
   uv run --no-project --with klayout python -I design/compiler/gen_layout.py --snm-halfcell \
       [-o OUT.gds] [--check OUT.gds] [--report]
 --snm-halfcell builds the dedicated test top for the DC SNM fixture instead of a macro: a 64-row
 single column whose row 0 is the decoupled half-cell (free IN/OUT, own WL), rows 1..63 are bitcell_6t,
 and the column carries one sram_precharge. It takes no WORDS BITS MUX and no --socket/--lef.
 --check / --check-socket / --check-lef exit 3 when the committed file differs from a fresh build. --lef and
---check-lef run `klt lef-abstract` (needs klt and PDK_ROOT/PDK in the environment).
+--check-lef run `klt lef-abstract` (needs klt and PDK_ROOT/PDK in the environment). --bench-slice emits the
+column-bench slice top (see build_bench_slice); it takes no WORDS BITS MUX and no other output flag.
 
 Every size goes through build(); there is no per-instance code. The geometry
 (rows, cols, address split) comes from sram_compile.geometry(), the cell
@@ -1076,6 +1079,200 @@ def build(words, bits, mux):
     return ly, T, BuildGeom(ag=ag, hcm=hcm)
 
 
+# ---- bench slice (issue #209): the PEX top for the column transient benches ----------
+SLICE_NAME = "sram_col_slice"
+SLICE_ROWS, SLICE_COLS = 64, 4      # one bit slice of the 256 x 32 mux-4 reference
+
+
+def build_bench_slice(rows=SLICE_ROWS, cols=SLICE_COLS):
+    """Place the column-bench slice layout: the bit slice the transient benches measure.
+
+    The same cells at the same pitches as bit 0 of sram_256x32_m4 (build()): a rows x cols
+    bitcell array (cols = mux, one bit group), one precharge and one column-mux per column,
+    one sense amplifier, one write driver, the SAEB inverter and the row-0 word-line driver,
+    plus every row's word-line landing pads. Differences from the macro top, each of which
+    the bench accounts for: rows 1.. are strapped into one WLO net (the benches drive them
+    as one ideal line), the 124 absent columns' word-line gate load is NOT drawn (the bench
+    adds XWLLOAD once, outside this top, on both klt pex legs) and there is no decoder or
+    control logic beyond the row-0 driver and the SAEB inverter. Top-cell labels name every
+    bench-visible pin and the four probed storage nodes (Q00/QB00/Q01/Q02), so a flat
+    `klt pex --pins` extraction keeps each an addressable net with a clean name.
+    """
+    if cols != SLICE_COLS:
+        raise GenError(f"bench slice: cols={cols}: the column benches measure one mux-4 bit group")
+    mux = cols
+    ly = db.Layout()
+    ly.dbu = 0.001
+    ly.read(str(BITCELL_GDS))
+    bcc = ly.cell(BITCELL)
+    bb = bcc.dbbox()
+    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
+    bc = _Ref(bcc)
+
+    pc = cell_precharge(ly, "sram_precharge")
+    cm = [cell_colmux(ly, f"sram_colmux_m{m}", m, mux) for m in range(mux)]
+    sa = cell_senseamp(ly, "sram_senseamp")
+    wd = cell_wdrv(ly, "sram_wdrv")
+    inv = _mk_logic_cell(ly, "sram_inv", "slice_sram_inv", _nat_hc("sram_inv"), 0.9)
+    T = Pen(ly, SLICE_NAME, labels=True)
+    ag = ArrayGeom(rows, cols)
+    G = mux * BC_W
+
+    # ---- array, precharge row (above), column-mux row (below): as the macro ------------
+    build_array(T, bc, ag)
+    place_array(T, pc, 0, ag.height, cols, 1, BC_W, 0)
+    hcm = cm[0].size[1]
+    for m in range(mux):
+        place(T, cm[m], m * BC_W, -hcm)          # bit-0 group: colmux variant m on column m
+        hbar(T, "m3", 0, ag.width, -hcm + 1.55 + 0.7 * m, 0.30)
+        T.label("m3", f"CS{m}", 0.5, -hcm + 1.55 + 0.7 * m)
+    CW = ag.width
+    for c in range(cols):                       # one label per net: anchors for LVS name hints
+        T.label("m1", f"BL{c}", c * BC_W + BL_X, 0.1)
+        T.label("m1", f"BLB{c}", c * BC_W + BLB_X, 0.1)
+
+    # ---- bit-0 collectors, sense amp, write driver (one bit of _place_bit_slices) ------
+    yc1, yc2 = -hcm - 0.7, -hcm - 1.4
+    sa_x = {"SBL": sa.pins["SBL"][1], "SBLB": sa.pins["SBLB"][1], "Q": sa.pins["DOUT"][1]}
+    wd_x = {"SBL": wd.pins["SBL"][1], "SBLB": wd.pins["SBLB"][1], "D": wd.pins["DIN"][1]}
+    t_sa, t_wd, slots = _choose_slots(G, sa.size[0], wd.size[0], sa_x, wd_x)
+    if t_sa != 1 or t_wd != 1:
+        raise GenError(f"bench slice: a {sa.size[0]:.2f}/{wd.size[0]:.2f} um sense amp/write driver "
+                       f"does not fit one {G:.2f} um bit group")
+    y_sa = yc2 - 1.0 - sa.size[1]
+    y_wd = y_sa - 1.0 - wd.size[1]
+    y_qd_top = ag.height + pc.size[1] + 0.6
+    place(T, sa, 0, y_sa)
+    place(T, wd, 0, y_wd)
+    sa_pin = lambda n: (sa.pins[n][1], y_sa + sa.pins[n][2], sa.pins[n][0])
+    wd_pin = lambda n: (wd.pins[n][1], y_wd + wd.pins[n][2], wd.pins[n][0])
+    col_spans = {}
+    for xs, yc, nm in (([j * BC_W + BL_X for j in range(mux)], yc1, "SBL"),
+                       ([j * BC_W + BLB_X for j in range(mux)], yc2, "SBLB")):
+        for x in xs:
+            vbar(T, "m1", x, yc, -hcm + 0.1, 0.14)
+            stack(T, x, yc, "m1", "m3")
+        col_spans[nm] = [yc, min(xs), max(xs)]
+    for nm, yc in (("SBL", yc1), ("SBLB", yc2)):
+        for (x, y, lay) in (sa_pin(nm), wd_pin(nm)):
+            stack(T, x, y, lay, "m4")
+            vbar(T, "m4", x, y, yc, 0.30)
+            stack(T, x, yc, "m3", "m4")
+            span = col_spans[nm]
+            span[1], span[2] = min(span[1], x), max(span[2], x)
+    for nm, pn in (("Q", "DOUT"), ("D", "DIN")):
+        x, y, lay = sa_pin(pn) if nm == "Q" else wd_pin(pn)
+        xv = slots[nm]
+        if abs(xv - x) < 1e-9:
+            stack(T, x, y, lay, "m4", ext=1)
+        else:                    # jog on m3 at the pin's y to the free vertical slot
+            stack(T, x, y, lay, "m3")
+            hbar(T, "m3", min(x, xv) - PAD3 / 2, max(x, xv) + PAD3 / 2, y, PAD3)
+            via3(T, xv, y)
+        vbar(T, "m4", xv, y, y_qd_top, 0.30)
+        T.label("m4", pn, xv, y_qd_top - 0.2)
+    for nm, (yc, x0, x1) in col_spans.items():
+        pad_ = max(0.2, (0.9 - (x1 - x0)) / 2)          # m3 area rule: bar at least 0.9 long
+        hbar(T, "m3", x0 - pad_, x1 + pad_, yc, 0.30)
+        T.label("m3", nm, x0, yc)
+
+    # ---- SAEB inverter, right of both cells so its routes cross neither cell row -------
+    hc_inv = inv.size[1]
+    x_inv = snap(max(sa.size[0], wd.size[0]) + 2.0)
+    y_inv = y_wd - 1.5 - hc_inv
+    place(T, inv, x_inv, y_inv)
+    x_end = snap(max(CW, x_inv + inv.size[0]) + 1.0)
+    yl_sae = y_sa + sa.pins["SAE"][2]
+    x, y, lay = sa_pin("SAE")
+    stack(T, x, y, lay, "m3")
+    hbar(T, "m3", sa.pins["SAE"][1] - 0.15, x_end - 0.2, yl_sae, 0.30)
+    T.label("m3", "SAE", x_end - 0.5, yl_sae)
+    ax, ay = x_inv + inv.pins["A"][1], y_inv + inv.pins["A"][2]
+    stack(T, ax, ay, "m1", "m2")
+    vbar(T, "m2", ax, ay - 0.115, yl_sae + 0.115, 0.23)
+    via2(T, ax, yl_sae)                          # m2 riser lands on the SAE m3 bar
+    yl_saeb = y_sa + sa.pins["SAEB"][2]
+    x, y, lay = sa_pin("SAEB")
+    stack(T, x, y, lay, "m3")
+    # inv Y reaches the SA's SAEB pin through the left margin: a vertical between the cells
+    # would cross the SAE and WEN m3 bars (same layer -> short), the left margin crosses nothing.
+    yx, yy = x_inv + inv.pins["Y"][1], y_inv + inv.pins["Y"][2]
+    stack(T, yx, yy, "m1", "m3")
+    xL = -0.60
+    hbar(T, "m3", xL - 0.15, yx + 0.15, yy, 0.30)
+    vbar(T, "m3", xL, yy, yl_saeb, 0.30)
+    hbar(T, "m3", xL - 0.15, sa.pins["SAEB"][1] + 0.15, yl_saeb, 0.30)
+    yl_wen = y_wd + wd.pins["WEN"][2]
+    x, y, lay = wd_pin("WEN")
+    stack(T, x, y, lay, "m3")
+    hbar(T, "m3", wd.pins["WEN"][1] - 0.3, x_end - 0.2, yl_wen, 0.30)
+    T.label("m3", "WEN", x_end - 0.5, yl_wen)
+    y_pchb = ag.height + 1.45
+    hbar(T, "m3", CW, x_end - 0.2, y_pchb, 0.30)
+    T.label("m3", "PCHB", x_end - 0.5, y_pchb)
+
+    # ---- row-0 word-line driver (one decoder lane), WL0 route as the macro draws it ----
+    hc_row = _nat_hc("sram_wldrv")
+    wl_r = _mk_logic_cell(ly, "sram_wldrv", "slice_sram_wldrv", hc_row, 1.0)
+    xl = snap(-(wl_r.size[0] + 1.4))
+    y0 = ag.row_y(0)
+    place(T, wl_r, xl, y0)
+    ox, oy = xl + wl_r.pins["Y"][1], y0 + wl_r.pins["Y"][2]
+    ywl = y0 + 1.105
+    stack(T, ox, oy, "m1", "m3")
+    vbar(T, "m3", ox, min(oy, ywl) - 0.15, max(oy, ywl) + 0.15, 0.30)
+    hbar(T, "m3", -0.40 - 0.15, ox + 0.15, ywl, 0.30)
+    axw, ayw = xl + wl_r.pins["A"][1], y0 + wl_r.pins["A"][2]
+    via1(T, axw, ayw)
+    ytop = snap(y0 + hc_row + 0.9)
+    vbar(T, "m2", axw, ayw - 0.115, ytop + 0.115, 0.23)
+    via2(T, axw, ytop)
+    hbar(T, "m3", axw - 0.15, axw + 0.85, ytop, 0.30)
+    T.label("m3", "WLIN0", axw + 0.45, ytop)
+    T.label("m3", "WL0", -0.40, ywl)
+    # rows 1.. strapped into the benches' one ideal word line
+    vbar(T, "m3", -0.40, ag.row_y(1) + 1.105 - 0.15, ag.row_y(rows - 1) + 1.105 + 0.15, 0.30)
+    T.label("m3", "WLO", -0.40, ag.row_y(rows // 2) + 1.105)
+    # the four probed storage nodes, labelled where the bitcell's own li pin label sits
+    for nm, c, qx in (("Q00", 0, 0.87), ("QB00", 0, 4.31), ("Q01", 1, 0.87), ("Q02", 2, 0.87)):
+        T.label("li", nm, c * BC_W + qx, y0 + 0.775)
+
+    # ---- supplies: lane spines, precharge-row buses out to a right-hand ring -----------
+    y_a = snap(y_qd_top + 1.2)
+    y_b = snap(y_a + 0.8)
+    x_rv, x_rd = snap(x_end + 2.0), snap(x_end + 3.6)
+    x_vss, x_vdd = snap(xl - 1.0), snap(xl - 2.2)
+    for x, yb_ in ((x_vss, y_b), (x_vdd, y_a)):
+        vbar(T, "m2", x, y0 - 0.3, yb_ + 0.4, 0.5)
+        via2(T, x, yb_)
+    hbar(T, "m3", x_vdd - 0.2, x_rd, y_a, 0.40)
+    hbar(T, "m3", x_vss - 0.2, x_rv, y_b, 0.40)
+    hbar(T, "m3", CW, x_rd, ag.height + 2.30, 0.30)
+    hbar(T, "m3", CW, x_rv, ag.height + 3.00, 0.30)
+    for xr_, yr_ in ((x_rd, y_a), (x_rv, y_b), (x_rd, ag.height + 2.30), (x_rv, ag.height + 3.00)):
+        via3(T, xr_, yr_)
+    for net, yr in (("VSS", y0 + 0.145), ("VDD", y0 + hc_row - 0.145)):
+        xsp = x_vss if net == "VSS" else x_vdd
+        hbar(T, "m1", xsp - 0.16, xl + 0.2, yr, RAIL)
+        via1(T, xsp, yr)
+    rows_y = [(y_sa, sa.size[1]), (y_wd, wd.size[1]), (y_inv, hc_inv)]
+    for y, h in rows_y:               # each cell row's rails run on to the right-hand ring
+        for xring, yr in ((x_rv, y + 0.145), (x_rd, y + h - 0.145)):
+            T.rect("m1", 0, yr - RAIL / 2, xring, yr + RAIL / 2)
+            stack(T, xring, yr, "m1", "m4")
+    y_bot = snap(y_inv - 1.0)
+    y_top = snap(y_b + 0.8)
+    for xr_ in (x_rv, x_rd):
+        vbar(T, "m4", xr_, y_bot, y_top, 1.0)
+    for nm, x in (("VSS", x_rv), ("VDD", x_rd)):
+        T.label("m4", nm, x, (y_bot + y_top) / 2, drawing=True)
+
+    bb_all = T.cell.dbbox()
+    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
+    T.size = (bb_all.width(), bb_all.height())
+    return ly, T, BuildGeom(ag=ag, hcm=hcm)
+
+
 # ---- outputs -------------------------------------------------------------------------
 SNM_TOP = "sram_snm_halfcell_col64"
 SNM_ROWS = 64
@@ -1197,10 +1394,12 @@ def main(argv):
     if snm:
         args.remove("--snm-halfcell")
     out = check = sock = lef = check_lef = check_sock = None
+    bench_slice = check_bench_slice = None
     report = "--report" in args
     if report:
         args.remove("--report")
-    for flag in ("-o", "--check", "--socket", "--lef", "--check-lef", "--check-socket"):
+    for flag in ("-o", "--check", "--socket", "--lef", "--check-lef", "--check-socket",
+                 "--bench-slice", "--check-bench-slice"):
         if flag in args:
             i = args.index(flag)
             val = args[i + 1]
@@ -1215,8 +1414,33 @@ def main(argv):
                 lef = val
             elif flag == "--check-lef":
                 check_lef = val
-            else:
+            elif flag == "--check-socket":
                 check_sock = val
+            elif flag == "--bench-slice":
+                bench_slice = val
+            else:
+                check_bench_slice = val
+    if bench_slice or check_bench_slice:
+        if args or out or check or sock or lef or check_lef or check_sock:
+            print(__doc__, file=sys.stderr)
+            return 2
+        try:
+            ly, T, _geom = build_bench_slice()
+        except (sc.RangeError, GenError, ValueError) as e:
+            print(f"gen_layout: error: {e}", file=sys.stderr)
+            return 1
+        with tempfile.TemporaryDirectory() as tmp:
+            fresh = pathlib.Path(tmp) / "fresh.gds"
+            write_gds(ly, fresh)
+            data = fresh.read_bytes()
+        if bench_slice:
+            pathlib.Path(bench_slice).write_bytes(data)
+        if check_bench_slice:
+            p = pathlib.Path(check_bench_slice)
+            if not p.exists() or p.read_bytes() != data:
+                print(f"gen_layout: {check_bench_slice} drifted from the generator", file=sys.stderr)
+                return 3
+        return 0
     if len(args) != (0 if snm else 3) or (snm and (sock or lef or check_lef or check_sock)):
         print(__doc__, file=sys.stderr)
         return 2
