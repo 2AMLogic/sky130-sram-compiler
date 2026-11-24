@@ -5,6 +5,10 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-24
 
+- **PR #237**: docs(sim): add provenance record for SNM PEX col_*_snm probe column
+- **PR #233**: docs(column): disclose word-line wire truncation in PEX record and README
+- **Issue #236** (closed): SNM PEX record: cite provenance for the 'Committed col_*_snm probe (pre-layout)' column
+- **Issue #232** (closed): Name the word-line wire truncation in the column-slice PEX record's Scope section
 - **PR #231**: feat(sim): add extracted-DUT SNM measurement path and provisional PEX comparison record
 - **Issue #210** (closed): Measure provisional hold and read SNM on the extracted half-cell fixture
 - **Issue #207** (closed): T1 item 7 (post-layout, analog): prove the klt pex route on the bitcell and 256x32 macro, with a provisional one-corner delta on the column benches
