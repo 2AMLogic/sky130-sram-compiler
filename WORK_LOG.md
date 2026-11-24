@@ -3,8 +3,15 @@
 Chronological record of merged pull requests and closed issues, newest first.
 Maintained by the Loom Guide role; entries are appended automatically.
 
+### 2026-11-24
+
+- **PR #220**: fix(pex): probe launched klt and surface validator summary
+- **Issue #219** (closed): run_pex.sh: TOOL_MISSING pre-flight does not actually check the launched tool, and the validator summary never prints
+
 ### 2026-11-23
 
+- **PR #224**: refactor: split gen_layout.build() into per-section helpers
+- **Issue #223** (closed): Split gen_layout.build() into per-section helpers and drop three vestigial redundancies
 - **PR #216**: feat: add PEX extract-only capacity wrapper, record bitcell and macro results
 - **Issue #208** (closed): Measure bitcell and full-macro PEX capacity and body bias
 - **PR #214**: test: build column record fixtures from the writer's BENCHES roster
