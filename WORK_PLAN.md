@@ -22,7 +22,7 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack) *(held)*
-- **#208**: Measure bitcell and full-macro PEX capacity and body bias
+- **#209**: Measure provisional read and write deltas on an LVS-matched column slice
 
 ## Ready
 
@@ -34,13 +34,13 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#208**: Measure bitcell and full-macro PEX capacity and body bias
+- **#209**: Measure provisional read and write deltas on an LVS-matched column slice
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#216**: feat: add PEX extract-only capacity wrapper, record bitcell and macro results
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -54,7 +54,8 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
-- **#208**: Measure bitcell and full-macro PEX capacity and body bias *(curated)*
+- **#209**: Measure provisional read and write deltas on an LVS-matched column slice *(curated)*
+- **#210**: Measure provisional hold and read SNM on the extracted half-cell fixture *(curated)* *(held)*
 
 ## Proposed (Architect / Hermit)
 
@@ -73,9 +74,9 @@ _None._
 | Important | 2 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
 | In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 3 |
+| Curated | 4 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
