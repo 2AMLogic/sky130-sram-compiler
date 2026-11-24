@@ -5,6 +5,9 @@ Maintained by the Loom Guide role; entries are appended automatically.
 
 ### 2026-11-24
 
+- **PR #231**: feat(sim): add extracted-DUT SNM measurement path and provisional PEX comparison record
+- **Issue #210** (closed): Measure provisional hold and read SNM on the extracted half-cell fixture
+- **Issue #207** (closed): T1 item 7 (post-layout, analog): prove the klt pex route on the bitcell and 256x32 macro, with a provisional one-corner delta on the column benches
 - **PR #225**: feat: provisional read/write PEX deltas on an LVS-matched column slice
 - **Issue #209** (closed): Measure provisional read and write deltas on an LVS-matched column slice
 - **PR #229**: feat: add decoupled half-cell column top for DC SNM fixture
