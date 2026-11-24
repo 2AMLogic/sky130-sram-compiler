@@ -98,10 +98,16 @@ Startable today; none depends on the ratified spec.
   read from the extractions: klt reports no unbiased PMOS bodies in either (that status is
   PMOS-only); macro nfet bulks are all on the drawn VSS taps, while the bare cell's 4 nfet
   bulks sit on the exported `vsubs` pin, which a consuming bench must bias itself — record
-  `sim/column/records/20261121-3c2d73b.md`. Remaining simulation work: re-run the column
-  benches on a `klt pex` netlist of the macro with the record beside the pre-layout one;
-  `sim/column/README.md` lists wire parasitics as not modelled. The DC SNM fixture's
-  layout top (#228, `gen_layout.py --snm-halfcell`, DRC/LVS clean, record
+  `sim/column/records/20261121-3c2d73b.md`. The provisional one-corner comparison landed
+  (#209): the column benches re-ran on an LVS-matched bench slice (4 columns + periphery,
+  DRC-clean, 543/543 nets and 1575/1575 devices by LVS with a biting negative control,
+  `layout/sram_col_slice.gds`) against the flat generated schematic DUT — both legs
+  simulated, every ladder and the WEN-off control held on each side, and the write
+  completion transition moved from a 0.35–0.40 ns to a 0.45–0.50 ns bounding pulse width
+  at tt/1.8 V/25 °C (read access unshifted at the 50 ps ladder resolution; sense
+  differential −5 %) — record `sim/column/records/20261123-69ff7430.md`. The DC SNM
+  fixture's layout top (#228, `gen_layout.py --snm-halfcell`, a 64-row column with a
+  decoupled half-cell in row 0, DRC/LVS clean, record
   `design/macro/records/20261124-snm-halfcell-col64.md`) has now been compared at
   `tt`, `1.800 V`, `25 °C` through `klt pex --measure-command --device-only-leg` (#210):
   hold `eye_snm` 0.707994 V → 0.707859 V (`-0.136 mV`, `-0.019%`), read `eye_snm`
@@ -109,8 +115,10 @@ Startable today; none depends on the ratified spec.
   against `--parasitic-variant drop-r:*` and all 254 NFET bulks confirmed on `VSS` — record
   `sim/column/records/20261124-snm-pex.md` and report
   `sim/column/records/pex-sram_snm_halfcell_col64.report.json.gz`. Provisional only:
-  transient read/write deltas (#209), multi-corner/MC grids, spec ratification (#8) and the
-  graded item-7 analog claim stay open. Unblocked by the pre-layout grids (#29) and the spec.
+  the post-layout corner grids and Monte Carlo on the extracted slice (the pre-layout
+  grids are the committed `klt sim` requests), multi-corner/MC SNM, spec ratification (#8)
+  and the graded item-7 analog claim stay open; item 7 stays uncited.
+  Unblocked by the pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS
   records exist for it from the same compiler path. Blocked on the

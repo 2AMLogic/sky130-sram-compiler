@@ -159,6 +159,114 @@ def slice_netlist():
     return L
 
 
+# ------------------------------------------------------------- PEX slice DUT (#209)
+SLICE_TOP = "sram_col_slice"
+# The interface the LVS-matched layout top declares (design/compiler/gen_layout.py
+# build_bench_slice), in the .SUBCKT header order the pinned klt 0.9.0 extraction writes
+# for that layout (verified on the committed GDS; klt pex pin_order_mismatch fires if the
+# generated header ever disagrees). Q00/QB00/Q01/Q02 export the probed storage nodes so
+# the same measurement cards address them on the flat extracted leg and here.
+SLICE_PINS = ("BL0 BL1 BL2 BL3 BLB0 BLB1 BLB2 BLB3 CS0 CS1 CS2 CS3 DIN DOUT PCHB "
+              "Q00 Q01 Q02 QB00 SAE SBL SBLB VDD VSS WEN WL0 WLO WLIN0").split()
+PDK_LEAVES = ("sky130_fd_pr__nfet_01v8", "sky130_fd_pr__pfet_01v8")
+# bench-side spellings of the storage nodes the ladders probe (v(xc0_0.q) in the classic
+# benches): the PEX benches measure the DUT pins instead of reaching into the hierarchy
+QNODE_MAP = (("v(xc0_0.q)", "v(q00)"), ("v(xc0_0.qb)", "v(qb00)"),
+             ("v(xc0_1.q)", "v(q01)"), ("v(xc0_2.q)", "v(q02)"))
+
+
+def _subckt_def(name):
+    """(ports, device lines) of one subckt of the macro netlist, verbatim."""
+    body = macro_subckt(name).splitlines()
+    ports = body[0].split()[2:]
+    devs = [ln for ln in body[1:] if ln and not ln.startswith(("*", "."))]
+    return ports, devs
+
+
+def _emit_inst(cell, inst, portmap, renames, out):
+    """Inline one instance of `cell` into `out`: its devices with port nets mapped through
+    `portmap` and every internal net renamed `<inst>.<net>` (or through `renames`)."""
+    ports, devs = _subckt_def(cell)
+    if set(portmap) != set(ports):
+        sys.exit(f"make_column_tb: {cell} port map {sorted(portmap)} != ports {sorted(ports)}")
+    for dev in devs:
+        toks = dev.split()
+        mi = next((i for i, t in enumerate(toks[1:]) if t in PDK_LEAVES), None)
+        if mi is None or mi != 4:            # every PDK leaf here is a 4-terminal d,g,s,b call
+            sys.exit(f"make_column_tb: unexpected device line in {cell}: {dev}")
+        nodes = [portmap.get(n, renames.get(f"{inst}.{n}", f"{inst}.{n}")) for n in toks[1:1 + mi]]
+        out.append(f"X{inst}.{toks[0][1:]} " + " ".join(nodes) + " " + " ".join(toks[1 + mi:]))
+
+
+def slice_dut():
+    """The bench bit slice as ONE flat subckt: same cells, same nets as slice_netlist(),
+    with every leaf subckt of the compiled macro inlined by the generator (nothing is
+    hand-copied) so `klt pex` has a single `.include` to swap for the flat extraction."""
+    L = [f"* {SLICE_TOP}: the column benches' bit slice (4 columns x {ROWS} cells, precharge,",
+         "* colmux, sense amp, write driver, SAEB inverter, row-0 word-line driver) as one flat",
+         f"* subckt, generated from {MACRO}: the macro's own leaf subckts are inlined here,",
+         "* internal nets keep '<instance>.<net>' names, and the four probed storage nodes are",
+         "* exported as pins so both klt pex legs measure the same nodes. The layout top that",
+         "* matches this netlist by LVS is design/compiler/gen_layout.py::build_bench_slice."]
+    L.append(".subckt " + SLICE_TOP + " " + " ".join(SLICE_PINS))
+    p = {n: n.lower() for n in SLICE_PINS}       # pin -> body net (VSS is tied by the bench)
+    for r in range(ROWS):
+        for c in range(COLS):
+            pm = {"BL": f"bl{c}", "BLB": f"blb{c}", "WL": "wl0" if r == 0 else "wlo",
+                  "VDD": p["VDD"], "VSS": p["VSS"]}
+            rn = {}
+            if (r, c) == (0, 0):
+                rn = {"xc0_0.Q": p["Q00"], "xc0_0.QB": p["QB00"]}
+            elif (r, c) == (0, 1):
+                rn = {"xc0_1.Q": p["Q01"]}
+            elif (r, c) == (0, 2):
+                rn = {"xc0_2.Q": p["Q02"]}
+            _emit_inst("bitcell_6t", f"xc{r}_{c}", pm, rn, L)
+    for c in range(COLS):
+        _emit_inst("sram_precharge", f"xpch{c}",
+                   {"BL": f"bl{c}", "BLB": f"blb{c}", "PCHB": p["PCHB"], "VDD": p["VDD"]}, {}, L)
+        _emit_inst("sram_colmux", f"xcm{c}",
+                   {"BL": f"bl{c}", "BLB": f"blb{c}", "SBL": p["SBL"], "SBLB": p["SBLB"],
+                    "SEL": f"cs{c}", "VSS": p["VSS"]}, {}, L)
+    _emit_inst("sram_senseamp", "xsa",
+               {"SBL": p["SBL"], "SBLB": p["SBLB"], "SAE": p["SAE"], "SAEB": "saeb",
+                "DOUT": p["DOUT"], "VDD": p["VDD"], "VSS": p["VSS"]}, {}, L)
+    _emit_inst("sram_wdrv", "xwd",
+               {"SBL": p["SBL"], "SBLB": p["SBLB"], "DIN": p["DIN"], "WEN": p["WEN"],
+                "VDD": p["VDD"], "VSS": p["VSS"]}, {}, L)
+    _emit_inst("sram_inv", "xsainv",
+               {"A": p["SAE"], "Y": "saeb", "VDD": p["VDD"], "VSS": p["VSS"]}, {}, L)
+    _emit_inst("sram_wldrv", "xwldrv",
+               {"A": p["WLIN0"], "Y": "wl0", "VDD": p["VDD"], "VSS": p["VSS"]}, {}, L)
+    L += [".ends", ""]
+    return "\n".join(L)
+
+
+def slice_instance():
+    """The DUT one-liner the PEX benches carry in their own body: one include line (`klt pex`'s
+    single swap point), the supply, the instantiation in SLICE_PINS order, and the 124 omitted
+    columns' word-line gate load -- outside the extracted top, so it loads both legs alike."""
+    nets = " ".join("0" if n == "VSS" else n.lower() for n in SLICE_PINS)
+    return ["* PEX bench: the matched DUT sits behind the single .include line klt pex swaps",
+            f"* for the extracted netlist ({SLICE_TOP}.spice here, the layout extraction there).",
+            f".include '{SLICE_TOP}.spice'",
+            "VVDD vdd 0 dc 1.8",
+            f"XSLICE {nets} {SLICE_TOP}",
+            "* the 124 omitted columns' word-line gate load, outside the extracted top",
+            f"XWLLOAD 0 wl0 0 0 sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 m={2 * (128 - COLS)}"]
+
+
+def pex_meas(meas):
+    """Measurement cards with the storage-node probes pointed at the DUT pins."""
+    out = []
+    for m in meas:
+        m2 = dict(m)
+        for a, b in QNODE_MAP:
+            m2["spice"] = m2["spice"].replace(a, b)
+        out.append(m2)
+    return out
+
+
 def common_sources(wl0_iv, wlo_iv, pchb_low_iv, cs_iv, sae_iv, wen_iv, din):
     L = [pwl("wl0f", wl0_iv), drive("wlin0", "wl0f", invert=True),
          pwl("wlof", wlo_iv), drive("wlo", "wlof"),
@@ -175,9 +283,10 @@ def meas_find(name, expr, t):
 
 
 # ------------------------------------------------------------------ read benches
-def read_tb(d):
+def read_tb(d, dut=None, pex=False):
     """Accessed cell (row 0, col 0) stores d; all other slice cells store 1-d; col 1/2/3 row 0
-    (half selected) store 1-d, d, 1-d."""
+    (half selected) store 1-d, d, 1-d. `dut` replaces the inline slice (the PEX benches pass
+    the matched-DUT instantiation); `pex` points the storage-node probes at the DUT pins."""
     data = [d, 1 - d, d, 1 - d]       # row 0 of cols 0..3 (for the row-0 re-init)
     others = 1 - d
     # init phase 1: every row's WL high, all columns forced to `others`; phase 2: row 0 only, forced to `data`.
@@ -189,7 +298,7 @@ def read_tb(d):
          "* Trial k (variable period): precharge 1.5 ns, WL0+CS0 high, SAE rises d_k after WL (d_k from READ_D),",
          "* WL and SAE fall 0.8 ns after SAE rose. Measured: DOUT and the sense-bit-line differential at SAE,",
          "* cell state after the trial; max Q/QB bump and min half-select node over the run."]
-    L += slice_netlist()
+    L += dut if dut is not None else slice_netlist()
     # drivers: phase 1 data = others on all columns; phase 2 data = row-0 data
     L += [".model swinit sw(vt=0.5 vh=0.05 ron=20 roff=1e12)"]
     for c in range(COLS):
@@ -222,13 +331,14 @@ def read_tb(d):
              {"name": "hs2", "spice": f".meas tran hs2 {'min' if d == 1 else 'max'} v(xc0_2.q) from={t0:g}n to={t1:g}n", "unit": "V"}]
     # hs1 stores 1-d: for d=0 it stores 1 (watch the minimum), for d=1 it stores 0 (watch the maximum); hs2 stores d.
     L.append("")
-    return "\n".join(L), meas, tmax
+    return "\n".join(L), pex_meas(meas) if pex else meas, tmax
 
 
 # ------------------------------------------------------------------ write benches
-def write_tb(bit, wen=True):
+def write_tb(bit, wen=True, dut=None, pex=False):
     """Cell (0,0) restored to 1-bit before each trial, then `bit` written through wdrv/colmux with a
-    WL0 + WEN pulse of width w_k. Columns 1..3 row 0 (half selected) store 1-bit, bit, 1-bit."""
+    WL0 + WEN pulse of width w_k. Columns 1..3 row 0 (half selected) store 1-bit, bit, 1-bit.
+    `dut`/`pex` as in read_tb()."""
     restore = 1 - bit
     others = 1 - bit
     data1 = [restore, 1 - bit, bit, 1 - bit]    # row-0 data in cols 0..3 after initialisation
@@ -237,7 +347,7 @@ def write_tb(bit, wen=True):
          "* trial k (variable period): restore cell (0,0) to its old value with forced bit lines, precharge 1.0 ns, then WL0 and",
          f"* WEN high together for w_k (WRITE_W) ns with DIN={bit} through wdrv -> colmux (CS0); cell state sampled",
          "* 0.5 ns after the pulse. Half-select retention (min/max of the row-0 cells of columns 1..3) over the run."]
-    L += slice_netlist()
+    L += dut if dut is not None else slice_netlist()
     L += [".model swinit sw(vt=0.5 vh=0.05 ron=20 roff=1e12)"]
     # forcing windows: init phase 1/2 on all columns, then per-trial restore on column 0 only
     ctl = {c: [(0.1, 2.3)] for c in range(COLS)}
@@ -273,7 +383,7 @@ def write_tb(bit, wen=True):
     meas += [{"name": "hs1", "spice": f".meas tran hs1 {hs(1, data1[1])} v(xc0_1.q) from={T_START:g}n to={tmax:g}n", "unit": "V"},
              {"name": "hs2", "spice": f".meas tran hs2 {hs(2, data1[2])} v(xc0_2.q) from={T_START:g}n to={tmax:g}n", "unit": "V"}]
     L.append("")
-    return "\n".join(L), meas, tmax
+    return "\n".join(L), pex_meas(meas) if pex else meas, tmax
 
 
 # ------------------------------------------------------------------ SNM benches
@@ -629,6 +739,25 @@ def build():
         r["options"]["timeout_s"] = SNM_TIMEOUT_S
         r["batch"] = batch_block(r, 5400)
         files[f"requests/col_mc_{mode}_snm_neg.request.json"] = r
+    # PEX benches (#209): the same ladders, stimuli and controls, with the LVS-matched DUT
+    # behind the one `.include` line `klt pex` swaps for the extracted netlist. Probe-only
+    # (single corner, local): the post-layout corner grids are future work.
+    files[f"tb/pex/{SLICE_TOP}.spice"] = slice_dut()
+    mapq = lambda s: functools.reduce(lambda a, kv: a.replace(*kv), QNODE_MAP, s)
+    for name in ("col_read0", "col_read1", "col_write0", "col_write1", "col_write0_nowen"):
+        if name.startswith("col_read"):
+            body, meas, tmax = read_tb(int(name[-1]), dut=slice_instance(), pex=True)
+        elif name == "col_write0_nowen":
+            body, meas, tmax = write_tb(0, wen=False, dut=slice_instance(), pex=True)
+        else:
+            body, meas, tmax = write_tb(int(name[-1]), dut=slice_instance(), pex=True)
+        files[f"tb/pex/{name}.sp"] = body
+        keep = ({"save_vectors": [mapq(s) for s in save[name]]} if name in save
+                else {"waveforms": False, "keep_artifacts": False})
+        r = probe_of(base_req(f"pex/{name}.sp", {"kind": "tran", "args": f"{TRAN_STEP} {tmax:g}n"},
+                              meas, keep))
+        r["netlist"] = f"../../tb/pex/{name}.sp"     # request sits one directory deeper
+        files[f"requests/pex/{name}.probe.request.json"] = r
 
 
 def _parse_opt(argv, flag):

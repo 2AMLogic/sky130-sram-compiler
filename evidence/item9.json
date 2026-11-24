@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 76/76 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 90/90 attestation checks passed (klt signoff --attest)",
   "source": "sim/testbench-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 76,
-    "passed_count": 76,
+    "check_count": 90,
+    "passed_count": 90,
     "checks": [
       {
         "check": "present",
@@ -269,14 +269,21 @@
         "role": "testbench",
         "path": "sim/column/README.md",
         "passed": true,
-        "content_hash": "sha256:1a6c4ffa5932e6dbcef7853a63767a01307b162e05a900d10f8526a59ecdc6f9"
+        "content_hash": "sha256:8383af7c535ab14e3213c50a59a9ce721062596112e4d340e7588dab9ef116c2"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/lib/check_pex_probe.py",
+        "passed": true,
+        "content_hash": "sha256:29b0d0b0efa0251722f13939c2e411b323446177c881bbad37e430d3266e097c"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/column/lib/check_probe.py",
         "passed": true,
-        "content_hash": "sha256:7b557722b4e1d17c6177071ba4e6bbc37d46d55d7052ffac1b3dc6065e878ae4"
+        "content_hash": "sha256:89a43878af5096be348ae9e8f341355f150337adbcd9f7272ad075ac408921ff"
       },
       {
         "check": "present",
@@ -290,7 +297,14 @@
         "role": "testbench",
         "path": "sim/column/lib/make_column_tb.py",
         "passed": true,
-        "content_hash": "sha256:b6610ce83164a7b99190fc0ed3490118987656c2d4848a9fddc0d87fabb23162"
+        "content_hash": "sha256:9be48d8f2c5e78e83cc514d466db05bc82ba9224648aa7cb4f1e0dada20168be"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/lib/test_check_probe.py",
+        "passed": true,
+        "content_hash": "sha256:2e9c24d8fdde23d513b4ded2f741efefa2fcff36966555e776595cbd9d05665d"
       },
       {
         "check": "present",
@@ -421,9 +435,51 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "sim/column/requests/pex/col_read0.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:a4d4c6f6fbfda041a728aceec816029370123cb21e6c2f4cee2827362ee100f8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/pex/col_read1.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:ed43206f44ecff473ac7591e9197b19e21e7ae1848797165476484a577753cc8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/pex/col_write0.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:165591fdb5f9f61482f23d0da7583ebe5c0714139fc3d594a846c6f1ff495133"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/pex/col_write0_nowen.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:b088707a595778b16554ba6809cfd4f2fc394278e82da28c98593e140664f97d"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/requests/pex/col_write1.probe.request.json",
+        "passed": true,
+        "content_hash": "sha256:8fc4c295344bedcb8868fae10f9dae5dc783fe22d2f1d8976eef04cd6eccbd58"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "sim/column/run.sh",
         "passed": true,
         "content_hash": "sha256:a5d3604a523606bb6b71cc746be7021411bb6193f387a4afea4b30cfdad2bbd5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/run_pex.sh",
+        "passed": true,
+        "content_hash": "sha256:0c7ee047893d21fbe6e3aa465e28684b7a1b4aee9833e73838a818cd424da2fc"
       },
       {
         "check": "present",
@@ -505,6 +561,48 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "sim/column/tb/pex/col_read0.sp",
+        "passed": true,
+        "content_hash": "sha256:2eb53ea4d1d6de11fbef8f00af2e2180d6cc7a4b062b69293a8753d30b6c8ca6"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/pex/col_read1.sp",
+        "passed": true,
+        "content_hash": "sha256:3d12abe909e5b9379d275e832227b50728df5c922a82e0b249ffb9f2751666a8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/pex/col_write0.sp",
+        "passed": true,
+        "content_hash": "sha256:e858191ec6dff61e49d28af1520fce438f1bd00782eb78cfc91202e547d4934d"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/pex/col_write0_nowen.sp",
+        "passed": true,
+        "content_hash": "sha256:63bd2cd41386d13ef756c148125fa2d2cdc0d908797e5b2d96b845dcb5140ce2"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/pex/col_write1.sp",
+        "passed": true,
+        "content_hash": "sha256:534f6f1998cc70f1952c27ef28cf9675d822a48db937c3c0c27d45bb49271412"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/column/tb/pex/sram_col_slice.spice",
+        "passed": true,
+        "content_hash": "sha256:0496f85320be10a13106c53a4c3e515d4223ace44a8319a17e4262c9957dea4e"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "sim/env.sh",
         "passed": true,
         "content_hash": "sha256:161abe04516c124e7f9a0593eca4acfcd50be51bda205a3e35cac70518658cb2"
@@ -569,7 +667,7 @@
         "path": "sim/testbench-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:3597be500a51834828e77514ebf45d873deb14fed248e5149735b2dda313c7e9"
+      "content_hash": "sha256:5ae9d1624213ba1ee828326fd17f9134afafbea7cb236c7b2101c839f997f57f"
     }
   }
 }

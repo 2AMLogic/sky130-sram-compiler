@@ -59,6 +59,36 @@ class Layout(unittest.TestCase):
             self.skipTest("reference GDS not committed yet")
         self.assertEqual(gds_bytes(gl.build(256, 32, 4)[0]), committed.read_bytes())
 
+    def test_bench_slice_deterministic(self):
+        self.assertEqual(gds_bytes(gl.build_bench_slice()[0]), gds_bytes(gl.build_bench_slice()[0]))
+
+    def test_committed_bench_slice(self):
+        committed = ROOT / "layout/sram_col_slice.gds"
+        if not committed.exists():
+            self.skipTest("bench-slice GDS not committed yet")
+        self.assertEqual(gds_bytes(gl.build_bench_slice()[0]), committed.read_bytes())
+
+    def test_bench_slice_labels_name_every_pin(self):
+        """Every pin the PEX benches declare is a top-cell label on the slice (extraction
+        keeps each an addressable net; see sim/column/lib/make_column_tb.py SLICE_PINS)."""
+        import pathlib
+        pins = pathlib.Path(ROOT / "sim/column/tb/pex/sram_col_slice.spice")
+        if not pins.exists():
+            self.skipTest("generated slice DUT not present")
+        header = next(l for l in pins.read_text().splitlines() if l.startswith(".subckt"))
+        declared = set(header.split()[2:])
+        ly, T, _ = gl.build_bench_slice()
+        labelled = set()
+        for li in ly.layer_indexes():
+            it = T.cell.begin_shapes_rec(li)
+            while not it.at_end():
+                s = it.shape()
+                if s.is_text():
+                    labelled.add(s.text.string.split("|")[0])
+                it.next()
+        self.assertEqual(declared, declared & labelled, f"unlabelled pins: {sorted(declared - labelled)}")
+
+
     def test_bitcell_constants_sit_on_the_cell(self):
         """BL/BLB/VSS m1 columns and VDD m2 columns are where the generator assumes."""
         ly = db.Layout()

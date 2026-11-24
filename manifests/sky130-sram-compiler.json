@@ -16,7 +16,7 @@
     },
     "10": {
       "file": "manifests/sky130-sram-compiler.item10.attest.json",
-      "content_hash": "sha256:59da40823f3a4e014cf0711f51a92633308fcfc95a281475a4e805869ea70334"
+      "content_hash": "sha256:619203ebb45841f21b753c3f6d406289aa738a1ff2a91df3bad4f9582d981e98"
     },
     "2.analog": {
       "file": "design/compiler/evidence/item2.json",
@@ -44,11 +44,11 @@
     },
     "9.analog": {
       "file": "evidence/item9.json",
-      "content_hash": "sha256:3597be500a51834828e77514ebf45d873deb14fed248e5149735b2dda313c7e9"
+      "content_hash": "sha256:5ae9d1624213ba1ee828326fd17f9134afafbea7cb236c7b2101c839f997f57f"
     },
     "9.digital": {
       "file": "evidence/item9.json",
-      "content_hash": "sha256:3597be500a51834828e77514ebf45d873deb14fed248e5149735b2dda313c7e9"
+      "content_hash": "sha256:5ae9d1624213ba1ee828326fd17f9134afafbea7cb236c7b2101c839f997f57f"
     },
     "11.analog": [
       {
