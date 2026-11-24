@@ -23,7 +23,7 @@ block `sram_ctrl`.
 | 4 LVS clean | met, both | `design/macro/records/`, `design/control/records/`, `power_connectivity: match` (#33) |
 | 5 Corner verification vs a ratified spec | unmet | no ratified spec (#2, #8) |
 | 6 Monte Carlo for statistical rows | unmet | bitcell MC exists (`sim/bitcell/records/`) but grades against no spec |
-| 7 Post-layout verification (analog) | unmet | no extracted-netlist run |
+| 7 Post-layout verification (analog) | unmet | provisional single-corner extracted hold/read SNM only (`sim/column/records/20261124-snm-pex.md`, #210); transient (#209), multi-corner/MC and graded claim stay open |
 | 7 Post-layout verification (digital) | unmet (`check_failed`) | SDF-annotated cocotb re-run on the routed netlist: passes 5/5 at `tt_025C_1v80` (`evidence/item7-digital.json`), fails 4 of 5 at the worst-setup corner `ss_n40C_1v28` (`evidence/item7-digital-ss-n40C-1v28.json`); both cited, so the row grades unmet (#206; closure with #40) |
 | 8 Characterization report | unmet | follows 5 to 7 |
 | 9 Testbenches shipped | met, both | `evidence/item9.json` over `sim/testbench-inventory.json` (#29 part 1, #51) |
@@ -105,13 +105,19 @@ Startable today; none depends on the ratified spec.
   simulated, every ladder and the WEN-off control held on each side, and the write
   completion transition moved from a 0.35–0.40 ns to a 0.45–0.50 ns bounding pulse width
   at tt/1.8 V/25 °C (read access unshifted at the 50 ps ladder resolution; sense
-  differential −5 %) — record `sim/column/records/20261123-69ff7430.md`. Remaining
-  simulation work: the post-layout corner grids and Monte Carlo on the extracted slice
-  (the pre-layout grids are the committed `klt sim` requests); item 7 stays uncited.
-  The DC SNM fixture's
-  layout top now exists (#228): `gen_layout.py --snm-halfcell`, a 64-row column with a decoupled
-  half-cell in row 0, DRC/LVS clean, extract-only accepted in 1 s; it measures nothing —
-  the extracted hold/read SNM is #210; record `design/macro/records/20261124-snm-halfcell-col64.md`.
+  differential −5 %) — record `sim/column/records/20261123-69ff7430.md`. The DC SNM
+  fixture's layout top (#228, `gen_layout.py --snm-halfcell`, a 64-row column with a
+  decoupled half-cell in row 0, DRC/LVS clean, record
+  `design/macro/records/20261124-snm-halfcell-col64.md`) has now been compared at
+  `tt`, `1.800 V`, `25 °C` through `klt pex --measure-command --device-only-leg` (#210):
+  hold `eye_snm` 0.707994 V → 0.707859 V (`-0.136 mV`, `-0.019%`), read `eye_snm`
+  0.429380 V → 0.428921 V (`-0.459 mV`, `-0.107%`), with the resistive-star delta verified
+  against `--parasitic-variant drop-r:*` and all 254 NFET bulks confirmed on `VSS` — record
+  `sim/column/records/20261124-snm-pex.md` and report
+  `sim/column/records/pex-sram_snm_halfcell_col64.report.json.gz`. Provisional only:
+  the post-layout corner grids and Monte Carlo on the extracted slice (the pre-layout
+  grids are the committed `klt sim` requests), multi-corner/MC SNM, spec ratification (#8)
+  and the graded item-7 analog claim stay open; item 7 stays uncited.
   Unblocked by the pre-layout grids (#29) and the spec.
 - **Characterization report** (item 8). Done when one aggregated report is cited in the manifest; follows items 5 to 7.
 - **Second reference instance, 64 x 32.** Done when GDS, LEF, DRC and LVS

@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "T1 item 10 (Repo hygiene): 25/25 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 10 (Repo hygiene): 26/26 attestation checks passed (klt signoff --attest)",
   "source": "manifests/hygiene-inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 25,
-    "passed_count": 25,
+    "check_count": 26,
+    "passed_count": 26,
     "checks": [
       {
         "check": "present",
         "role": "hygiene",
         "path": ".github/workflows/hygiene.yml",
         "passed": true,
-        "content_hash": "sha256:e3388258050376311c8009c95760162ebbe0800f844d30010bc128ec08363788"
+        "content_hash": "sha256:1c160e0a8652c409df8823f180de6e9f38600465991406480a1498af52bea42d"
       },
       {
         "check": "present",
@@ -38,7 +38,7 @@
         "role": "hygiene",
         "path": "README.md",
         "passed": true,
-        "content_hash": "sha256:be9301e7732354e650ae5ded595df24fec7d321274bd85777bdf983f924abe68"
+        "content_hash": "sha256:3221c2375623af8c3dcadd2efc2a0382e4d3779252677e446f3c8865d2fc9cc7"
       },
       {
         "check": "present",
@@ -311,11 +311,24 @@
         "cwd": ".",
         "exit_status": 0,
         "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "snm-pex-dut",
+        "argv": [
+          "python3",
+          "-I",
+          "sim/column/lib/test_snm_pex.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
       }
     ]
   },
   "provenance": {
-    "klt_version": "0.9.0",
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -324,7 +337,7 @@
         "path": "manifests/hygiene-inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:e2eccf17964b10c94bacc057e20fa12040f794a11ccb03981c0909fbf57c384e"
+      "content_hash": "sha256:619203ebb45841f21b753c3f6d406289aa738a1ff2a91df3bad4f9582d981e98"
     }
   }
 }
