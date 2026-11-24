@@ -22,7 +22,6 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack) *(held)*
-- **#209**: Measure provisional read and write deltas on an LVS-matched column slice
 
 ## Ready
 
@@ -34,13 +33,15 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#209**: Measure provisional read and write deltas on an LVS-matched column slice
+- **#227**: check_pex_probe.py swallows check_probe.py's stderr, so a structural per-leg failure is unnamed
+- **#232**: Name the word-line wire truncation in the column-slice PEX record's Scope section
+- **#236**: SNM PEX record: cite provenance for the 'Committed col_*_snm probe (pre-layout)' column
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#237**: (feature/issue-236) SNM PEX record provenance
 
 ## Approved (Awaiting Merge)
 
@@ -54,8 +55,9 @@ Issues carrying `loom:curated`.
 
 - **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
 - **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
-- **#209**: Measure provisional read and write deltas on an LVS-matched column slice *(curated)*
-- **#210**: Measure provisional hold and read SNM on the extracted half-cell fixture *(curated)* *(held)*
+- **#227**: check_pex_probe.py swallows check_probe.py's stderr, so a structural per-leg failure is unnamed *(curated)*
+- **#232**: Name the word-line wire truncation in the column-slice PEX record's Scope section *(curated)*
+- **#236**: SNM PEX record: cite provenance for the 'Committed col_*_snm probe (pre-layout)' column *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -71,12 +73,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 2 |
+| Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 0 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 4 |
+| Curated | 5 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
