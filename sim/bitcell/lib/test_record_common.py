@@ -74,6 +74,20 @@ def mc_report(corners):
     return {"corners": corners, "environment": {"monte_carlo": {"n": len(corners)}}}
 
 
+def regenerate_write_mc_record(levels, kstars=(10, 12, 14)):
+    corners = [mc_sample(levels, "fs_mm", 1.62, -40, k, i) for i, k in enumerate(kstars)]
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = pathlib.Path(tmp)
+        rep = tmp / "mc_write_trip.report.json"
+        rep.write_text(json.dumps(mc_report(corners)))
+        out = tmp / "record.md"
+        argv = ["make_write_mc_record.py", "--id", "fixture", "--out", str(out),
+                "--evidence", str(tmp / "ev"), "--report", str(rep)]
+        with mock.patch.object(sys, "argv", argv):
+            make_write_mc_record.main()
+        return out.read_text()
+
+
 class DeclaredOnce(unittest.TestCase):
     """Issue #76: one declaration, so the emitter and the validator cannot drift apart."""
 
@@ -159,6 +173,15 @@ class ValidLadder(unittest.TestCase):
         self.assertEqual(rc.write_ladder(c), (10, True, rc.LADDER))
 
 
+class WriteMCConclusion(unittest.TestCase):
+    def test_complete_report_with_one_no_flip(self):
+        record = regenerate_write_mc_record(rc.LADDER, (10, -1, 12))
+        conclusion = record.split("## Conclusion\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("1 of 3 valid samples failed to flip.", conclusion)
+        self.assertNotIn("No sample failed to flip", conclusion)
+        self.assertNotIn("No mismatch-driven write failure", conclusion)
+
+
 class DeterminismReference(unittest.TestCase):
     """make_controls_record.ref_kstar subscripted write_ladder() unguarded; it now says what is wrong."""
 
@@ -202,21 +225,8 @@ class RecordProseTracksLadder(unittest.TestCase):
     def step_mv(self, vdd):
         return f"{vdd / (self.STUB - 1) * 1000:.0f}"
 
-    def regenerate_write_mc_record(self, n):
-        corners = [mc_sample(n, "fs_mm", 1.62, -40, k, i) for i, k in enumerate((10, 12, 14))]
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp = pathlib.Path(tmp)
-            rep = tmp / "mc_write_trip.report.json"
-            rep.write_text(json.dumps(mc_report(corners)))
-            out = tmp / "record.md"
-            argv = ["make_write_mc_record.py", "--id", "prose-pin", "--out", str(out),
-                    "--evidence", str(tmp / "ev"), "--report", str(rep)]
-            with mock.patch.object(sys, "argv", argv):
-                make_write_mc_record.main()
-            return out.read_text()
-
     def test_write_mc_record_prose_reports_the_stubbed_step(self):
-        text = self.regenerate_write_mc_record(self.STUB)
+        text = regenerate_write_mc_record(self.STUB)
         self.assertIn(f"step VDD/{self.STUB - 1} = {self.step_mv(1.62)} mV at 1.62 V, "
                       f"{self.step_mv(1.98)} mV at 1.98 V", text)
         self.assertIn(f"[VDD*k*/{self.STUB - 1}, VDD*(k*+1)/{self.STUB - 1})", text)
@@ -232,7 +242,7 @@ class RecordProseTracksLadder(unittest.TestCase):
             p = mock.patch.object(m, "LADDER", 34, create=True)
             p.start()
             self.addCleanup(p.stop)
-        text = self.regenerate_write_mc_record(34)
+        text = regenerate_write_mc_record(34)
         self.assertIn("[VDD*k*/33, VDD*(k*+1)/33)", text)
         for old in ("/32", "33-level", "51 mV", "62 mV", "56 mV"):
             with self.subTest(literal=old):
