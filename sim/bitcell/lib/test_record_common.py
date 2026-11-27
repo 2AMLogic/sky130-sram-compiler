@@ -882,6 +882,16 @@ class RefusesBeforeWritingEvidence(unittest.TestCase):
             with mock.patch.object(make_write_mc_record, "repo", self.sizing_repo(td, "{")):
                 self.assert_refused(make_write_mc_record.main, argv, ev, json.JSONDecodeError)
 
+    def test_write_mc_empty_merged_corners_writes_nothing(self):
+        """Every input report has zero corners: the record would claim '0 of 0 valid samples failed
+        to flip' and n valid samples at every point over an empty Results table. Refused before
+        any evidence or record lands (an empty report merged with a populated one stays valid)."""
+        with tempfile.TemporaryDirectory() as td:
+            argv, ev = self.write_mc_argv(td)
+            with mock.patch.object(make_write_mc_record, "repo", self.sizing_repo(td, "{}")):
+                self.assert_refused(make_write_mc_record.main, argv, ev, ValueError)
+            self.assertFalse((pathlib.Path(td) / "record.md").exists())
+
     def test_column_missing_request_writes_nothing(self):
         """One `sim/column/requests/<bench>.request.json` missing among eleven: its sha256
         lookup ran after all eleven bench gzips landed pre-#172 (the issue's edge case).

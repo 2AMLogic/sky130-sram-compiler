@@ -74,6 +74,10 @@ def main():
     # before any artifact lands, not after earlier .json.gz files are already on disk.
     git = git_short_sha(repo)
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
+    if not merge(reps):
+        # Zero merged corners would pick the complete-input conclusion and Limits text for a record
+        # with no Results rows ("0 of 0 valid samples failed to flip"): refuse before any artifact lands.
+        raise ValueError(f"no corners in any input report ({', '.join(a.report)}); refusing to write an empty record")
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
     for i, r in enumerate(reps[1:], 1):  # the base report is already committed; only the new ones are stored
