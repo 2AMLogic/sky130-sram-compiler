@@ -101,7 +101,7 @@
         "role": "testbench",
         "path": "sim/bitcell/lib/make_write_mc_record.py",
         "passed": true,
-        "content_hash": "sha256:09159123dc235dbc688a2af22d7172567f313531b9bf131d7a82085a897e2e00"
+        "content_hash": "sha256:44c60d6fb4d9231f8e4a30aace8b8172c6124ec298cb3ebd70afbb1ddb88b6fd"
       },
       {
         "check": "present",
