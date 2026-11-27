@@ -74,6 +74,10 @@ def main():
     # before any artifact lands, not after earlier .json.gz files are already on disk.
     git = git_short_sha(repo)
     sizing = json.load(open(repo / "design/bitcell/sizing.json"))
+    if not merge(reps):
+        # Zero merged corners would pick the complete-input conclusion and Limits text for a record
+        # with no Results rows ("0 of 0 valid samples failed to flip"): refuse before any artifact lands.
+        raise ValueError(f"no corners in any input report ({', '.join(a.report)}); refusing to write an empty record")
     ev = pathlib.Path(a.evidence)
     ev.mkdir(parents=True, exist_ok=True)
     for i, r in enumerate(reps[1:], 1):  # the base report is already committed; only the new ones are stored
@@ -85,12 +89,15 @@ def main():
     bpts, bfail, _ = stats(reps[0]["corners"])
 
     rows, notes = [], []
+    total_valid = total_noflip = 0
     for k in sorted(set(pts) | set(fail), key=lambda t: (t[0], t[1], t[2])):
         proc, vdd, temp = k
         step = vdd / (LADDER - 1)
         v = pts.get(k, [])
         n = len(v)
         noflip = sum(1 for s, _ in v if s < 0)
+        total_valid += n
+        total_noflip += noflip
         nonmono = sum(1 for _, m in v if not m)
         if n - noflip < 2:
             rows.append(f"| {proc} | {vdd:.2f} | {temp} | {n + fail.get(k, 0)} | {n} | {noflip} | {nonmono} | - | - | - | - | - | - |")
@@ -165,19 +172,16 @@ def main():
          "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"] + rows + [""]
     if notes:
         L += ["Notes:"] + [f"- {n}" for n in notes] + [""]
-    tot = sum(len(v) for v in pts.values()) + sum(fail.values())
+    tot = total_valid + sum(fail.values())
     short = sorted(k for k in units if len(pts.get(k, [])) < (mc.get("n") or 0))
     if cmp_lines:
         later = {c["corner_id"]: write_ladder(c) for c in reps[-1]["corners"]}
         bv = [(c["corner_id"], write_ladder(c)) for c in reps[0]["corners"] if write_ladder(c)]
         nb, ns = len(bv), sum(1 for i, w in bv if later.get(i) == w)
     if not short:
-        nof = sum(1 for v in pts.values() for s_, _ in v if s_ < 0)
-        zmin = min((statistics.mean([max(s_, 0) for s_, _ in v]) * (k[1] / (LADDER - 1))) / (statistics.stdev([max(s_, 0) * (k[1] / (LADDER - 1)) for s_, _ in v]) or 1e-9) for k, v in pts.items())
         L += ["## Conclusion", "",
-              f"No sample failed to flip ({nof} no-flip over {sum(len(v) for v in pts.values())} valid samples), and the lowest lower-bound sigmas-to-failure over the 8 points is {zmin:.1f}. "
-              "No mismatch-driven write failure is observed at these points at n = 60 (the smallest margin, fs / 1.62 V / 125 C, is 6.9 sigma on the lower-bound estimate); the sizing in `design/bitcell/sizing.json` (access / pull-up ratio) is unchanged and no lever is named. "
-              "This is not a graded yield claim: the determinism control, negative control and `klt yield` report are out of this record (below).", ""]
+              f"{total_noflip} of {total_valid} valid samples failed to flip. "
+              "This record lacks the determinism control, negative control and `klt yield` report required for a graded yield claim.", ""]
     if cmp_lines:
         L += (["## Compared with 2026-10-18-write-mc.md", "",
               "Base report: `sim/bitcell/corners/20261018-write-mc/mc_write_trip.report.json.gz` (the partial first look). "
