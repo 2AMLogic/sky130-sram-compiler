@@ -15,17 +15,17 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(held)*
+- **#8**: Write spec/sram-compiler.md, inheritance table and ratification request
 
 ## Important
 
 `loom:important`; taken before unlabelled work.
 
-- **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack) *(held)*
+- **#40**: Follow-on from PR #39: sram_ctrl P&R timing closure (placeholder 10 ns clock, negative setup slack)
 
 ## Ready
 
-Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
+Human-approved issues ready for implementation (`loom:issue`).
 
 _None._
 
@@ -51,8 +51,8 @@ _None._
 
 Issues carrying `loom:curated`.
 
-- **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)* *(held)*
-- **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)* *(held)*
+- **#8**: Write spec/sram-compiler.md, inheritance table and ratification request *(curated)*
+- **#29**: T1 item 9 (testbenches shipped): array access/write benches, control cocotb bench and --attest 9 *(curated)*
 - **#227**: check_pex_probe.py swallows check_probe.py's stderr, so a structural per-leg failure is unnamed *(curated)*
 
 ## Proposed (Architect / Hermit)
@@ -70,7 +70,7 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
