@@ -1402,6 +1402,9 @@ def main(argv):
                  "--bench-slice", "--check-bench-slice"):
         if flag in args:
             i = args.index(flag)
+            if i + 1 >= len(args):
+                print(__doc__, file=sys.stderr)
+                return 2
             val = args[i + 1]
             del args[i:i + 2]
             if flag == "-o":
