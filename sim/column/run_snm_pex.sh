@@ -54,7 +54,7 @@ uv run --no-project --with klayout python -I design/compiler/gen_layout.py \
   --snm-halfcell -o "$gds" --report > "$scratch/layout.json"
 
 pins="BL0,BLB0,IN,OUT,PCHB,VDD,VSS,$(seq -s, -f 'WL%g' 0 63)"
-measure_cmd="python3 -I sim/column/lib/make_column_tb.py --measure-snm-dut --klt '$KLT'"
+measure_cmd="python3 -I sim/column/lib/snm_pex.py --measure-snm-dut --klt '$KLT'"
 
 set +e
 /usr/bin/time -v -o "$scratch/time.v" -- "${KLT_ARR[@]}" pex "$gds" \
