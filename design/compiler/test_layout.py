@@ -237,4 +237,17 @@ class SnmHalfcellColumn(unittest.TestCase):
         self.assertEqual(r.returncode, 0)
 
 
+class Usage(unittest.TestCase):
+    """A malformed command line is a usage error: exit 2 with the usage text, never a traceback."""
+
+    def test_value_taking_flag_given_last_is_usage_error(self):
+        """Every value-taking flag as the last token exits 2 instead of indexing past the end of argv."""
+        for argv in (["--check"], ["-o"], ["--bench-slice"], ["--check-bench-slice"],
+                     ["--snm-halfcell", "--check"], ["--socket"], ["--lef"], ["--check-lef"], ["--check-socket"]):
+            err = io.StringIO()
+            with self.subTest(argv=argv), contextlib.redirect_stderr(err):
+                self.assertEqual(gl.main(["gen_layout.py", *argv]), 2)
+                self.assertEqual(err.getvalue(), gl.__doc__ + "\n")
+
+
 unittest.main()
