@@ -641,6 +641,27 @@ class _Ref:
         self.cell = cell
 
 
+def _new_bitcell_layout():
+    """A dbu = 0.001 layout holding the committed bitcell, asserted to be BC_W x BC_H.
+    Returns (ly, bc): the layout and the bitcell as the _Ref build_array() places."""
+    ly = db.Layout()
+    ly.dbu = 0.001
+    ly.read(str(BITCELL_GDS))
+    bcc = ly.cell(BITCELL)
+    bb = bcc.dbbox()
+    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
+    return ly, _Ref(bcc)
+
+
+def _finish_top(ly, T, ag, hcm):
+    """Close a top cell: its bound rectangle and T.size around everything drawn. Returns the
+    (ly, T, BuildGeom) record every builder hands back."""
+    bb_all = T.cell.dbbox()
+    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
+    T.size = (bb_all.width(), bb_all.height())
+    return ly, T, BuildGeom(ag=ag, hcm=hcm)
+
+
 def _natural_hc(wn, wp):
     return snap(0.60 + wn + wp + 0.90)
 
@@ -721,14 +742,20 @@ class _BusRouter:
         return b[0]
 
 
-def _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd):
+def _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd, export_pins=True):
     """Collectors, sense amps, write drivers and the Q/D m4 verticals.
-    Returns (t_sa, t_wd, y_sa, y_wd, y_qd_top)."""
+    Returns (t_sa, t_wd, y_sa, y_wd, y_qd_top).
+    export_pins=False is the bench slice's single bit (bits == 1): exactly one sense-amp and one
+    write-driver tier, the Q/D verticals and the collectors labelled by port name (DOUT/DIN,
+    SBL/SBLB) for the flat PEX instead of Q0/D0/SBL0/SBLB0, and no macro pins in T.pins."""
     yc1 = -hcm - 0.7
     yc2 = yc1 - 0.7
     sa_x = {"SBL": sa.pins["SBL"][1], "SBLB": sa.pins["SBLB"][1], "Q": sa.pins["DOUT"][1]}
     wd_x = {"SBL": wd.pins["SBL"][1], "SBLB": wd.pins["SBLB"][1], "D": wd.pins["DIN"][1]}
     t_sa, t_wd, slots = _choose_slots(G, sa.size[0], wd.size[0], sa_x, wd_x)
+    if not export_pins and (t_sa != 1 or t_wd != 1):
+        raise GenError(f"bench slice: a {sa.size[0]:.2f}/{wd.size[0]:.2f} um sense amp/write driver "
+                       f"does not fit one {G:.2f} um bit group")
     y_sa0 = yc2 - 1.0 - sa.size[1]
     y_sa = [y_sa0 - t * (sa.size[1] + 0.8) for t in range(t_sa)]
     y_wd0 = y_sa[-1] - 1.0 - wd.size[1]
@@ -758,7 +785,8 @@ def _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd):
                 stack(T, x, yc, "m3", "m4")
                 span = col_spans[(nm, k)]
                 span[1], span[2] = min(span[1], x), max(span[2], x)
-        for nm, (x, y, lay) in (("Q", sa_pin("DOUT")), ("D", wd_pin("DIN"))):
+        for nm, pn in (("Q", "DOUT"), ("D", "DIN")):
+            x, y, lay = sa_pin(pn) if nm == "Q" else wd_pin(pn)
             xv = k * G + slots[nm]
             if abs(xv - x) < 1e-9:
                 stack(T, x, y, lay, "m4", ext=1)
@@ -767,13 +795,16 @@ def _place_bit_slices(T, ag, hcm, G, mux, bits, pc, sa, wd):
                 hbar(T, "m3", min(x, xv) - PAD3 / 2, max(x, xv) + PAD3 / 2, y, PAD3)   # as tall as the pads: no notches
                 via3(T, xv, y)
             vbar(T, "m4", xv, y, y_qd_top, 0.30)
-            T.label("m4", f"{nm}{k}", xv, y_qd_top - 0.2, drawing=True)
-            T.pins[f"{nm}{k}"] = ("m4", xv, y_qd_top - 0.2)
-            T.pin_rects[f"{nm}{k}"] = ("m4", xv - 0.15, y_qd_top - 0.8, xv + 0.15, y_qd_top)
+            if export_pins:
+                T.label("m4", f"{nm}{k}", xv, y_qd_top - 0.2, drawing=True)
+                T.pins[f"{nm}{k}"] = ("m4", xv, y_qd_top - 0.2)
+                T.pin_rects[f"{nm}{k}"] = ("m4", xv - 0.15, y_qd_top - 0.8, xv + 0.15, y_qd_top)
+            else:
+                T.label("m4", pn, xv, y_qd_top - 0.2)
     for (nm, k), (yc, x0, x1) in col_spans.items():
         pad_ = max(0.2, (0.9 - (x1 - x0)) / 2)          # m3 area rule: bar at least 0.9 long
         hbar(T, "m3", x0 - pad_, x1 + pad_, yc, 0.30)
-        T.label("m3", f"{nm}{k}", x0, yc)
+        T.label("m3", f"{nm}{k}" if export_pins else nm, x0, yc)
     return t_sa, t_wd, y_sa, y_wd, y_qd_top
 
 
@@ -845,16 +876,24 @@ def _place_row_decoders(T, ly, ag, rows, row_gate, gname, nin):
         hbar(T, "m2", yx, ax2, yy, 0.23)
         vbar(T, "m2", ax2, min(ay2, yy), max(ay2, yy), 0.23)
         via1(T, ax2, ay2)
-        ox, oy = ln["xl"] + wg + wl_r.pins["Y"][1], y0 + wl_r.pins["Y"][2]
-        ywl = y0 + 1.105
-        stack(T, ox, oy, "m1", "m3")
-        vbar(T, "m3", ox, min(oy, ywl) - 0.15, max(oy, ywl) + 0.15, 0.30)
-        hbar(T, "m3", -0.40 - 0.15, ox + 0.15, ywl, 0.30)
-        for net, yr in (("VSS", y0 + 0.145), ("VDD", y0 + hc_row - 0.145)):
-            xsp = ln["vss"] if net == "VSS" else ln["vdd"]
-            hbar(T, "m1", xsp - 0.16, ln["xl"] + 0.2, yr, RAIL)
-            via1(T, xsp, yr)
+        _route_wl_output(T, ln["xl"] + wg + wl_r.pins["Y"][1], y0 + wl_r.pins["Y"][2], y0 + 1.105)
+        _tie_lane_rails(T, ln, y0, hc_row)
     return lanes, router
+
+
+def _route_wl_output(T, ox, oy, ywl):
+    """A word-line driver's output pin (ox, oy) on m3 to its row's landing pad at (-0.40, ywl)."""
+    stack(T, ox, oy, "m1", "m3")
+    vbar(T, "m3", ox, min(oy, ywl) - 0.15, max(oy, ywl) + 0.15, 0.30)
+    hbar(T, "m3", -0.40 - 0.15, ox + 0.15, ywl, 0.30)
+
+
+def _tie_lane_rails(T, ln, y0, hc_row):
+    """Tie one decoder lane's VSS/VDD m1 rails (row bottom y0, cell height hc_row) to its m2 spines."""
+    for net, yr in (("VSS", y0 + 0.145), ("VDD", y0 + hc_row - 0.145)):
+        xsp = ln["vss"] if net == "VSS" else ln["vdd"]
+        hbar(T, "m1", xsp - 0.16, ln["xl"] + 0.2, yr, RAIL)
+        via1(T, xsp, yr)
 
 
 def _place_control_row(T, ly, g, mux, bits, G, CW, sa, wd, y_wd, ctl, router):
@@ -979,9 +1018,11 @@ def _route_globals(T, ag, hcm, mux, bits, G, CW, sa, wd, t_sa, t_wd, y_sa, y_wd,
     return y_wen, y_pchb
 
 
-def _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, y_cell0, hc_ctl,
-                             x_end, y_track, y_wen, y_pchb):
-    """Supply spines, right-hand VDD/VSS ring and macro pin export."""
+def _route_supply_spines(T, ag, CW, x_end, y_qd_top, lanes):
+    """The decoder lanes' m2 VSS/VDD spines (lanes: dicts with a 'vss' and a 'vdd' x), each tied
+    at its top to an m3 bus that runs right to where the ring goes; the precharge row's own VDD
+    and VSS buses are extended out on m3 to meet them. Returns (x_rv, x_rd, y_b): the ring's VSS
+    and VDD x, and the VSS bus y."""
     y_a = snap(y_qd_top + 1.2)
     y_b = snap(y_a + 0.8)
     x_rv, x_rd = snap(x_end + 2.0), snap(x_end + 3.6)
@@ -995,20 +1036,36 @@ def _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, 
     hbar(T, "m3", CW, x_rv, ag.height + 3.00, 0.30)
     for xr_, yr_ in ((x_rd, y_a), (x_rv, y_b), (x_rd, ag.height + 2.30), (x_rv, ag.height + 3.00)):
         via3(T, xr_, yr_)
-    rows_y = ([(y, sa.size[1]) for y in y_sa] + [(y, wd.size[1]) for y in y_wd]
-              + [(y_cell0, hc_ctl)])
+    return x_rv, x_rd, y_b
+
+
+def _route_supply_ring(T, x_rv, x_rd, y_b, rows_y, export_pins=False):
+    """The right-hand VSS/VDD ring: every cell row in rows_y ((y, height), bottom-most last)
+    runs its m1 rails out to the x_rv / x_rd m4 verticals, which span from 1.0 below that last
+    row to 0.8 above the VSS bus at y_b. export_pins=True makes the two verticals the macro's
+    VSS/VDD pins."""
     for y, h in rows_y:               # each cell row's rails run on to the right-hand ring
         for xring, yr in ((x_rv, y + 0.145), (x_rd, y + h - 0.145)):
             T.rect("m1", 0, yr - RAIL / 2, xring, yr + RAIL / 2)
             stack(T, xring, yr, "m1", "m4")
-    y_bot = snap(y_cell0 - 1.0)
+    y_bot = snap(rows_y[-1][0] - 1.0)
     y_top = snap(y_b + 0.8)
     for xr_ in (x_rv, x_rd):
         vbar(T, "m4", xr_, y_bot, y_top, 1.0)
     for nm, x in (("VSS", x_rv), ("VDD", x_rd)):
         T.label("m4", nm, x, (y_bot + y_top) / 2, drawing=True)
-        T.pins[nm] = ("m4", x, (y_bot + y_top) / 2)
-        T.pin_rects[nm] = ("m4", x - 0.5, y_bot, x + 0.5, y_top)
+        if export_pins:
+            T.pins[nm] = ("m4", x, (y_bot + y_top) / 2)
+            T.pin_rects[nm] = ("m4", x - 0.5, y_bot, x + 0.5, y_top)
+
+
+def _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, y_cell0, hc_ctl,
+                             x_end, y_track, y_wen, y_pchb):
+    """Supply spines, right-hand VDD/VSS ring and macro pin export."""
+    x_rv, x_rd, y_b = _route_supply_spines(T, ag, CW, x_end, y_qd_top, lanes)
+    rows_y = ([(y, sa.size[1]) for y in y_sa] + [(y, wd.size[1]) for y in y_wd]
+              + [(y_cell0, hc_ctl)])
+    _route_supply_ring(T, x_rv, x_rd, y_b, rows_y, export_pins=True)
     for i in range(g["na"]):
         yt_ = y_track[f"A{i}"]
         T.label("m3", f"A{i}", x_end - 0.2, yt_, drawing=True)
@@ -1031,13 +1088,7 @@ def build(words, bits, mux):
     g = sc.geometry(words, bits, mux)
     rows, cols = g["rows"], g["cols"]
     name = sc.top_name(words, bits, mux)
-    ly = db.Layout()
-    ly.dbu = 0.001
-    ly.read(str(BITCELL_GDS))
-    bcc = ly.cell(BITCELL)
-    bb = bcc.dbbox()
-    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
-    bc = _Ref(bcc)
+    ly, bc = _new_bitcell_layout()
 
     # ---- cells --------------------------------------------------------------------
     pc = cell_precharge(ly, "sram_precharge")
@@ -1073,10 +1124,7 @@ def build(words, bits, mux):
                                    router, x_end, x_rd_pre)
     _route_supplies_and_pins(T, ag, g, CW, sa, wd, lanes, y_sa, y_wd, y_qd_top, y_cell0, hc_ctl,
                              x_end, y_track, y_wen, y_pchb)
-    bb_all = T.cell.dbbox()
-    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
-    T.size = (bb_all.width(), bb_all.height())
-    return ly, T, BuildGeom(ag=ag, hcm=hcm)
+    return _finish_top(ly, T, ag, hcm)
 
 
 # ---- bench slice (issue #209): the PEX top for the column transient benches ----------
@@ -1101,13 +1149,7 @@ def build_bench_slice(rows=SLICE_ROWS, cols=SLICE_COLS):
     if cols != SLICE_COLS:
         raise GenError(f"bench slice: cols={cols}: the column benches measure one mux-4 bit group")
     mux = cols
-    ly = db.Layout()
-    ly.dbu = 0.001
-    ly.read(str(BITCELL_GDS))
-    bcc = ly.cell(BITCELL)
-    bb = bcc.dbbox()
-    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, bb
-    bc = _Ref(bcc)
+    ly, bc = _new_bitcell_layout()
 
     pc = cell_precharge(ly, "sram_precharge")
     cm = [cell_colmux(ly, f"sram_colmux_m{m}", m, mux) for m in range(mux)]
@@ -1132,49 +1174,10 @@ def build_bench_slice(rows=SLICE_ROWS, cols=SLICE_COLS):
         T.label("m1", f"BLB{c}", c * BC_W + BLB_X, 0.1)
 
     # ---- bit-0 collectors, sense amp, write driver (one bit of _place_bit_slices) ------
-    yc1, yc2 = -hcm - 0.7, -hcm - 1.4
-    sa_x = {"SBL": sa.pins["SBL"][1], "SBLB": sa.pins["SBLB"][1], "Q": sa.pins["DOUT"][1]}
-    wd_x = {"SBL": wd.pins["SBL"][1], "SBLB": wd.pins["SBLB"][1], "D": wd.pins["DIN"][1]}
-    t_sa, t_wd, slots = _choose_slots(G, sa.size[0], wd.size[0], sa_x, wd_x)
-    if t_sa != 1 or t_wd != 1:
-        raise GenError(f"bench slice: a {sa.size[0]:.2f}/{wd.size[0]:.2f} um sense amp/write driver "
-                       f"does not fit one {G:.2f} um bit group")
-    y_sa = yc2 - 1.0 - sa.size[1]
-    y_wd = y_sa - 1.0 - wd.size[1]
-    y_qd_top = ag.height + pc.size[1] + 0.6
-    place(T, sa, 0, y_sa)
-    place(T, wd, 0, y_wd)
+    _, _, (y_sa,), (y_wd,), y_qd_top = _place_bit_slices(T, ag, hcm, G, mux, 1, pc, sa, wd,
+                                                         export_pins=False)
     sa_pin = lambda n: (sa.pins[n][1], y_sa + sa.pins[n][2], sa.pins[n][0])
     wd_pin = lambda n: (wd.pins[n][1], y_wd + wd.pins[n][2], wd.pins[n][0])
-    col_spans = {}
-    for xs, yc, nm in (([j * BC_W + BL_X for j in range(mux)], yc1, "SBL"),
-                       ([j * BC_W + BLB_X for j in range(mux)], yc2, "SBLB")):
-        for x in xs:
-            vbar(T, "m1", x, yc, -hcm + 0.1, 0.14)
-            stack(T, x, yc, "m1", "m3")
-        col_spans[nm] = [yc, min(xs), max(xs)]
-    for nm, yc in (("SBL", yc1), ("SBLB", yc2)):
-        for (x, y, lay) in (sa_pin(nm), wd_pin(nm)):
-            stack(T, x, y, lay, "m4")
-            vbar(T, "m4", x, y, yc, 0.30)
-            stack(T, x, yc, "m3", "m4")
-            span = col_spans[nm]
-            span[1], span[2] = min(span[1], x), max(span[2], x)
-    for nm, pn in (("Q", "DOUT"), ("D", "DIN")):
-        x, y, lay = sa_pin(pn) if nm == "Q" else wd_pin(pn)
-        xv = slots[nm]
-        if abs(xv - x) < 1e-9:
-            stack(T, x, y, lay, "m4", ext=1)
-        else:                    # jog on m3 at the pin's y to the free vertical slot
-            stack(T, x, y, lay, "m3")
-            hbar(T, "m3", min(x, xv) - PAD3 / 2, max(x, xv) + PAD3 / 2, y, PAD3)
-            via3(T, xv, y)
-        vbar(T, "m4", xv, y, y_qd_top, 0.30)
-        T.label("m4", pn, xv, y_qd_top - 0.2)
-    for nm, (yc, x0, x1) in col_spans.items():
-        pad_ = max(0.2, (0.9 - (x1 - x0)) / 2)          # m3 area rule: bar at least 0.9 long
-        hbar(T, "m3", x0 - pad_, x1 + pad_, yc, 0.30)
-        T.label("m3", nm, x0, yc)
 
     # ---- SAEB inverter, right of both cells so its routes cross neither cell row -------
     hc_inv = inv.size[1]
@@ -1217,11 +1220,8 @@ def build_bench_slice(rows=SLICE_ROWS, cols=SLICE_COLS):
     xl = snap(-(wl_r.size[0] + 1.4))
     y0 = ag.row_y(0)
     place(T, wl_r, xl, y0)
-    ox, oy = xl + wl_r.pins["Y"][1], y0 + wl_r.pins["Y"][2]
     ywl = y0 + 1.105
-    stack(T, ox, oy, "m1", "m3")
-    vbar(T, "m3", ox, min(oy, ywl) - 0.15, max(oy, ywl) + 0.15, 0.30)
-    hbar(T, "m3", -0.40 - 0.15, ox + 0.15, ywl, 0.30)
+    _route_wl_output(T, xl + wl_r.pins["Y"][1], y0 + wl_r.pins["Y"][2], ywl)
     axw, ayw = xl + wl_r.pins["A"][1], y0 + wl_r.pins["A"][2]
     via1(T, axw, ayw)
     ytop = snap(y0 + hc_row + 0.9)
@@ -1238,39 +1238,11 @@ def build_bench_slice(rows=SLICE_ROWS, cols=SLICE_COLS):
         T.label("li", nm, c * BC_W + qx, y0 + 0.775)
 
     # ---- supplies: lane spines, precharge-row buses out to a right-hand ring -----------
-    y_a = snap(y_qd_top + 1.2)
-    y_b = snap(y_a + 0.8)
-    x_rv, x_rd = snap(x_end + 2.0), snap(x_end + 3.6)
-    x_vss, x_vdd = snap(xl - 1.0), snap(xl - 2.2)
-    for x, yb_ in ((x_vss, y_b), (x_vdd, y_a)):
-        vbar(T, "m2", x, y0 - 0.3, yb_ + 0.4, 0.5)
-        via2(T, x, yb_)
-    hbar(T, "m3", x_vdd - 0.2, x_rd, y_a, 0.40)
-    hbar(T, "m3", x_vss - 0.2, x_rv, y_b, 0.40)
-    hbar(T, "m3", CW, x_rd, ag.height + 2.30, 0.30)
-    hbar(T, "m3", CW, x_rv, ag.height + 3.00, 0.30)
-    for xr_, yr_ in ((x_rd, y_a), (x_rv, y_b), (x_rd, ag.height + 2.30), (x_rv, ag.height + 3.00)):
-        via3(T, xr_, yr_)
-    for net, yr in (("VSS", y0 + 0.145), ("VDD", y0 + hc_row - 0.145)):
-        xsp = x_vss if net == "VSS" else x_vdd
-        hbar(T, "m1", xsp - 0.16, xl + 0.2, yr, RAIL)
-        via1(T, xsp, yr)
-    rows_y = [(y_sa, sa.size[1]), (y_wd, wd.size[1]), (y_inv, hc_inv)]
-    for y, h in rows_y:               # each cell row's rails run on to the right-hand ring
-        for xring, yr in ((x_rv, y + 0.145), (x_rd, y + h - 0.145)):
-            T.rect("m1", 0, yr - RAIL / 2, xring, yr + RAIL / 2)
-            stack(T, xring, yr, "m1", "m4")
-    y_bot = snap(y_inv - 1.0)
-    y_top = snap(y_b + 0.8)
-    for xr_ in (x_rv, x_rd):
-        vbar(T, "m4", xr_, y_bot, y_top, 1.0)
-    for nm, x in (("VSS", x_rv), ("VDD", x_rd)):
-        T.label("m4", nm, x, (y_bot + y_top) / 2, drawing=True)
-
-    bb_all = T.cell.dbbox()
-    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
-    T.size = (bb_all.width(), bb_all.height())
-    return ly, T, BuildGeom(ag=ag, hcm=hcm)
+    lane = {"xl": xl, "vss": snap(xl - 1.0), "vdd": snap(xl - 2.2)}
+    x_rv, x_rd, y_b = _route_supply_spines(T, ag, CW, x_end, y_qd_top, [lane])
+    _tie_lane_rails(T, lane, y0, hc_row)
+    _route_supply_ring(T, x_rv, x_rd, y_b, [(y_sa, sa.size[1]), (y_wd, wd.size[1]), (y_inv, hc_inv)])
+    return _finish_top(ly, T, ag, hcm)
 
 
 # ---- outputs -------------------------------------------------------------------------
@@ -1284,22 +1256,19 @@ def build_snm_halfcell_column():
     cell_precharge exactly as the macro's columns. Ports (top-cell labels): BL0 BLB0 IN OUT
     WL0 (the half-cell's own word line) WL1..WL63 (the background rows') PCHB VDD VSS. Returns (ly, T, BuildGeom)."""
     import gen_bitcell as gb  # noqa: E402  (design/bitcell is put on sys.path below)
-    ly = db.Layout()
-    ly.dbu = 0.001
-    ly.read(str(BITCELL_GDS))
+    ly, bc = _new_bitcell_layout()
     half_ly, half_info = gb.build(half=True)
     with tempfile.TemporaryDirectory() as tmp:
         hp = pathlib.Path(tmp) / "half.gds"
         write_gds(half_ly, hp)
         ly.read(str(hp))
-    bcc, hcc = ly.cell(BITCELL), ly.cell(gb.HALF_CELL)
-    for c in (bcc, hcc):
-        bb = c.dbbox()
-        assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, (c.name, bb)
+    hcc = ly.cell(gb.HALF_CELL)
+    bb = hcc.dbbox()
+    assert abs(bb.width() - BC_W) < 1e-6 and abs(bb.height() - BC_H) < 1e-6, (hcc.name, bb)
     pc = cell_precharge(ly, "sram_precharge")
     T = Pen(ly, SNM_TOP, labels=True)
     ag = ArrayGeom(SNM_ROWS, 1)
-    build_array(T, _Ref(bcc), ag, row0_cell=_Ref(hcc))
+    build_array(T, bc, ag, row0_cell=_Ref(hcc))
     place_array(T, pc, 0, ag.height, 1, 1, BC_W, 0)
     T.label("m1", "BL0", BL_X, 0.1)
     T.label("m1", "BLB0", BLB_X, 0.1)
@@ -1315,10 +1284,7 @@ def build_snm_halfcell_column():
     for name in ("PCHB", "VDD", "VSS"):          # BL/BLB are the bit-line labels above
         layer, x, y = pc.pins[name]
         T.pin(name, layer, x, ag.height + y)
-    bb_all = T.cell.dbbox()
-    T.rect("bound", bb_all.left, bb_all.bottom, bb_all.right, bb_all.top)
-    T.size = (bb_all.width(), bb_all.height())
-    return ly, T, BuildGeom(ag=ag, hcm=0.0)
+    return _finish_top(ly, T, ag, 0.0)
 
 
 def socket_descriptor(T, name):
@@ -1420,32 +1386,20 @@ def main(argv):
                 bench_slice = val
             else:
                 check_bench_slice = val
-    if bench_slice or check_bench_slice:
-        if args or out or check or sock or lef or check_lef or check_sock:
+    bench = bool(bench_slice or check_bench_slice)
+    if bench:
+        if args or snm or report or any((out, check, sock, lef, check_lef, check_sock)):
             print(__doc__, file=sys.stderr)
             return 2
-        try:
-            ly, T, _geom = build_bench_slice()
-        except (sc.RangeError, GenError, ValueError) as e:
-            print(f"gen_layout: error: {e}", file=sys.stderr)
-            return 1
-        with tempfile.TemporaryDirectory() as tmp:
-            fresh = pathlib.Path(tmp) / "fresh.gds"
-            write_gds(ly, fresh)
-            data = fresh.read_bytes()
-        if bench_slice:
-            pathlib.Path(bench_slice).write_bytes(data)
-        if check_bench_slice:
-            p = pathlib.Path(check_bench_slice)
-            if not p.exists() or p.read_bytes() != data:
-                print(f"gen_layout: {check_bench_slice} drifted from the generator", file=sys.stderr)
-                return 3
-        return 0
-    if len(args) != (0 if snm else 3) or (snm and (sock or lef or check_lef or check_sock)):
+        out, check = bench_slice, check_bench_slice
+    elif len(args) != (0 if snm else 3) or (snm and (sock or lef or check_lef or check_sock)):
         print(__doc__, file=sys.stderr)
         return 2
     try:
-        if snm:
+        if bench:
+            top_name = SLICE_NAME
+            ly, T, geom = build_bench_slice()
+        elif snm:
             top_name = SNM_TOP
             ly, T, geom = build_snm_halfcell_column()
         else:
