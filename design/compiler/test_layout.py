@@ -1,6 +1,8 @@
 """Tests for the layout generator (needs klayout's python module, no PDK):
   uv run --no-project --with klayout python -I design/compiler/test_layout.py
 """
+import contextlib
+import io
 import json
 import pathlib
 import subprocess
@@ -152,6 +154,41 @@ class Layout(unittest.TestCase):
         for p in d["pins"]:
             self.assertTrue(bb["x0"] <= p["x"] <= bb["x1"] and bb["y0"] <= p["y"] <= bb["y1"], p["name"])
         json.dumps(d)
+
+
+class BenchSlice(unittest.TestCase):
+    """--bench-slice: the column-bench slice top, through the same generator entry point."""
+
+    def test_deterministic_and_same_entry_point(self):
+        """--bench-slice and --check-bench-slice share main()'s one write / --check path."""
+        committed = ROOT / "layout/sram_col_slice.gds"
+        with tempfile.TemporaryDirectory() as tmp:
+            p = pathlib.Path(tmp)
+            self.assertEqual(gl.main(["gen_layout.py", "--bench-slice", str(p / "a.gds")]), 0)
+            self.assertEqual(gl.main(["gen_layout.py", "--bench-slice", str(p / "b.gds")]), 0)
+            self.assertEqual((p / "a.gds").read_bytes(), (p / "b.gds").read_bytes())
+            if committed.exists():
+                self.assertEqual((p / "a.gds").read_bytes(), committed.read_bytes())
+            self.assertEqual(gl.main(["gen_layout.py", "--check-bench-slice", str(p / "a.gds")]), 0)
+            self.assertEqual(gl.main(["gen_layout.py", "--check-bench-slice", str(p / "absent.gds")]), 3)
+            (p / "b.gds").write_bytes((p / "b.gds").read_bytes() + b"\x00")
+            self.assertEqual(gl.main(["gen_layout.py", "--check-bench-slice", str(p / "b.gds")]), 3)
+            self.assertEqual(gl.main(["gen_layout.py", "--bench-slice", str(p / "a.gds"),
+                                      "--check-bench-slice", str(p / "b.gds")]), 3)
+
+    def test_incompatible_flags_are_usage_errors(self):
+        """No size, no --snm-halfcell and no other output flag beside --bench-slice / --check-bench-slice."""
+        with tempfile.TemporaryDirectory() as tmp:
+            p = pathlib.Path(tmp)
+            outputs = [("-o", "o.gds"), ("--check", "c.gds"), ("--socket", "s.json"), ("--lef", "l.lef"),
+                       ("--check-lef", "cl.lef"), ("--check-socket", "cs.json")]
+            for bench in ("--bench-slice", "--check-bench-slice"):
+                for extra in (["16", "8", "2"], ["--snm-halfcell"], ["--report"],
+                              *([flag, str(p / f)] for flag, f in outputs)):
+                    with self.subTest(bench=bench, extra=extra), contextlib.redirect_stderr(io.StringIO()):
+                        rc = gl.main(["gen_layout.py", bench, str(p / "slice.gds"), *extra])
+                        self.assertEqual(rc, 2)
+            self.assertEqual(list(p.iterdir()), [])
 
 
 class SnmHalfcellColumn(unittest.TestCase):
