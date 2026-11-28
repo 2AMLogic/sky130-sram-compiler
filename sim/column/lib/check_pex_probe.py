@@ -82,7 +82,10 @@ def main():
                 json.dump(rep, f)
             out = subprocess.run([sys.executable, "-I", os.path.join(HERE, "check_probe.py"),
                                   bench, p, req_path], capture_output=True, text=True)
-            print(f"[{side}] " + out.stdout.strip())
+            # check_probe.py reports ladder verdicts on stdout but structural refusals
+            # (sys.exit(msg)) on stderr; surface both, or the missing-sample name is lost
+            msg = "\n".join(x for x in (out.stdout.strip(), out.stderr.strip()) if x)
+            print(f"[{side}] " + msg)
             if out.returncode != 0:
                 rc = 1
     return rc
